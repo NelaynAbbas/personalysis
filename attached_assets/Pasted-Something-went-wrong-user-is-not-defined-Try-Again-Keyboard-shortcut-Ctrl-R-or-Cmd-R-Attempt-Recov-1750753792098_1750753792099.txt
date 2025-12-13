@@ -1,0 +1,34 @@
+Something went wrong
+user is not defined
+Try Again(Keyboard shortcut: Ctrl+R or Cmd+R)
+Attempt Recovery
+Return to Homepage(Keyboard shortcut: Alt+H)
+
+Error Details (Development Only)
+(Keyboard shortcut: Alt+D)
+Error:
+
+ReferenceError: user is not defined
+    at Dashboard (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/pages/Dashboard.tsx:143:28)
+    at renderWithHooks (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=78a042de:11548:26)
+    at mountIndeterminateComponent (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=78a042de:14926:21)
+    at beginWork (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=78a042de:15914:22)
+    at beginWork$1 (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=78a042de:19753:22)
+    at performUnitOfWork (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=78a042de:19198:20)
+    at workLoopSync (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=78a042de:19137:13)
+    at renderRootSync (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=78a042de:19116:15)
+    at recoverFromConcurrentError (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=78a042de:18736:28)
+    at performSyncWorkOnRoot (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=78a042de:18879:28)
+Component Stack:
+
+
+    at Dashboard (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/pages/Dashboard.tsx:46:27)
+    at Route (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=78a042de:323:16)
+    at Switch (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=78a042de:379:17)
+    at RouterWithAnalytics (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/App.tsx?v=rqHC8XlaBMp47veu0J1XG:295:3)
+    at div
+    at AccessibilityProvider (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/hooks/use-accessibility.tsx:44:41)
+    at ToastProvider (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/hooks/use-toast.ts:10:33)
+    at ErrorBoundary (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/components/ErrorBoundary.tsx:25:5)
+    at QueryClientProvider (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=78a042de:2805:3)
+    at App (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/App.tsx?v=rqHC8XlaBMp47veu0J1XG:207:33)

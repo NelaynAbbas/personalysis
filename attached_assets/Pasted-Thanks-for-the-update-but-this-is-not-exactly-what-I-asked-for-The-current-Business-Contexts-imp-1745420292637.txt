@@ -1,0 +1,39 @@
+Thanks for the update, but this is not exactly what I asked for. The current “Business Contexts” implementation is too static and separate from the core idea of the platform.
+
+Let me clarify again — this platform is designed to be used by marketing agencies, who will run personalized, gamified surveys for each of their clients’ target audiences, not for themselves. Here’s what I actually need:
+
+✅ What needs to happen:
+Surveys must be personalized dynamically per client/project
+Agencies should be able to:
+
+Create a new survey instance tailored to a specific product, service, or startup idea
+
+Input competitor info, product descriptions, target segments, or positioning details (e.g. URLs, keywords, features)
+
+Have this context guide the survey personalization behind the scenes (prompt injection, tone changes, question logic, etc.)
+
+Surveys collect data indirectly for that specific context
+No static business profile form.
+The survey itself must gather market insights using indirect, gamified questions, and automatically adapt or reference the specific context (product, market, competitors) that was set.
+
+AI analysis layer combines both sources
+After responses come in, the AI should:
+
+Pull in additional web context (from competitors’ websites, industry trends, etc.)
+
+Merge that with survey data
+
+Output strategic insights into the client dashboard (e.g. positioning recommendations, unmet market needs, product perception, etc.)
+
+Dashboard for agencies & their clients
+Ensure the results are shown:
+
+In a clean dashboard specific to each project
+
+With breakdowns by segments, psychographics, and AI‑driven analysis
+
+In a way that agencies can export or present to their clients easily
+
+🎯 The core principle: Surveys are the tool for market research, dynamically adjusted for each case — not just a form system to store static business data.
+
+Please rework the feature accordingly and let me know what’s needed to support this shift. I’m happy to clarify more or review the survey personalization logic with you.

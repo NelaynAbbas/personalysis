@@ -1,0 +1,32 @@
+Error response body: {"status":"fail","message":"Cannot GET /api/admin/demo-requests","code":"NOT_FOUND","timestamp":"2025-06-05T14:40:55.916Z","path":"/api/admin/demo-requests"}
+at t.value (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Error in fetchWithAdminAuth: 
+Error {}
+
+at t.value (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Error fetching backups: 
+Error {}
+
+at t.value (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Error fetching system settings: 
+ApiError {status: 200, code: undefined, errors: undefined, response: Response, name: "ApiError"}
+code: undefined
+errors: undefined
+name: "ApiError"
+response: Response
+status: 200
+message: "API response has error status"
+stack: "ApiError: API response has error status↵ at apiRequest (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/lib/api.ts:131:26)↵ at async fetchSystemSettings (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/components/admin/SystemSettings.tsx:197:26)"
+get stack: ƒ ()
+set stack: ƒ ()
+[[Prototype]]: Object
+

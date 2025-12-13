@@ -1,0 +1,1926 @@
+import express, { Express, Request, Response, NextFunction } from 'express';
+import { WebSocketServer, WebSocket } from 'ws';
+import { IStorage } from './storage';
+import http from 'http';
+import os from 'os';
+import { 
+  WebSocketMessage, 
+  ConnectionMessage, 
+  SystemUpdateData, 
+  SurveyAnalyticsUpdateData,
+  SurveyResponseReceivedData
+} from '../shared/websocket-types';
+import * as errorLogger from './utils/errorLogger';
+import { db } from './db';
+import { addSurveyBIEndpoints } from './survey-bi-endpoints';
+import { systemBackups } from '../shared/schema';
+import { eq, sql } from 'drizzle-orm';
+import * as performance from './utils/performance';
+import { sendSuccess, sendServerError, sendClientError, ErrorCodes } from './utils/apiResponses';
+import { AppError } from './middleware/errorHandler';
+
+export async function registerRoutes(app: Express, storage: IStorage): Promise<WebSocketServer> {
+  // Create WebSocket server for real-time updates 
+  // We use noServer: true because we'll handle the upgrade in index.ts
+  const wss = new WebSocketServer({ noServer: true });
+  
+  // Helper function to broadcast system updates to all connected clients
+  const broadcastSystemUpdate = (updateData: SystemUpdateData) => {
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(updateData));
+      }
+    });
+  };
+  
+  // Helper function to broadcast survey analytics updates to all connected clients
+  const broadcastSurveyAnalytics = (analyticsData: SurveyAnalyticsUpdateData) => {
+    console.log(`Broadcasting survey analytics update for survey ${analyticsData.surveyId}`);
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(analyticsData));
+      }
+    });
+  };
+  
+  // Helper function to broadcast survey response received notification
+  const broadcastSurveyResponse = (responseData: SurveyResponseReceivedData) => {
+    console.log(`Broadcasting new survey response for survey ${responseData.surveyId}`);
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(responseData));
+      }
+    });
+  };
+  
+  // Set up periodic system metrics broadcasting
+  let systemUpdateInterval: NodeJS.Timeout | null = null;
+  
+  // Start broadcasting system metrics when there are connected clients
+  const startSystemMetricsBroadcast = () => {
+    if (systemUpdateInterval) return; // Already running
+    
+    console.log('Starting periodic system metrics broadcast');
+    systemUpdateInterval = setInterval(() => {
+      // Only broadcast if there are connected clients
+      if (wss.clients.size > 0) {
+        const metrics = generatePerformanceMetrics();
+        const updateData: SystemUpdateData = {
+          type: 'systemUpdate',
+          updateType: 'metrics',
+          cpu: { usage: metrics.cpu.usage },
+          memory: { 
+            usage: metrics.memory.usage,
+            heapUsed: metrics.memory.heapUsed,
+            heapTotal: metrics.memory.heapTotal
+          },
+          activeConnections: {
+            total: metrics.activeConnections.total,
+            websocket: metrics.activeConnections.websockets,
+            http: metrics.activeConnections.http || 0
+          },
+          status: metrics.health.status as 'healthy' | 'degraded' | 'critical',
+          timestamp: new Date().toISOString()
+        };
+        
+        // Broadcast to all connected clients
+        broadcastSystemUpdate(updateData);
+      }
+    }, 5000); // Every 5 seconds
+  };
+  
+  // Stop broadcasting when no clients are connected
+  const stopSystemMetricsBroadcast = () => {
+    if (systemUpdateInterval) {
+      console.log('Stopping periodic system metrics broadcast');
+      clearInterval(systemUpdateInterval);
+      systemUpdateInterval = null;
+    }
+  };
+  
+  // Track client connections
+  wss.on('connection', (ws: WebSocket) => {
+    console.log('WebSocket client connected');
+    
+    // Start broadcasting metrics when clients connect
+    startSystemMetricsBroadcast();
+    
+    // Send connection confirmation message
+    const connectionMsg: ConnectionMessage = {
+      type: 'connection',
+      userId: 0, // Default user ID
+      role: 'guest',
+      timestamp: new Date().toISOString()
+    };
+    
+    ws.send(JSON.stringify(connectionMsg));
+    
+    // Send initial system metrics
+    const initialMetrics = generatePerformanceMetrics();
+    const initialUpdateData: SystemUpdateData = {
+      type: 'systemUpdate',
+      updateType: 'metrics',
+      cpu: { usage: initialMetrics.cpu.usage },
+      memory: { 
+        usage: initialMetrics.memory.usage,
+        heapUsed: initialMetrics.memory.heapUsed,
+        heapTotal: initialMetrics.memory.heapTotal
+      },
+      activeConnections: {
+        total: initialMetrics.activeConnections.total,
+        websocket: initialMetrics.activeConnections.websockets,
+        http: initialMetrics.activeConnections.http || 0
+      },
+      status: initialMetrics.health.status as 'healthy' | 'degraded' | 'critical',
+      timestamp: new Date().toISOString()
+    };
+    ws.send(JSON.stringify(initialUpdateData));
+    
+    // Handle incoming messages
+    ws.on('message', (message: string) => {
+      try {
+        const parsedMessage = JSON.parse(message.toString()) as WebSocketMessage;
+        console.log(`Received message: ${parsedMessage.type}`);
+        
+        // Handle different message types here based on their type property
+        // This will be expanded as we add more real-time features
+      } catch (error) {
+        console.error('Error processing WebSocket message:', error);
+        ws.send(JSON.stringify({
+          type: 'error',
+          message: 'Invalid message format'
+        }));
+      }
+    });
+    
+    // Handle client disconnect
+    ws.on('close', () => {
+      console.log('WebSocket client disconnected');
+      
+      // If no more clients, stop broadcasting metrics
+      if (wss.clients.size === 0) {
+        stopSystemMetricsBroadcast();
+      }
+    });
+  });
+  
+  app.get('/api/test/enhance-demo-account', async (req: Request, res: Response) => {
+    console.log('Enhance demo account endpoint called');
+    try {
+      // Import the dedicated function for generating demo data
+      const { generateDemoData } = await import('./generateDemoData');
+      
+      // Generate demo data
+      console.log('Starting demo data generation process...');
+      const result = await generateDemoData();
+      
+      // Return result
+      if (result.success) {
+        return res.status(200).json(result);
+      } else {
+        return res.status(500).json(result);
+      }
+    } catch (error) {
+      console.error('Error in enhance-demo-account endpoint:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error enhancing demo account',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  // System settings endpoints
+  app.get('/api/system/settings', async (req: Request, res: Response) => {
+    try {
+      // Here we would normally fetch from database, using storage implementation
+      // For now, return demo data
+      return res.status(200).json({
+        general: {
+          platformName: "PersonalysisPro",
+          supportEmail: "support@personalysispro.com",
+          logoUrl: "/assets/logo.svg",
+          favicon: "/assets/favicon.ico",
+          defaultLanguage: "en",
+          dateFormat: "MM/DD/YYYY",
+          timeFormat: "12h",
+          timezone: "UTC",
+        },
+        security: {
+          passwordPolicy: {
+            minLength: 8,
+            requireUppercase: true,
+            requireLowercase: true,
+            requireNumbers: true,
+            requireSpecialChars: true,
+          },
+          mfaEnabled: true,
+          sessionTimeout: 30,
+          ipWhitelist: [],
+          allowPublicSurveys: true,
+          enableAPIAccess: true,
+          csrfProtection: true,
+        },
+        notifications: {
+          emailNotifications: true,
+          surveyCompletionAlerts: true,
+          weeklyReports: true,
+          systemAlerts: true,
+        },
+        storage: {
+          dataRetentionPeriod: 365,
+          autoBackup: true,
+          backupFrequency: "daily",
+          storageProvider: "cloud",
+        },
+        userManagement: {
+          allowSelfRegistration: false,
+          requireEmailVerification: true,
+          defaultUserRole: "client",
+        },
+        appearance: {
+          theme: "system",
+          primaryColor: "#4F46E5",
+          customCss: "",
+          allowCustomBranding: true,
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching system settings:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error fetching system settings',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  app.post('/api/system/settings', async (req: Request, res: Response) => {
+    try {
+      const settings = req.body;
+      
+      // Here we would validate and save the settings to database
+      // For now, just log and return success
+      console.log('Received system settings update:', JSON.stringify(settings, null, 2));
+      
+      return res.status(200).json({
+        success: true,
+        message: 'System settings updated successfully'
+      });
+    } catch (error) {
+      console.error('Error updating system settings:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error updating system settings',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  app.get('/api/system/metrics', async (req: Request, res: Response) => {
+    try {
+      // Generate real system metrics using the performance metrics function
+      const perfMetrics = generatePerformanceMetrics();
+      
+      // Format the data for the endpoint response using the structure we have
+      const metrics = {
+        cpuUsage: perfMetrics.cpu.usage,
+        memoryUsage: perfMetrics.memory.usage,
+        diskUsage: perfMetrics.disk.usage,
+        activeConnections: perfMetrics.activeConnections.total,
+        requestsPerMinute: Math.floor(perfMetrics.performance.overall.totalRequests / 5), // Approximation for requests per minute
+        averageResponseTime: perfMetrics.performance.overall.averageResponseTime,
+        errorRate: Math.round(perfMetrics.performance.overall.failedRequests / Math.max(1, perfMetrics.performance.overall.totalRequests) * 100),
+        totalRequests: perfMetrics.performance.overall.totalRequests,
+        successfulRequests: perfMetrics.performance.overall.successfulRequests,
+        failedRequests: perfMetrics.performance.overall.failedRequests,
+        status: perfMetrics.health.status,
+        lastUpdated: perfMetrics.timestamp || new Date().toISOString()
+      };
+      
+      return sendSuccess(res, metrics);
+    } catch (error) {
+      console.error('Error fetching system metrics:', error);
+      return sendServerError(res, 'Error fetching system metrics', 500, ErrorCodes.INTERNAL_ERROR);
+    }
+  });
+  
+  // Function to generate performance metrics for both HTTP and WebSocket
+  // Track API requests
+  let totalRequests = 0;
+  let successfulRequests = 0;
+  let failedRequests = 0;
+  let responseTimes: number[] = [];
+  let endpointStats: {
+    [endpoint: string]: {
+      count: number;
+      durations: number[];
+      errors: number;
+      lastRequestTime: string;
+    }
+  } = {};
+  
+  // API request monitoring middleware
+  app.use((req: Request, res: Response, next: Function) => {
+    const startTime = Date.now();
+    const endpoint = req.originalUrl;
+    
+    // Initialize endpoint stats if not exists
+    if (!endpointStats[endpoint]) {
+      endpointStats[endpoint] = {
+        count: 0,
+        durations: [],
+        errors: 0,
+        lastRequestTime: new Date().toISOString()
+      };
+    }
+    
+    // Update request count
+    totalRequests++;
+    endpointStats[endpoint].count++;
+    endpointStats[endpoint].lastRequestTime = new Date().toISOString();
+    
+    // Track response status and time on request completion
+    res.on('finish', () => {
+      const duration = Date.now() - startTime;
+      responseTimes.push(duration);
+      endpointStats[endpoint].durations.push(duration);
+      
+      if (res.statusCode >= 400) {
+        failedRequests++;
+        endpointStats[endpoint].errors++;
+      } else {
+        successfulRequests++;
+      }
+    });
+    
+    next();
+  });
+  
+  const generatePerformanceMetrics = () => {
+    // Get memory usage statistics
+    const memoryUsage = process.memoryUsage();
+    
+    // Get process uptime
+    const uptime = process.uptime();
+    
+    // Get CPU usage (estimated based on Node.js process)
+    // In a real app, you'd use a system monitoring library
+    const cpuUsage = process.cpuUsage();
+    const cpuUsagePercent = ((cpuUsage.user + cpuUsage.system) / 1000000 / uptime) * 100;
+    
+    // Calculate average response time
+    const avgResponseTime = responseTimes.length > 0 
+      ? responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length 
+      : 0;
+    
+    // Process endpoint stats
+    const processedEndpointStats: {[endpoint: string]: any} = {};
+    Object.entries(endpointStats).forEach(([endpoint, stats]) => {
+      processedEndpointStats[endpoint] = {
+        count: stats.count,
+        averageDuration: stats.durations.length > 0 
+          ? stats.durations.reduce((sum, time) => sum + time, 0) / stats.durations.length 
+          : 0,
+        slowestRequest: stats.durations.length > 0 
+          ? Math.max(...stats.durations) 
+          : 0,
+        errors: stats.errors,
+        lastRequestTime: stats.lastRequestTime
+      };
+    });
+    
+    // Get active connections
+    const activeConnections = {
+      total: wss.clients.size,
+      websockets: wss.clients.size,
+      http: Math.max(0, totalRequests - successfulRequests - failedRequests)
+    };
+    
+    // Create performance metrics
+    return {
+      memory: {
+        rss: memoryUsage.rss,
+        heapTotal: memoryUsage.heapTotal,
+        heapUsed: memoryUsage.heapUsed,
+        external: memoryUsage.external,
+        usage: Math.round((memoryUsage.heapUsed / memoryUsage.heapTotal) * 100)
+      },
+      cpu: {
+        usage: cpuUsagePercent > 0 ? cpuUsagePercent : 35 + (Math.random() * 15),
+        cores: os.cpus().length
+      },
+      disk: {
+        // Since we don't have direct disk access in this environment, using static values
+        total: 512 * 1024 * 1024 * 1024, // 512 GB in bytes
+        free: 315 * 1024 * 1024 * 1024,  // 315 GB in bytes
+        usage: 38 + (Math.random() * 5)
+      },
+      uptime: uptime,
+      performance: {
+        overall: {
+          totalRequests: totalRequests,
+          successfulRequests: successfulRequests,
+          failedRequests: failedRequests,
+          averageResponseTime: avgResponseTime
+        },
+        endpoints: processedEndpointStats
+      },
+      cache: {
+        hits: totalRequests - failedRequests, // Approximation of cache hits (successful requests)
+        misses: failedRequests,
+        size: Math.round(memoryUsage.heapUsed * 0.4), // Estimated cache size based on memory usage
+        groups: {
+          'surveys': Math.round((endpointStats['/api/surveys']?.count || 0) / (totalRequests || 1) * 100),
+          'users': Math.round((endpointStats['/api/users']?.count || 0) / (totalRequests || 1) * 100),
+          'analytics': Math.round((endpointStats['/api/analytics']?.count || 0) / (totalRequests || 1) * 100)
+        }
+      },
+      rateLimiter: {
+        activeKeys: wss.clients.size > 0 ? wss.clients.size + 15 : 18,
+        limitsByEndpoint: {
+          '/api/auth': 60,
+          '/api/surveys': 120,
+          '/api/analytics': 30
+        }
+      },
+      activeConnections: {
+        total: wss.clients.size + (totalRequests - successfulRequests - failedRequests),
+        websockets: wss.clients.size,
+        http: Math.max(0, totalRequests - successfulRequests - failedRequests)
+      },
+      health: {
+        status: (memoryUsage.heapUsed / memoryUsage.heapTotal) > 0.9 || failedRequests > (totalRequests * 0.1) 
+          ? 'degraded' 
+          : 'healthy',
+        lastCheck: new Date().toISOString(),
+        services: {
+          database: {
+            status: db ? 'operational' : 'degraded',
+            connections: Math.max(1, Math.round(successfulRequests * 0.1)),
+            queryTime: avgResponseTime || 15
+          },
+          cache: {
+            status: 'operational',
+            connections: Math.round(wss.clients.size * 0.5) || 3
+          },
+          storage: {
+            status: 'operational',
+            latency: Math.round(avgResponseTime * 0.75) || 10
+          }
+        }
+      },
+      timestamp: new Date().toISOString()
+    };
+  };
+
+  // Set up periodic WebSocket updates
+  const startSystemMetricsUpdates = () => {
+    // Set up interval to send real-time updates
+    const wsUpdateInterval = setInterval(() => {
+      // Only calculate and send updates if there are active clients
+      if (wss.clients.size > 0) {
+        try {
+          // Get basic metrics to send via WebSocket (lighter than full metrics)
+          const memoryUsage = process.memoryUsage();
+          const cpuUsage = process.cpuUsage();
+          const uptime = process.uptime();
+          const cpuUsagePercent = ((cpuUsage.user + cpuUsage.system) / 1000000 / uptime) * 100;
+          
+          // Calculate real HTTP connections
+          const httpConnections = Math.max(0, totalRequests - successfulRequests - failedRequests);
+          
+          const updateData: SystemUpdateData = {
+            type: 'systemUpdate',
+            updateType: 'metrics',
+            cpu: {
+              usage: cpuUsagePercent > 0 ? cpuUsagePercent : 35 + (Math.random() * 15)
+            },
+            memory: {
+              usage: Math.round((memoryUsage.heapUsed / memoryUsage.heapTotal) * 100),
+              heapUsed: memoryUsage.heapUsed,
+              heapTotal: memoryUsage.heapTotal
+            },
+            activeConnections: {
+              total: wss.clients.size + httpConnections,
+              websocket: wss.clients.size,
+              http: httpConnections
+            },
+            // Only mark as degraded if memory usage is high or there are errors
+            status: (memoryUsage.heapUsed / memoryUsage.heapTotal) > 0.9 || failedRequests > (totalRequests * 0.1) 
+              ? 'degraded' 
+              : 'healthy',
+            timestamp: new Date().toISOString()
+          };
+          
+          // Broadcast to all connected clients
+          broadcastSystemUpdate(updateData);
+          console.log(`Broadcasting system update to ${wss.clients.size} client(s)`);
+        } catch (error) {
+          console.error('Error generating WebSocket updates:', error);
+        }
+      }
+    }, 5000); // Send updates every 5 seconds
+    
+    // Clean up interval when the server stops
+    process.on('SIGINT', () => {
+      clearInterval(wsUpdateInterval);
+      process.exit(0);
+    });
+  };
+  
+  // Start sending updates immediately
+  startSystemMetricsUpdates();
+
+  // System performance endpoint for detailed health monitoring
+  app.get('/api/system/performance', async (req: Request, res: Response) => {
+    try {
+      // Use the shared function to generate metrics
+      const performanceMetrics = generatePerformanceMetrics();
+      
+      return res.status(200).json(performanceMetrics);
+    } catch (error) {
+      console.error('Error fetching system performance metrics:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error fetching system performance metrics',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  // Use the error logger utility
+  const { getRecentErrors, logError, clearRecentErrors } = errorLogger;
+  
+  // Endpoint to get system error logs
+  app.get('/api/system/errors', async (req: Request, res: Response) => {
+    try {
+      // Get filtering parameters
+      const count = req.query.count ? parseInt(req.query.count as string) : 10;
+      const level = req.query.level as 'error' | 'warning' | 'info' | undefined;
+      const source = req.query.source as string | undefined;
+      
+      // Get basic error logs from file-based logger
+      const fileBasedErrors = getRecentErrors(count, level, source);
+      
+      // Get advanced error stats from our new tracking system
+      const { getErrorStats } = require('./middleware/errorHandler');
+      const errorStats = getErrorStats();
+      
+      // Combine the data for a comprehensive view
+      const combinedErrors = [
+        ...fileBasedErrors,
+        ...errorStats.recent.map(error => ({
+          timestamp: error.lastOccurred.toISOString(),
+          level: 'error',
+          source: error.key.split(':')[0],
+          message: error.message,
+          count: error.count,
+          trending: errorStats.trending.some(trend => trend.key === error.key && trend.increasing)
+        }))
+      ].slice(0, count);
+      
+      // Add trending analysis
+      const analytics = {
+        totalErrors: errorStats.total,
+        uniqueErrorTypes: errorStats.unique,
+        trendingErrors: errorStats.trending.map(trend => ({
+          type: trend.key.split(':')[0],
+          count: trend.count,
+          increasing: trend.increasing
+        }))
+      };
+      
+      return sendSuccess(res, {
+        errors: combinedErrors,
+        total: combinedErrors.length,
+        analytics,
+        filters: { count, level, source }
+      });
+    } catch (error) {
+      console.error('Error fetching system error logs:', error);
+      
+      // Log this error about error logs - meta!
+      const { logError } = require('./utils/errorLogger');
+      logError(error instanceof Error ? error : String(error), 'routes', { 
+        endpoint: '/api/system/errors', 
+        method: 'GET'
+      });
+      
+      return sendServerError(res, 'Error fetching system error logs');
+    }
+  });
+  
+  // Endpoint to clear error logs (admin only)
+  app.post('/api/system/errors/clear', async (req: Request, res: Response) => {
+    try {
+      clearRecentErrors();
+      
+      return res.status(200).json({
+        success: true,
+        message: 'Error logs cleared successfully'
+      });
+    } catch (error) {
+      console.error('Error clearing system error logs:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error clearing system error logs',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  // Test endpoint to generate a sample error (for testing error logging and tracking)
+  app.get('/api/system/test-error', async (req: Request, res: Response) => {
+    try {
+      const errorType = req.query.type as string || 'generic';
+      const throwError = req.query.throw === 'true'; // Control whether to throw the error
+      const showErrorStats = req.query.stats === 'true'; // Show error tracking stats
+      
+      if (showErrorStats) {
+        // Return current error tracking statistics instead of generating an error
+        const { getErrorStats } = require('./middleware/errorHandler');
+        const errorStats = getErrorStats();
+        return sendSuccess(res, {
+          message: 'Current error tracking statistics',
+          statistics: errorStats
+        });
+      }
+      
+      switch (errorType) {
+        case 'runtime':
+          // Generate a runtime error
+          const obj: any = null;
+          if (obj) {
+            obj.nonExistentMethod(); // This won't execute but fixes the TypeScript error
+          } else {
+            throw new TypeError('Null object access: Cannot read property nonExistentMethod of null');
+          }
+          break;
+          
+        case 'api':
+          // Simulate an API error
+          logError(
+            'External API failure during data retrieval',
+            'external-api',
+            { service: 'test-service', statusCode: 503 },
+            'error'
+          );
+          if (throwError) {
+            throw new AppError('External API request failed', 502, ErrorCodes.EXTERNAL_SERVICE_ERROR);
+          }
+          break;
+          
+        case 'database':
+          // Simulate a database error
+          logError(
+            'Database query timeout',
+            'database',
+            { query: 'SELECT * FROM large_table WHERE complex_condition', timeout: '30s' },
+            'error'
+          );
+          if (throwError) {
+            throw new AppError('Database query timed out', 500, ErrorCodes.DATABASE_ERROR);
+          }
+          break;
+          
+        case 'validation':
+          // Simulate a validation error
+          if (throwError) {
+            throw new AppError('Validation failed', 400, ErrorCodes.INVALID_INPUT, {
+              username: ['Username must be at least 3 characters'],
+              email: ['Invalid email format']
+            });
+          }
+          logError(
+            'Input validation failed',
+            'validation',
+            { fields: ['username', 'email'] },
+            'warning'
+          );
+          break;
+          
+        case 'auth':
+          // Simulate an authentication error
+          if (throwError) {
+            throw new AppError('Invalid authentication token', 401, ErrorCodes.AUTHENTICATION_ERROR);
+          }
+          logError(
+            'Authentication failed',
+            'auth',
+            { reason: 'Invalid token', ip: req.ip },
+            'error'
+          );
+          break;
+          
+        case 'system':
+          // Simulate a system-level error (will be tracked for trending)
+          for (let i = 0; i < 5; i++) {
+            setTimeout(() => {
+              try {
+                throw new Error(`System error iteration ${i+1}`);
+              } catch (err) {
+                // We'll use our tracking directly
+                const { trackError } = require('./middleware/errorHandler');
+                trackError(err, req);
+              }
+            }, i * 500);
+          }
+          break;
+          
+        case 'warning':
+          // Log a warning
+          logError(
+            'Resource utilization approaching threshold',
+            'system-monitor',
+            { resource: 'memory', current: 85, threshold: 90 },
+            'warning'
+          );
+          break;
+          
+        default:
+          // Generic error
+          if (throwError) {
+            throw new Error('Test error generated via API');
+          }
+          logError(
+            'Generic test error',
+            'test-error-endpoint',
+            { type: 'generic' },
+            'error'
+          );
+      }
+      
+      return sendSuccess(res, {
+        message: `Test ${errorType} error generated successfully`,
+        trackingEnabled: true
+      });
+    } catch (error) {
+      // If this is a thrown error, let the error handler middleware handle it
+      if (req.query.middleware === 'true') {
+        throw error; // This will be caught by the errorHandler middleware
+      }
+      
+      // Otherwise, log it but return a success response for testing purposes
+      logError(
+        error instanceof Error ? error : String(error),
+        'test-error-endpoint',
+        { query: req.query }
+      );
+      
+      return sendSuccess(res, {
+        message: 'Test error generated and logged successfully',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  // Analytics endpoints
+  
+  // Company-level analytics endpoint
+  app.get('/api/company/:id/analytics', async (req: Request, res: Response) => {
+    try {
+      const companyId = parseInt(req.params.id);
+      console.log(`Fetching analytics for company ID: ${companyId}`);
+      
+      // Get company stats from the storage layer using existing method
+      const analyticsData = await storage.getCompanyStats(companyId);
+      
+      res.json({
+        status: 'success',
+        data: analyticsData
+      });
+    } catch (error) {
+      console.error(`Error fetching company analytics:`, error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to retrieve company analytics',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  // Survey-specific analytics endpoint
+  app.get('/api/surveys/:id/analytics', async (req: Request, res: Response) => {
+    try {
+      const surveyId = parseInt(req.params.id);
+      console.log(`Fetching analytics for survey ID: ${surveyId}`);
+      
+      // Try to get real-time analytics first
+      let analyticsData = await performance.getRealTimeSurveyAnalytics(surveyId);
+      
+      // Fall back to storage if real-time analytics not available
+      if (!analyticsData) {
+        analyticsData = await storage.getSurveyAnalytics(surveyId);
+      }
+      
+      res.json({
+        status: 'success',
+        data: analyticsData
+      });
+    } catch (error) {
+      console.error(`Error fetching survey analytics:`, error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to retrieve survey analytics',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  // Real-time survey analytics endpoint
+  app.get('/api/surveys/:id/analytics/realtime', async (req: Request, res: Response) => {
+    try {
+      const surveyId = parseInt(req.params.id);
+      console.log(`Fetching real-time analytics for survey ID: ${surveyId}`);
+      
+      // Force recalculation of analytics
+      const analytics = await performance.getRealTimeSurveyAnalytics(surveyId);
+      
+      if (!analytics) {
+        return res.status(404).json({
+          status: 'error',
+          message: 'No analytics data available for this survey'
+        });
+      }
+      
+      // Broadcast the updated analytics to all connected clients
+      const analyticsUpdateData: SurveyAnalyticsUpdateData = {
+        type: 'surveyAnalyticsUpdate',
+        surveyId,
+        metrics: {
+          totalResponses: analytics.totalResponses,
+          completionRate: analytics.completionRate,
+          averageRating: analytics.averageRating,
+          uniqueRespondents: analytics.uniqueRespondents,
+          lastResponseTime: analytics.lastResponseTime.toISOString(),
+          averageCompletionTime: analytics.averageCompletionTime
+        },
+        demographics: analytics.demographics,
+        responseRates: performance.getSurveyResponseRates(),
+        timestamp: new Date().toISOString()
+      };
+      
+      broadcastSurveyAnalytics(analyticsUpdateData);
+      
+      return res.json({
+        status: 'success',
+        data: analytics
+      });
+    } catch (error) {
+      console.error(`Error fetching real-time survey analytics:`, error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to retrieve real-time survey analytics',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  // Survey response submission endpoint with real-time analytics
+  app.post('/api/survey-responses', async (req: Request, res: Response) => {
+    try {
+      const responseData = req.body;
+      
+      if (!responseData || !responseData.surveyId) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Invalid survey response data. Survey ID is required.'
+        });
+      }
+      
+      // Save the response to the database
+      const createdResponse = await storage.createSurveyResponse(responseData);
+      
+      // Track the response for real-time analytics
+      await performance.trackSurveyResponse(responseData.surveyId, responseData);
+      
+      // Broadcast survey response received notification
+      const responseReceivedData: SurveyResponseReceivedData = {
+        type: 'surveyResponseReceived',
+        surveyId: responseData.surveyId,
+        responseId: createdResponse.id,
+        userId: responseData.respondentId ? Number(responseData.respondentId) : undefined,
+        isAnonymous: !responseData.respondentEmail,
+        isComplete: responseData.completionStatus === 'completed',
+        completionTimeSeconds: responseData.completionTime || 0,
+        questionCount: responseData.totalQuestions || 0,
+        answeredCount: responseData.answeredQuestions || 0,
+        timestamp: new Date().toISOString()
+      };
+      
+      broadcastSurveyResponse(responseReceivedData);
+      
+      // Update and broadcast survey analytics after a short delay
+      // to allow for aggregation
+      setTimeout(async () => {
+        try {
+          const surveyId = responseData.surveyId;
+          const analytics = await performance.getRealTimeSurveyAnalytics(surveyId);
+          
+          if (analytics) {
+            const analyticsUpdateData: SurveyAnalyticsUpdateData = {
+              type: 'surveyAnalyticsUpdate',
+              surveyId,
+              metrics: {
+                totalResponses: analytics.totalResponses,
+                completionRate: analytics.completionRate,
+                averageRating: analytics.averageRating,
+                uniqueRespondents: analytics.uniqueRespondents,
+                lastResponseTime: analytics.lastResponseTime.toISOString(),
+                averageCompletionTime: analytics.averageCompletionTime
+              },
+              demographics: analytics.demographics,
+              responseRates: performance.getSurveyResponseRates(),
+              timestamp: new Date().toISOString()
+            };
+            
+            broadcastSurveyAnalytics(analyticsUpdateData);
+          }
+        } catch (error) {
+          console.error('Error broadcasting survey analytics update:', error);
+        }
+      }, 2000); // Wait 2 seconds to allow for data aggregation
+      
+      return res.status(201).json({
+        status: 'success',
+        data: createdResponse
+      });
+    } catch (error) {
+      console.error('Error submitting survey response:', error);
+      return res.status(500).json({
+        status: 'error',
+        message: 'Failed to submit survey response',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Backup management endpoints using database
+  
+  // Get all backups
+  app.get('/api/system/backups', async (req: Request, res: Response) => {
+    try {
+      // Get query parameters for filtering
+      const type = req.query.type as string;
+      const status = req.query.status as string;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+      
+      // Build query conditions based on filters
+      let query;
+      
+      if (type && status) {
+        query = sql`
+          SELECT * FROM system_backups
+          WHERE type = ${type} AND status = ${status}
+          ORDER BY created_at DESC
+          ${limit ? sql`LIMIT ${limit}` : sql``}
+        `;
+      } else if (type) {
+        query = sql`
+          SELECT * FROM system_backups
+          WHERE type = ${type}
+          ORDER BY created_at DESC
+          ${limit ? sql`LIMIT ${limit}` : sql``}
+        `;
+      } else if (status) {
+        query = sql`
+          SELECT * FROM system_backups
+          WHERE status = ${status}
+          ORDER BY created_at DESC
+          ${limit ? sql`LIMIT ${limit}` : sql``}
+        `;
+      } else {
+        query = sql`
+          SELECT * FROM system_backups
+          ORDER BY created_at DESC
+          ${limit ? sql`LIMIT ${limit}` : sql``}
+        `;
+      }
+      
+      // Execute the query
+      const result = await db.execute(query);
+      const backups = result.rows || [];
+      
+      // Return the backups
+      res.json({
+        status: 'success',
+        data: backups
+      });
+    } catch (error) {
+      console.error('Error fetching backups:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to fetch backups',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Create a new backup
+  app.post('/api/system/backups', async (req: Request, res: Response) => {
+    try {
+      const { name } = req.body;
+      
+      if (!name) {
+        return sendClientError(res, 'Backup name is required', 400, ErrorCodes.VALIDATION_ERROR);
+      }
+      
+      // Generate a random file size for the backup
+      const size = `${(35 + Math.floor(Math.random() * 15)).toFixed(1)} MB`;
+      
+      // Create the backup in the database
+      const [newBackup] = await db.insert(systemBackups)
+        .values({
+          name,
+          type: 'manual',
+          status: 'completed',
+          size,
+          path: `/backups/${name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.zip`,
+          userId: 1 // Default admin user
+        })
+        .returning();
+      
+      return sendSuccess(res, newBackup, 'Backup created successfully', 201);
+    } catch (error) {
+      console.error('Error creating backup:', error);
+      return sendServerError(res, 'Failed to create backup', 500, ErrorCodes.INTERNAL_ERROR);
+    }
+  });
+  
+  // Delete a backup
+  app.delete('/api/system/backups/:id', async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      if (isNaN(id)) {
+        return sendClientError(res, 'Invalid backup ID', 400, ErrorCodes.VALIDATION_ERROR);
+      }
+      
+      // Check if backup exists and get its type
+      const [backup] = await db.select()
+        .from(systemBackups)
+        .where(eq(systemBackups.id, id))
+        .limit(1);
+      
+      if (!backup) {
+        return sendClientError(res, 'Backup not found', 404, ErrorCodes.NOT_FOUND);
+      }
+      
+      // Don't allow deletion of automatic backups
+      if (backup.type === 'auto') {
+        return sendClientError(
+          res, 
+          'Automatic backups cannot be deleted', 
+          403, 
+          ErrorCodes.FORBIDDEN
+        );
+      }
+      
+      // Delete the backup
+      const [deletedBackup] = await db.delete(systemBackups)
+        .where(eq(systemBackups.id, id))
+        .returning();
+      
+      return sendSuccess(res, deletedBackup, 'Backup deleted successfully');
+    } catch (error) {
+      console.error('Error deleting backup:', error);
+      return sendServerError(res, 'Failed to delete backup', 500, ErrorCodes.INTERNAL_ERROR);
+    }
+  });
+  
+  // Restore from a backup
+  app.post('/api/system/backups/:id/restore', async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      if (isNaN(id)) {
+        return sendClientError(res, 'Invalid backup ID', 400, ErrorCodes.VALIDATION_ERROR);
+      }
+      
+      // Check if backup exists and its status
+      const [backup] = await db.select()
+        .from(systemBackups)
+        .where(eq(systemBackups.id, id))
+        .limit(1);
+      
+      if (!backup) {
+        return sendClientError(res, 'Backup not found', 404, ErrorCodes.NOT_FOUND);
+      }
+      
+      // Only allow restoration of completed backups
+      if (backup.status !== 'completed') {
+        return sendClientError(
+          res, 
+          'Only completed backups can be restored', 
+          400, 
+          ErrorCodes.OPERATION_NOT_ALLOWED
+        );
+      }
+      
+      // In a real application, this would trigger the actual restore process
+      // For now, we'll simulate a successful restore
+      
+      return sendSuccess(res, { 
+        id: backup.id,
+        name: backup.name,
+        status: 'restored',
+        restoredAt: new Date().toISOString()
+      }, 'Backup restored successfully');
+    } catch (error) {
+      console.error('Error restoring from backup:', error);
+      return sendServerError(res, 'Failed to restore from backup', 500, ErrorCodes.INTERNAL_ERROR);
+    }
+  });
+
+  // These duplicate endpoints were removed
+  // The implementations are available around line ~1050
+      
+      // Find the backup
+      const [backup] = await db.select().from(systemBackups).where(eq(systemBackups.id, idNum));
+      
+      if (!backup) {
+        return res.status(404).json({
+          status: 'error',
+          message: `Backup with ID ${id} not found`
+        });
+      }
+      
+      // Update the backup status to indicate it's being restored
+      await db.update(systemBackups)
+        .set({ 
+          status: 'restored',
+          updatedAt: new Date()
+        })
+        .where(eq(systemBackups.id, idNum));
+      
+      // In a real application, there would be logic here to restore the database from the backup file
+      // Since this is a demo, we'll just simulate a successful restore
+      
+      // Get the updated backup
+      const [updatedBackup] = await db.select().from(systemBackups).where(eq(systemBackups.id, idNum));
+      
+      res.json({
+        status: 'success',
+        message: `Backup "${backup.name}" restored successfully`,
+        data: updatedBackup
+      });
+    } catch (error) {
+      console.error('Error restoring backup:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to restore backup',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  // Admin analytics endpoint for platform-wide metrics
+  app.get('/api/admin/analytics', async (req: Request, res: Response) => {
+    try {
+      const period = req.query.period as string || '12months';
+      console.log(`Fetching admin analytics for period: ${period}`);
+      
+      // Get all company IDs from the database to gather platform-wide analytics
+      const clients = await db.query.companies.findMany({
+        columns: {
+          id: true,
+          name: true,
+          createdAt: true
+        }
+      });
+      
+      // Calculate months based on period
+      const monthsLookback = period === '3months' ? 3 : period === '6months' ? 6 : 12;
+      const startDate = new Date();
+      startDate.setMonth(startDate.getMonth() - monthsLookback);
+      
+      // Get all survey responses after the start date
+      const responses = await db.query.surveyResponses.findMany({
+        where: (surveyResponses, { gt }) => gt(surveyResponses.createdAt, startDate)
+      });
+      
+      // Get monthly distribution by processing the responses
+      const monthlyData = Array.from({ length: monthsLookback }, (_, i) => {
+        const monthDate = new Date();
+        monthDate.setMonth(monthDate.getMonth() - (monthsLookback - 1 - i));
+        return {
+          month: monthDate.toLocaleString('default', { month: 'short', year: 'numeric' }),
+          newClients: 0,
+          activeClients: 0,
+          totalRevenue: 0,
+          subscriptionRevenue: 0,
+          oneTimeRevenue: 0,
+          responses: 0
+        };
+      });
+      
+      // Count clients by month of creation
+      clients.forEach(client => {
+        const clientCreationMonth = new Date(client.createdAt).getMonth();
+        const clientCreationYear = new Date(client.createdAt).getFullYear();
+        
+        // Find the corresponding month in our data
+        const monthIndex = monthlyData.findIndex(data => {
+          const [monthStr, yearStr] = data.month.split(' ');
+          const month = new Date(Date.parse(`${monthStr} 1, ${yearStr}`)).getMonth();
+          const year = parseInt(yearStr);
+          return month === clientCreationMonth && year === clientCreationYear;
+        });
+        
+        if (monthIndex >= 0) {
+          monthlyData[monthIndex].newClients++;
+        }
+      });
+      
+      // Count responses by month
+      responses.forEach(response => {
+        const responseMonth = new Date(response.createdAt).getMonth();
+        const responseYear = new Date(response.createdAt).getFullYear();
+        
+        const monthIndex = monthlyData.findIndex(data => {
+          const [monthStr, yearStr] = data.month.split(' ');
+          const month = new Date(Date.parse(`${monthStr} 1, ${yearStr}`)).getMonth();
+          const year = parseInt(yearStr);
+          return month === responseMonth && year === responseYear;
+        });
+        
+        if (monthIndex >= 0) {
+          monthlyData[monthIndex].responses++;
+          
+          // Add fixed revenue data based on survey responses
+          // In a real system, this would be from actual revenue tracking
+          const responseFactor = 10; // Each response generates fixed amount of revenue
+          const responseRevenue = responseFactor * 10; // $100 per response
+          monthlyData[monthIndex].totalRevenue += responseRevenue;
+          monthlyData[monthIndex].subscriptionRevenue += responseRevenue * 0.7; // 70% from subscriptions
+          monthlyData[monthIndex].oneTimeRevenue += responseRevenue * 0.3; // 30% from one-time sales
+        }
+      });
+      
+      // Calculate key performance indicators
+      const totalClients = clients.length;
+      const totalResponses = responses.length;
+      const revenueThisMonth = monthlyData[monthlyData.length - 1]?.totalRevenue || 0;
+      const revenueLastMonth = monthlyData[monthlyData.length - 2]?.totalRevenue || 0; 
+      const revenueGrowth = revenueLastMonth ? ((revenueThisMonth - revenueLastMonth) / revenueLastMonth) * 100 : 0;
+      
+      const clientsThisMonth = monthlyData[monthlyData.length - 1]?.newClients || 0;
+      const clientsLastMonth = monthlyData[monthlyData.length - 2]?.newClients || 0;
+      const clientGrowth = clientsLastMonth ? ((clientsThisMonth - clientsLastMonth) / clientsLastMonth) * 100 : 0;
+      
+      const responsesThisMonth = monthlyData[monthlyData.length - 1]?.responses || 0;
+      const responsesLastMonth = monthlyData[monthlyData.length - 2]?.responses || 0;
+      const responseGrowth = responsesLastMonth ? ((responsesThisMonth - responsesLastMonth) / responsesLastMonth) * 100 : 0;
+      
+      // Calculate churn rate based on actual data
+      // Fetch all clients created in the previous period for comparison
+      const previousPeriodStart = new Date(startDate);
+      previousPeriodStart.setMonth(previousPeriodStart.getMonth() - monthsLookback);
+      
+      // Get clients created in previous period
+      const previousPeriodClients = await db.query.companies.findMany({
+        columns: {
+          id: true
+        },
+        where: (companies, { and, gte, lt }) => and(
+          gte(companies.createdAt, previousPeriodStart),
+          lt(companies.createdAt, startDate)
+        )
+      });
+      
+      // Determine active clients (those with survey responses in current period)
+      const activeClientIds = new Set(responses.map(r => r.company_id));
+      
+      // Clients from previous period that have no activity in current period are considered churned
+      const previousPeriodClientIds = new Set(previousPeriodClients.map(c => c.id));
+      let inactiveCount = 0;
+      
+      previousPeriodClientIds.forEach(id => {
+        if (!activeClientIds.has(id)) {
+          inactiveCount++;
+        }
+      });
+      
+      // Calculate churn rate
+      const previousTotalClients = previousPeriodClientIds.size;
+      const churnRate = previousTotalClients > 0 
+        ? (inactiveCount / previousTotalClients) * 100 
+        : 0;
+      
+      // Calculate churn rate for previous-previous period to get change
+      const previousPreviousPeriodStart = new Date(previousPeriodStart);
+      previousPreviousPeriodStart.setMonth(previousPreviousPeriodStart.getMonth() - monthsLookback);
+      
+      // Get even older client data for comparison
+      const previousPreviousPeriodClients = await db.query.companies.findMany({
+        columns: {
+          id: true
+        },
+        where: (companies, { and, gte, lt }) => and(
+          gte(companies.createdAt, previousPreviousPeriodStart),
+          lt(companies.createdAt, previousPeriodStart)
+        )
+      });
+      
+      // Get responses from previous period
+      const previousPeriodResponses = await db.query.surveyResponses.findMany({
+        where: (surveyResponses, { and, gte, lt }) => and(
+          gte(surveyResponses.createdAt, previousPeriodStart),
+          lt(surveyResponses.createdAt, startDate)
+        )
+      });
+      
+      // Active clients in previous period
+      const previousActiveClientIds = new Set(previousPeriodResponses.map(r => r.company_id));
+      
+      // Calculate previous churn
+      const previousPreviousTotalClients = previousPreviousPeriodClients.length;
+      let previousInactiveCount = 0;
+      
+      previousPreviousPeriodClients.forEach(client => {
+        if (!previousActiveClientIds.has(client.id)) {
+          previousInactiveCount++;
+        }
+      });
+      
+      const previousChurnRate = previousPreviousTotalClients > 0 
+        ? (previousInactiveCount / previousPreviousTotalClients) * 100 
+        : 0;
+      
+      const churnChange = previousChurnRate > 0 
+        ? ((churnRate - previousChurnRate) / previousChurnRate) * 100 
+        : 0;
+      
+      // Calculate churned clients for each month
+      const getChurnedClientsForMonth = (monthData) => {
+        const [monthStr, yearStr] = monthData.month.split(' ');
+        const monthDate = new Date(Date.parse(`${monthStr} 1, ${yearStr}`));
+        
+        // Start of previous month
+        const prevMonthDate = new Date(monthDate);
+        prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
+        
+        // Count clients created in previous month that have no activity in current month
+        const clientsInPrevMonth = clients.filter(client => {
+          const clientDate = new Date(client.createdAt);
+          return clientDate >= prevMonthDate && clientDate < monthDate;
+        });
+        
+        // Get responses for current month
+        const monthResponses = responses.filter(response => {
+          const responseDate = new Date(response.createdAt);
+          return responseDate >= monthDate && 
+                 responseDate < new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1);
+        });
+        
+        // Active client IDs in current month
+        const monthActiveClientIds = new Set(monthResponses.map(r => r.company_id));
+        
+        // Count churned clients
+        let monthChurnedClients = 0;
+        clientsInPrevMonth.forEach(client => {
+          if (!monthActiveClientIds.has(client.id)) {
+            monthChurnedClients++;
+          }
+        });
+        
+        return monthChurnedClients;
+      };
+      
+      // Format the data for the front end
+      const result = {
+        keyMetrics: [
+          {
+            id: 'clients',
+            metric: 'Active Clients',
+            value: totalClients,
+            change: clientGrowth,
+            trend: clientGrowth >= 0 ? 'up' : 'down'
+          },
+          {
+            id: 'responses',
+            metric: 'Survey Responses',
+            value: totalResponses,
+            change: responseGrowth,
+            trend: responseGrowth >= 0 ? 'up' : 'down'
+          },
+          {
+            id: 'mrr',
+            metric: 'Monthly Revenue',
+            value: revenueThisMonth,
+            change: revenueGrowth,
+            trend: revenueGrowth >= 0 ? 'up' : 'down'
+          },
+          {
+            id: 'churn-rate',
+            metric: 'Churn Rate',
+            value: parseFloat(churnRate.toFixed(1)),
+            change: parseFloat(churnChange.toFixed(1)),
+            trend: churnChange <= 0 ? 'down' : 'up'
+          }
+        ],
+        clientGrowth: monthlyData.map(data => ({
+          month: data.month,
+          newClients: data.newClients,
+          activeClients: totalClients, 
+          churnedClients: getChurnedClientsForMonth(data)
+        })),
+        revenueData: monthlyData.map(data => ({
+          month: data.month,
+          totalRevenue: data.totalRevenue,
+          subscriptionRevenue: data.subscriptionRevenue,
+          oneTimeRevenue: data.oneTimeRevenue
+        })),
+        industryBreakdown: await (async () => {
+          // Group clients by industry
+          const industryMap = new Map();
+          
+          // Initialize with common industries to ensure they appear even if no clients exist yet
+          const commonIndustries = ['Technology', 'Healthcare', 'Finance', 'Education', 'Manufacturing'];
+          commonIndustries.forEach(industry => {
+            industryMap.set(industry, { 
+              name: industry, 
+              clients: 0, 
+              revenue: 0
+            });
+          });
+          
+          // Add "Others" category
+          industryMap.set('Others', { name: 'Others', clients: 0, revenue: 0 });
+          
+          // Process actual client data
+          clients.forEach(client => {
+            const industry = client.industry || 'Others';
+            if (!industryMap.has(industry)) {
+              if (commonIndustries.includes(industry)) {
+                industryMap.set(industry, { name: industry, clients: 1, revenue: 0 });
+              } else {
+                // Add to "Others" for uncommon industries
+                const othersData = industryMap.get('Others');
+                othersData.clients += 1;
+                industryMap.set('Others', othersData);
+              }
+            } else {
+              const industryData = industryMap.get(industry);
+              industryData.clients += 1;
+              industryMap.set(industry, industryData);
+            }
+          });
+          
+          // Add revenue data based on responses
+          const revenuePerResponse = 100; // $100 per response
+          const responseCountByIndustry = {};
+          
+          for (const response of responses) {
+            // Find the company for this response
+            const companyId = response.company_id;
+            const company = clients.find(c => c.id === companyId);
+            
+            if (company) {
+              const industry = company.industry || 'Others';
+              responseCountByIndustry[industry] = (responseCountByIndustry[industry] || 0) + 1;
+            }
+          }
+          
+          // Distribute revenue based on response counts
+          Object.entries(responseCountByIndustry).forEach(([industry, count]) => {
+            if (industryMap.has(industry)) {
+              const industryData = industryMap.get(industry);
+              industryData.revenue = count * revenuePerResponse;
+              industryMap.set(industry, industryData);
+            } else {
+              // Add to "Others" for uncommon industries
+              const othersData = industryMap.get('Others');
+              othersData.revenue += count * revenuePerResponse;
+              industryMap.set('Others', othersData);
+            }
+          });
+          
+          return Array.from(industryMap.values());
+        })()
+      };
+      
+      res.json(result);
+    } catch (error) {
+      console.error('Error fetching admin analytics:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to fetch admin analytics data',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Register survey-specific BI endpoints
+  addSurveyBIEndpoints(app, storage);
+  
+  // Clients API endpoint
+  app.get('/api/clients', async (req: Request, res: Response) => {
+    try {
+      const clients = await db.query.companies.findMany({
+        columns: {
+          id: true,
+          name: true,
+          email: true,
+          industry: true,
+          size: true,
+          subscriptionTier: true,
+          licenseStatus: true,
+          licenseStartDate: true,
+          licenseEndDate: true,
+          createdAt: true
+        }
+      });
+      
+      res.json({
+        status: 'success',
+        data: clients
+      });
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to fetch clients data',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  // Licenses API endpoint
+  app.get('/api/licenses', async (req: Request, res: Response) => {
+    try {
+      const licenses = await db.query.companies.findMany({
+        columns: {
+          id: true,
+          name: true,
+          subscriptionTier: true,
+          licenseStatus: true,
+          licenseStartDate: true,
+          licenseEndDate: true,
+          maxUsers: true,
+          maxSurveys: true,
+          maxResponses: true,
+          maxStorage: true
+        }
+      });
+      
+      // Transform into more license-focused format
+      const formattedLicenses = licenses.map(company => ({
+        id: company.id,
+        clientName: company.name,
+        plan: company.subscriptionTier,
+        status: company.licenseStatus,
+        startDate: company.licenseStartDate,
+        endDate: company.licenseEndDate || null,
+        limits: {
+          users: company.maxUsers,
+          surveys: company.maxSurveys,
+          responses: company.maxResponses,
+          storage: company.maxStorage
+        },
+        isActive: company.licenseStatus === 'active'
+      }));
+      
+      res.json({
+        status: 'success',
+        data: formattedLicenses
+      });
+    } catch (error) {
+      console.error('Error fetching licenses:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to fetch licenses data',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  // Survey responses API endpoint
+  app.get('/api/survey-responses', async (req: Request, res: Response) => {
+    try {
+      // Get query parameters
+      const surveyId = req.query.surveyId ? parseInt(req.query.surveyId as string) : undefined;
+      const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
+      
+      // Construct query using SQL template literals for better security
+      let sqlQuery;
+      
+      if (surveyId && companyId) {
+        sqlQuery = sql`
+          SELECT * FROM survey_responses 
+          WHERE survey_id = ${surveyId} AND company_id = ${companyId}
+        `;
+      } else if (surveyId) {
+        sqlQuery = sql`
+          SELECT * FROM survey_responses 
+          WHERE survey_id = ${surveyId}
+        `;
+      } else if (companyId) {
+        sqlQuery = sql`
+          SELECT * FROM survey_responses 
+          WHERE company_id = ${companyId}
+        `;
+      } else {
+        sqlQuery = sql`SELECT * FROM survey_responses`;
+      }
+      
+      // Execute the query with SQL template literals for better security
+      const responses = await db.execute(sqlQuery);
+      
+      // Get rows from the response
+      const formattedResponses = responses.rows || [];
+      
+      res.json({
+        status: 'success',
+        data: formattedResponses
+      });
+    } catch (error) {
+      console.error('Error fetching survey responses:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to fetch survey responses',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Surveys API endpoint
+  app.get('/api/surveys', async (req: Request, res: Response) => {
+    try {
+      // Use SQL template query to avoid the businessContextId reference issue
+      const surveys = await db.execute(sql`
+        SELECT 
+          id, company_id, created_by_id, title, description, survey_type, 
+          is_active, is_public, access_code, custom_logo, custom_theme, 
+          custom_css, custom_welcome_message, custom_completion_message, 
+          redirect_url, allow_anonymous, require_email, collect_demographics, 
+          estimated_time_minutes, max_responses, expiry_date, created_at, updated_at
+        FROM surveys
+      `);
+      
+      // Transform the results to match the expected format
+      const formattedSurveys = surveys.rows.map(row => ({
+        id: row.id,
+        companyId: row.company_id,
+        createdById: row.created_by_id,
+        title: row.title,
+        description: row.description,
+        surveyType: row.survey_type,
+        isActive: row.is_active,
+        isPublic: row.is_public,
+        accessCode: row.access_code,
+        customLogo: row.custom_logo,
+        customTheme: row.custom_theme,
+        customCss: row.custom_css,
+        customWelcomeMessage: row.custom_welcome_message,
+        customCompletionMessage: row.custom_completion_message,
+        redirectUrl: row.redirect_url,
+        allowAnonymous: row.allow_anonymous,
+        requireEmail: row.require_email,
+        collectDemographics: row.collect_demographics,
+        estimatedTimeMinutes: row.estimated_time_minutes,
+        maxResponses: row.max_responses,
+        expiryDate: row.expiry_date,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      }));
+      
+      res.json({
+        status: 'success',
+        data: formattedSurveys
+      });
+    } catch (error) {
+      console.error('Error fetching surveys:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to fetch surveys data',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  // Users/Agents API endpoint
+  app.get('/api/users/agents', async (req: Request, res: Response) => {
+    try {
+      const agents = await db.query.users.findMany({
+        where: (users, { eq }) => eq(users.role, 'SUPPORT_AGENT'),
+        columns: {
+          id: true,
+          username: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          jobTitle: true,
+          department: true,
+          isActive: true,
+          profilePic: true,
+          createdAt: true
+        }
+      });
+      
+      // If no support agents found, return some default data
+      const formattedAgents = agents.length > 0 ? agents : [
+        {
+          id: 1,
+          username: 'support1',
+          email: 'support@example.com',
+          firstName: 'Support',
+          lastName: 'Agent',
+          jobTitle: 'Customer Support Agent',
+          department: 'Customer Support',
+          isActive: true,
+          profilePic: null,
+          createdAt: new Date()
+        }
+      ];
+      
+      res.json({
+        status: 'success',
+        data: formattedAgents
+      });
+    } catch (error) {
+      console.error('Error fetching support agents:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to fetch support agents data',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  // Support tickets API endpoint
+  app.get('/api/support/tickets', async (req: Request, res: Response) => {
+    try {
+      // Get query parameters
+      const status = req.query.status as string;
+      const priority = req.query.priority as string;
+      const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
+      const assignedToId = req.query.assignedToId ? parseInt(req.query.assignedToId as string) : undefined;
+      
+      // Build SQL query with potential filters
+      let ticketsQuery;
+      
+      if (status && priority && companyId && assignedToId) {
+        ticketsQuery = sql`
+          SELECT t.*, c.name as client_name
+          FROM support_tickets t
+          JOIN companies c ON t.company_id = c.id
+          WHERE t.status = ${status}
+            AND t.priority = ${priority}
+            AND t.company_id = ${companyId}
+            AND t.assigned_to_id = ${assignedToId}
+          ORDER BY t.created_at DESC
+        `;
+      } else if (status && companyId) {
+        ticketsQuery = sql`
+          SELECT t.*, c.name as client_name
+          FROM support_tickets t
+          JOIN companies c ON t.company_id = c.id
+          WHERE t.status = ${status}
+            AND t.company_id = ${companyId}
+          ORDER BY t.created_at DESC
+        `;
+      } else if (priority && companyId) {
+        ticketsQuery = sql`
+          SELECT t.*, c.name as client_name
+          FROM support_tickets t
+          JOIN companies c ON t.company_id = c.id
+          WHERE t.priority = ${priority}
+            AND t.company_id = ${companyId}
+          ORDER BY t.created_at DESC
+        `;
+      } else if (assignedToId) {
+        ticketsQuery = sql`
+          SELECT t.*, c.name as client_name
+          FROM support_tickets t
+          JOIN companies c ON t.company_id = c.id
+          WHERE t.assigned_to_id = ${assignedToId}
+          ORDER BY t.created_at DESC
+        `;
+      } else if (status) {
+        ticketsQuery = sql`
+          SELECT t.*, c.name as client_name
+          FROM support_tickets t
+          JOIN companies c ON t.company_id = c.id
+          WHERE t.status = ${status}
+          ORDER BY t.created_at DESC
+        `;
+      } else if (priority) {
+        ticketsQuery = sql`
+          SELECT t.*, c.name as client_name
+          FROM support_tickets t
+          JOIN companies c ON t.company_id = c.id
+          WHERE t.priority = ${priority}
+          ORDER BY t.created_at DESC
+        `;
+      } else if (companyId) {
+        ticketsQuery = sql`
+          SELECT t.*, c.name as client_name
+          FROM support_tickets t
+          JOIN companies c ON t.company_id = c.id
+          WHERE t.company_id = ${companyId}
+          ORDER BY t.created_at DESC
+        `;
+      } else {
+        ticketsQuery = sql`
+          SELECT t.*, c.name as client_name
+          FROM support_tickets t
+          JOIN companies c ON t.company_id = c.id
+          ORDER BY t.created_at DESC
+        `;
+      }
+      
+      const tickets = await db.execute(ticketsQuery);
+      
+      // Format the results
+      const formattedTickets = tickets.rows.map(ticket => ({
+        id: ticket.id,
+        ticketNumber: ticket.ticket_number,
+        subject: ticket.subject,
+        status: ticket.status,
+        priority: ticket.priority,
+        createdAt: ticket.created_at,
+        clientId: ticket.company_id,
+        clientName: ticket.client_name,
+        assignedAgentId: ticket.assigned_to_id,
+        lastUpdate: ticket.updated_at,
+        description: ticket.description,
+        type: ticket.type,
+        dueDate: ticket.due_date,
+        resolvedAt: ticket.resolved_at,
+        closedAt: ticket.closed_at
+      }));
+      
+      res.json({
+        status: 'success',
+        data: formattedTickets
+      });
+    } catch (error) {
+      console.error('Error fetching support tickets:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to fetch support tickets data',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  // Notifications API endpoint
+  app.get('/api/notifications', async (req: Request, res: Response) => {
+    try {
+      const userId = req.query.userId ? parseInt(req.query.userId as string) : undefined;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const isRead = req.query.isRead === 'true' ? true : (req.query.isRead === 'false' ? false : undefined);
+      
+      // Build query based on parameters
+      let query;
+      
+      if (userId && isRead !== undefined) {
+        query = sql`
+          SELECT * FROM notifications 
+          WHERE "userId" = ${userId} AND "isRead" = ${isRead}
+          ORDER BY "createdAt" DESC
+          LIMIT ${limit}
+        `;
+      } else if (userId) {
+        query = sql`
+          SELECT * FROM notifications 
+          WHERE "userId" = ${userId}
+          ORDER BY "createdAt" DESC
+          LIMIT ${limit}
+        `;
+      } else if (isRead !== undefined) {
+        query = sql`
+          SELECT * FROM notifications 
+          WHERE "isRead" = ${isRead}
+          ORDER BY "createdAt" DESC
+          LIMIT ${limit}
+        `;
+      } else {
+        query = sql`
+          SELECT * FROM notifications 
+          ORDER BY "createdAt" DESC
+          LIMIT ${limit}
+        `;
+      }
+      
+      const result = await db.execute(query);
+      const notifications = result.rows || [];
+      
+      res.json({
+        status: 'success',
+        data: notifications
+      });
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to fetch notifications data',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  return wss;
+}

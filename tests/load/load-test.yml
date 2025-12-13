@@ -1,0 +1,100 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      rampTo: 20
+      name: "Warm up phase"
+    - duration: 120
+      arrivalRate: 20
+      rampTo: 50
+      name: "Ramp up load"
+    - duration: 60
+      arrivalRate: 50
+      name: "Sustained load"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+
+scenarios:
+  # Scenario 1: Anonymous user browsing
+  - name: "Anonymous browsing"
+    weight: 70
+    flow:
+      # Hit the public API
+      - get:
+          url: "/api/system/performance"
+          expect:
+            - statusCode: 200
+      
+      # Get available surveys
+      - get:
+          url: "/api/surveys"
+          expect:
+            - statusCode: 200
+
+  # Scenario 2: User authentication and actions
+  - name: "User authentication"
+    weight: 20
+    flow:
+      # Step 1: Login
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ $processEnvironment.TEST_EMAIL }}"
+            password: "{{ $processEnvironment.TEST_PASSWORD }}"
+          capture:
+            - json: "$.token"
+              as: "token"
+          expect:
+            - statusCode: 200
+      
+      # Step 2: Get user profile
+      - get:
+          url: "/api/auth/me"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+      
+      # Step 3: Get user's surveys
+      - get:
+          url: "/api/surveys"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+      
+      # Step 4: Logout
+      - post:
+          url: "/api/auth/logout"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+
+  # Scenario 3: Stress test with error handling
+  - name: "Error handling test"
+    weight: 10
+    flow:
+      # Test non-existent endpoint
+      - get:
+          url: "/api/non-existent"
+          expect:
+            - statusCode: 404
+      
+      # Test unauthorized access
+      - get:
+          url: "/api/auth/me"
+          expect:
+            - statusCode: 401
+      
+      # Test invalid input
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "invalid-email"
+            password: ""
+          expect:
+            - statusCode: 400

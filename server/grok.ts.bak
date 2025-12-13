@@ -1,0 +1,431 @@
+import OpenAI from "openai";
+import { Demographics, PersonalityTrait } from "@shared/schema";
+
+// Create OpenAI instance with xAI's API URL
+const openai = new OpenAI({ 
+  baseURL: "https://api.x.ai/v1", 
+  apiKey: process.env.XAI_API_KEY || "" // Provide empty string as fallback
+});
+
+/**
+ * Helper function to safely format demographics data for Grok API prompts
+ * This ensures consistent formatting across all Grok API functions
+ */
+function safelyFormatDemographicsForGrok(demographics?: Demographics): string {
+  if (!demographics) return '';
+  
+  let demographicsText = '\nDemographic Information:\n';
+  
+  if (demographics.age) demographicsText += `Age: ${demographics.age}\n`;
+  if (demographics.gender) demographicsText += `Gender: ${demographics.gender}\n`;
+  if (demographics.location) demographicsText += `Location: ${demographics.location}\n`;
+  if (demographics.education) demographicsText += `Education: ${demographics.education}\n`;
+  if (demographics.income) demographicsText += `Income: ${demographics.income}\n`;
+  if (demographics.occupation) demographicsText += `Occupation: ${demographics.occupation}\n`;
+  if (demographics.interests && demographics.interests.length > 0) {
+    demographicsText += `Interests: ${demographics.interests.join(', ')}\n`;
+  }
+  
+  return demographicsText;
+}
+
+/**
+ * Generate personality insights using xAI's Grok model
+ */
+export async function generateAIPersonalityInsightWithGrok(
+  traits: PersonalityTrait[],
+  demographics?: Demographics
+) {
+  try {
+    // Prepare the traits and demographics data
+    const traitsData = traits.map(t => `${t.name}: ${t.score}/100 (${t.category})`).join('\n');
+    
+    // Use the helper function for consistent demographics formatting
+    const demographicsText = safelyFormatDemographicsForGrok(demographics);
+
+    const prompt = `
+    You are an expert personality analyst. Analyze the following personality traits and provide deep, insightful observations about this person's personality.
+    
+    Personality Traits (Score out of 100):
+    ${traitsData}
+    ${demographicsText}
+    
+    Provide your analysis in the following JSON format:
+    {
+      "summary": "A concise 2-3 sentence summary of the core personality",
+      "strengths": ["strength 1", "strength 2", "strength 3"],
+      "challenges": ["challenge 1", "challenge 2", "challenge 3"],
+      "workStyle": "How this person likely functions in professional settings",
+      "relationshipCompatibility": "How this person likely functions in personal relationships",
+      "growthAreas": ["growth area 1", "growth area 2"]
+    }
+    
+    Make your insights specific, nuanced, and tailored to the data. Avoid generic statements.
+    Only respond with the JSON object, no additional text.
+    `;
+
+    const response = await openai.chat.completions.create({
+      model: "grok-2-1212",
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content || "{}");
+  } catch (error: any) {
+    console.error("Error generating AI personality insights with Grok:", error);
+    return {
+      error: "Failed to generate AI insights with Grok",
+      message: error.message || "Unknown error"
+    };
+  }
+}
+
+/**
+ * Generate product recommendations using xAI's Grok model
+ */
+export async function generateAIProductRecommendationsWithGrok(
+  traits: PersonalityTrait[],
+  demographics?: Demographics
+) {
+  try {
+    // Prepare the traits and demographics data
+    const traitsData = traits.map(t => `${t.name}: ${t.score}/100 (${t.category})`).join('\n');
+    
+    // Use the helper function for consistent demographics formatting
+    const demographicsText = safelyFormatDemographicsForGrok(demographics);
+
+    const prompt = `
+    You are an expert consumer psychologist. Based on the following personality traits, recommend products and services that would appeal to this person.
+    
+    Personality Traits (Score out of 100):
+    ${traitsData}
+    ${demographicsText}
+    
+    Provide your recommendations in the following JSON format:
+    {
+      "recommendations": [
+        {
+          "category": "Category name",
+          "products": [
+            {
+              "name": "Product name",
+              "description": "Brief description",
+              "appeal": "Why this would appeal to the person",
+              "confidenceScore": 85 (1-100 scale)
+            }
+          ]
+        }
+      ],
+      "marketingApproach": "How to most effectively market to this person",
+      "pricingSensitivity": "How price-sensitive this person is likely to be"
+    }
+    
+    Include at least 3 different categories with 2-3 products each. Make your recommendations specific and personalized.
+    Only respond with the JSON object, no additional text.
+    `;
+
+    const response = await openai.chat.completions.create({
+      model: "grok-2-1212",
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content || "{}");
+  } catch (error: any) {
+    console.error("Error generating AI product recommendations with Grok:", error);
+    return {
+      error: "Failed to generate AI product recommendations with Grok",
+      message: error.message || "Unknown error"
+    };
+  }
+}
+
+/**
+ * Generate career insights using xAI's Grok model
+ */
+export async function generateAICareerInsightsWithGrok(
+  traits: PersonalityTrait[],
+  demographics?: Demographics
+) {
+  try {
+    // Prepare the traits and demographics data
+    const traitsData = traits.map(t => `${t.name}: ${t.score}/100 (${t.category})`).join('\n');
+    
+    // Use the helper function for consistent demographics formatting
+    const demographicsText = safelyFormatDemographicsForGrok(demographics);
+
+    const prompt = `
+    You are an expert career counselor. Based on the following personality traits, provide career insights and recommendations.
+    
+    Personality Traits (Score out of 100):
+    ${traitsData}
+    ${demographicsText}
+    
+    Provide your analysis in the following JSON format:
+    {
+      "careerTypes": [
+        {
+          "field": "Career field",
+          "suitability": 85 (1-100 scale),
+          "reasons": ["reason 1", "reason 2"],
+          "specificRoles": ["role 1", "role 2", "role 3"]
+        }
+      ],
+      "workEnvironment": {
+        "idealSettings": ["setting 1", "setting 2"],
+        "challengingSettings": ["setting 1", "setting 2"],
+        "leadershipPotential": "Assessment of leadership abilities",
+        "teamDynamics": "How they function in teams"
+      },
+      "developmentPath": {
+        "strengths": ["strength 1", "strength 2"],
+        "areasForImprovement": ["area 1", "area 2"],
+        "recommendedSkills": ["skill 1", "skill 2"]
+      }
+    }
+    
+    Include at least 3 different career fields. Make your insights specific and actionable.
+    Only respond with the JSON object, no additional text.
+    `;
+
+    const response = await openai.chat.completions.create({
+      model: "grok-2-1212",
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content || "{}");
+  } catch (error: any) {
+    console.error("Error generating AI career insights with Grok:", error);
+    return {
+      error: "Failed to generate AI career insights with Grok",
+      message: error.message || "Unknown error"
+    };
+  }
+}
+
+/**
+ * Generate digital behavior insights using xAI's Grok model
+ */
+export async function generateAIDigitalBehaviorInsightsWithGrok(
+  traits: PersonalityTrait[],
+  demographics?: Demographics
+) {
+  try {
+    // Prepare the traits and demographics data
+    const traitsData = traits.map(t => `${t.name}: ${t.score}/100 (${t.category})`).join('\n');
+    
+    // Use the helper function for consistent demographics formatting
+    const demographicsText = safelyFormatDemographicsForGrok(demographics);
+
+    const prompt = `
+    You are an expert in digital behavior analysis. Based on the following personality traits, predict this person's online behaviors, preferences, and digital habits.
+    
+    Personality Traits (Score out of 100):
+    ${traitsData}
+    ${demographicsText}
+    
+    Provide your analysis in the following JSON format:
+    {
+      "digitalIdentity": {
+        "onlinePersona": "Description of likely online personality",
+        "privacyOrientation": "Approach to online privacy and data sharing",
+        "contentCreationStyle": "How they might create and share content"
+      },
+      "platformPreferences": [
+        {
+          "platform": "Platform name",
+          "usageLevel": "High/Medium/Low",
+          "activities": ["activity 1", "activity 2"],
+          "engagement": "How they engage with the platform"
+        }
+      ],
+      "consumptionPatterns": {
+        "contentTypes": ["content type 1", "content type 2"],
+        "attentionSpan": "Assessment of digital attention span",
+        "timeOfDayPatterns": "When they're most likely active online",
+        "multiScreenBehavior": "How they use multiple devices"
+      },
+      "purchasingBehavior": {
+        "researchStyle": "How they research before purchases",
+        "decisionSpeed": "Quick/Methodical",
+        "priceVsConvenience": "Balance between price sensitivity and convenience",
+        "loyaltyTendency": "Likelihood to stick with platforms/brands"
+      },
+      "digitalVulnerabilities": ["vulnerability 1", "vulnerability 2"]
+    }
+    
+    Include at least 3 different platforms. Make your analysis detailed and specific to the personality profile.
+    Only respond with the JSON object, no additional text.
+    `;
+
+    const response = await openai.chat.completions.create({
+      model: "grok-2-1212",
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content || "{}");
+  } catch (error: any) {
+    console.error("Error generating AI digital behavior insights with Grok:", error);
+    return {
+      error: "Failed to generate AI digital behavior insights with Grok",
+      message: error.message || "Unknown error"
+    };
+  }
+}
+
+/**
+ * Generate emotional intelligence insights using xAI's Grok model
+ */
+export async function generateAIEmotionalIntelligenceInsightsWithGrok(
+  traits: PersonalityTrait[],
+  demographics?: Demographics
+) {
+  try {
+    // Prepare the traits and demographics data
+    const traitsData = traits.map(t => `${t.name}: ${t.score}/100 (${t.category})`).join('\n');
+    
+    // Use the helper function for consistent demographics formatting
+    const demographicsText = safelyFormatDemographicsForGrok(demographics);
+
+    const prompt = `
+    You are an expert in emotional intelligence. Based on the following personality traits, analyze this person's emotional intelligence profile.
+    
+    Personality Traits (Score out of 100):
+    ${traitsData}
+    ${demographicsText}
+    
+    Provide your analysis in the following JSON format:
+    {
+      "overallEQ": {
+        "score": 75 (1-100 scale),
+        "assessment": "Overall assessment of emotional intelligence"
+      },
+      "selfAwareness": {
+        "score": 80 (1-100 scale),
+        "strengths": ["strength 1", "strength 2"],
+        "challenges": ["challenge 1", "challenge 2"]
+      },
+      "selfRegulation": {
+        "score": 65 (1-100 scale),
+        "strengths": ["strength 1", "strength 2"],
+        "challenges": ["challenge 1", "challenge 2"]
+      },
+      "motivation": {
+        "score": 70 (1-100 scale),
+        "drivers": ["driver 1", "driver 2"],
+        "inhibitors": ["inhibitor 1", "inhibitor 2"]
+      },
+      "empathy": {
+        "score": 85 (1-100 scale),
+        "strengths": ["strength 1", "strength 2"],
+        "challenges": ["challenge 1", "challenge 2"]
+      },
+      "socialSkills": {
+        "score": 75 (1-100 scale),
+        "strengths": ["strength 1", "strength 2"],
+        "challenges": ["challenge 1", "challenge 2"]
+      },
+      "developmentSuggestions": ["suggestion 1", "suggestion 2", "suggestion 3"]
+    }
+    
+    Make your analysis nuanced and specific to the personality profile. Base the scores on apparent strengths and weaknesses from the trait data.
+    Only respond with the JSON object, no additional text.
+    `;
+
+    const response = await openai.chat.completions.create({
+      model: "grok-2-1212",
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content || "{}");
+  } catch (error: any) {
+    console.error("Error generating AI emotional intelligence insights with Grok:", error);
+    return {
+      error: "Failed to generate AI emotional intelligence insights with Grok",
+      message: error.message || "Unknown error"
+    };
+  }
+}
+
+/**
+ * Generate comprehensive trait analysis using xAI's Grok model
+ */
+export async function generateAIComprehensiveTraitAnalysisWithGrok(
+  traits: PersonalityTrait[],
+  demographics?: Demographics
+) {
+  try {
+    // Prepare the traits and demographics data
+    const traitsData = traits.map(t => `${t.name}: ${t.score}/100 (${t.category})`).join('\n');
+    
+    // Use the helper function for consistent demographics formatting
+    const demographicsText = safelyFormatDemographicsForGrok(demographics);
+
+    const prompt = `
+    You are an expert psychologist specializing in personality assessment. Provide a comprehensive analysis of this person based on their personality traits.
+    
+    Personality Traits (Score out of 100):
+    ${traitsData}
+    ${demographicsText}
+    
+    Provide your analysis in the following JSON format:
+    {
+      "personalitySummary": "A 3-4 sentence comprehensive overview",
+      "coreTraits": [
+        {
+          "trait": "Trait name",
+          "score": 85,
+          "analysis": "Detailed analysis of what this score means",
+          "manifestation": "How this trait manifests in behavior",
+          "interactionWithOtherTraits": "How this trait interacts with other notable traits"
+        }
+      ],
+      "behavioralPatterns": {
+        "consistentPatterns": ["pattern 1", "pattern 2"],
+        "situationalResponses": {
+          "underStress": ["response 1", "response 2"],
+          "inSocialSettings": ["response 1", "response 2"],
+          "inProfessionalSettings": ["response 1", "response 2"]
+        }
+      },
+      "cognitiveStyle": {
+        "informationProcessing": "How they process information",
+        "decisionMaking": "Their decision-making approach",
+        "problemSolving": "Their problem-solving style",
+        "learningPreference": "How they prefer to learn"
+      },
+      "interpersonalDynamics": {
+        "communicationStyle": "Their communication approach",
+        "conflictResolution": "How they handle conflict",
+        "relationshipPatterns": "Patterns in how they form relationships",
+        "teamRole": "Natural role in team settings"
+      },
+      "personalGrowth": {
+        "developmentalEdge": "Areas with greatest growth potential",
+        "blindSpots": ["blind spot 1", "blind spot 2"],
+        "recommendedApproaches": ["approach 1", "approach 2"]
+      }
+    }
+    
+    Include 3-5 core traits in your analysis. Make your analysis psychologically sophisticated and insightful.
+    Only respond with the JSON object, no additional text.
+    `;
+
+    const response = await openai.chat.completions.create({
+      model: "grok-2-1212",
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content || "{}");
+  } catch (error: any) {
+    console.error("Error generating AI comprehensive trait analysis with Grok:", error);
+    return {
+      error: "Failed to generate AI comprehensive trait analysis with Grok",
+      message: error.message || "Unknown error"
+    };
+  }
+}

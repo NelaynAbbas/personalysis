@@ -1,0 +1,486 @@
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import { PersonalityTrait, Demographics } from '../shared/schema';
+
+// Initialize Gemini AI with API key
+const apiKey = process.env.GEMINI_API_KEY;
+if (!apiKey) {
+  console.warn('GEMINI_API_KEY environment variable is not set. Gemini AI features will not work properly.');
+}
+
+// Create the AI instance with error handling
+let genAI: GoogleGenerativeAI;
+try {
+  genAI = new GoogleGenerativeAI(apiKey || '');
+} catch (error) {
+  console.error('Failed to initialize Gemini AI:', error);
+  // Create a fallback instance that will throw meaningful errors when used
+  genAI = new GoogleGenerativeAI('invalid_key_placeholder');
+}
+
+// Configure the model
+const modelName = "gemini-1.5-pro";
+const generationConfig = {
+  temperature: 0.7,
+  topK: 1,
+  topP: 0.95,
+  maxOutputTokens: 2048,
+};
+
+// Configure safety settings to prevent harmful outputs
+const safetySettings = [
+  {
+    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+  },
+];
+
+// Create a model instance
+const model = genAI.getGenerativeModel({
+  model: modelName,
+  generationConfig,
+  safetySettings,
+});
+
+// Helper function to safely process demographics data
+function safelyFormatDemographics(demographics?: Demographics): string {
+  if (!demographics || typeof demographics !== 'object') {
+    return '';
+  }
+  
+  // Safely access demographic properties with fallbacks
+  const safeDemo = {
+    age: demographics.age || 'Unknown',
+    gender: demographics.gender || 'Unknown',
+    location: demographics.location || 'Unknown',
+    education: demographics.education || 'Unknown',
+    income: demographics.income || 'Unknown',
+    occupation: demographics.occupation || 'Unknown',
+    interests: Array.isArray(demographics.interests) ? demographics.interests.join(', ') : 'Unknown'
+  };
+  
+  return `
+Age: ${safeDemo.age}
+Gender: ${safeDemo.gender}
+Location: ${safeDemo.location}
+Education: ${safeDemo.education}
+Income: ${safeDemo.income}
+Occupation: ${safeDemo.occupation}
+Interests: ${safeDemo.interests}
+`;
+}
+
+// Helper function to create a comprehensive analysis of personality traits
+export async function generateAIPersonalityInsight(
+  traits: PersonalityTrait[],
+  demographics?: Demographics
+): Promise<string> {
+  try {
+    // Prepare traits data for AI input
+    const traitsData = traits.map(trait => 
+      `${trait.name}: ${trait.score}/10 (category: ${trait.category})`
+    ).join('\n');
+
+    // Use helper function to safely process demographics data
+    const demographicsData = safelyFormatDemographics(demographics);
+
+    // Create the prompt
+    const prompt = `
+As an AI personality analysis expert, provide a comprehensive and personalized analysis based on the following personality traits and demographics:
+
+PERSONALITY TRAITS:
+${traitsData}
+
+${demographicsData ? `DEMOGRAPHICS:\n${demographicsData}` : ''}
+
+Your analysis should include the following sections:
+1. PERSONALITY OVERVIEW: A summary of the key personality aspects and how they interact.
+2. STRENGTHS AND GROWTH AREAS: Identify 3-5 key strengths and areas for potential growth.
+3. RELATIONSHIP DYNAMICS: How this personality likely interacts in personal and professional relationships.
+4. WORK STYLE: Describe their natural approach to work, collaboration, and productivity.
+5. DECISION-MAKING STYLE: Analyze how they tend to make decisions and what influences their process.
+
+Format the response in a conversational but professional tone. Use markdown formatting. Make the insights specific, evidence-based from the data provided, and actionable.
+`;
+
+    // Get response from Gemini
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    return text;
+  } catch (error) {
+    console.error('Error generating AI insight:', error);
+    return "We're currently unable to generate an AI-powered personality insight. Please try again later.";
+  }
+}
+
+// Additional function for product recommendations based on personality traits
+export async function generateAIProductRecommendations(
+  traits: PersonalityTrait[],
+  demographics?: Demographics
+): Promise<string> {
+  try {
+    // Prepare traits data for AI input
+    const traitsData = traits.map(trait => 
+      `${trait.name}: ${trait.score}/10 (category: ${trait.category})`
+    ).join('\n');
+
+    // Use helper function to safely process demographics data
+    const demographicsData = safelyFormatDemographics(demographics);
+
+    // Create the prompt
+    const prompt = `
+As a marketing and consumer behavior expert, provide personalized product and service recommendations based on the following personality traits and demographics:
+
+PERSONALITY TRAITS:
+${traitsData}
+
+${demographicsData ? `DEMOGRAPHICS:\n${demographicsData}` : ''}
+
+Create recommendations in these categories:
+1. TECHNOLOGY PRODUCTS: Recommend 2-3 specific technology products with reasoning.
+2. SERVICES & SUBSCRIPTIONS: Suggest 2-3 services or subscriptions that would appeal to this personality.
+3. CONTENT & MEDIA: Recommend specific media types, genres, or content formats this person would likely enjoy.
+4. SHOPPING PREFERENCES: Describe this person's likely shopping habits and preferences.
+
+For each recommendation, explain the specific personality traits that make it a good fit. Use markdown formatting.
+Keep recommendations specific but without brand names. Focus on product/service types and features.
+`;
+
+    // Get response from Gemini
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    return text;
+  } catch (error) {
+    console.error('Error generating AI product recommendations:', error);
+    return "We're currently unable to generate AI-powered product recommendations. Please try again later.";
+  }
+}
+
+// Function to generate career insights based on personality traits
+export async function generateAICareerInsights(
+  traits: PersonalityTrait[],
+  demographics?: Demographics
+): Promise<string> {
+  try {
+    // Prepare traits data for AI input
+    const traitsData = traits.map(trait => 
+      `${trait.name}: ${trait.score}/10 (category: ${trait.category})`
+    ).join('\n');
+
+    // Use helper function to safely process demographics data
+    const demographicsData = safelyFormatDemographics(demographics);
+
+    // Create the prompt
+    const prompt = `
+As a career development and professional growth expert, provide personalized career insights based on the following personality traits and demographics:
+
+PERSONALITY TRAITS:
+${traitsData}
+
+${demographicsData ? `DEMOGRAPHICS:\n${demographicsData}` : ''}
+
+Your analysis should include:
+1. CAREER PATHS: Suggest 3-5 career paths that align well with this personality profile, with specific reasoning.
+2. WORK ENVIRONMENT: Describe the ideal work environment and culture for this person.
+3. LEADERSHIP POTENTIAL: Analyze their natural leadership style and potential.
+4. PROFESSIONAL DEVELOPMENT: Recommend specific skills they should develop to leverage their strengths.
+5. WORKPLACE CHALLENGES: Identify potential challenges they might face and strategies to overcome them.
+
+Format the response in a professional tone. Use markdown formatting. Make the insights specific and actionable without using stereotypes.
+`;
+
+    // Get response from Gemini
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    return text;
+  } catch (error) {
+    console.error('Error generating AI career insights:', error);
+    return "We're currently unable to generate AI-powered career insights. Please try again later.";
+  }
+}
+
+// Function to generate digital behavior insights
+export async function generateAIDigitalBehaviorInsights(
+  traits: PersonalityTrait[],
+  demographics?: Demographics
+): Promise<string> {
+  try {
+    // Prepare traits data for AI input
+    const traitsData = traits.map(trait => 
+      `${trait.name}: ${trait.score}/10 (category: ${trait.category})`
+    ).join('\n');
+
+    // Use helper function to safely process demographics data
+    const demographicsData = safelyFormatDemographics(demographics);
+
+    // Create the prompt
+    const prompt = `
+As a digital behavior and technology adoption expert, provide detailed insights based on the following personality traits and demographics:
+
+PERSONALITY TRAITS:
+${traitsData}
+
+${demographicsData ? `DEMOGRAPHICS:\n${demographicsData}` : ''}
+
+Your analysis should include:
+1. DIGITAL PROFILE: Summarize this person's relationship with technology and digital environments.
+2. TECHNOLOGY ADOPTION: Analyze how they approach new technologies and digital tools.
+3. ONLINE BEHAVIOR: Describe their likely online communication, content preferences, and digital interactions.
+4. DIGITAL SECURITY: Assess their approach to privacy, security, and data management.
+5. DIGITAL BALANCE: Evaluate how they likely balance digital and offline life.
+6. RECOMMENDATIONS: Suggest specific digital tools, approaches, or practices that would enhance their digital experience.
+
+Format the response in a conversational but informative tone. Use markdown formatting. Make the insights specific, balanced, and practical without making assumptions beyond the data provided.
+`;
+
+    // Get response from Gemini
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    return text;
+  } catch (error) {
+    console.error('Error generating AI digital behavior insights:', error);
+    return "We're currently unable to generate AI-powered digital behavior insights. Please try again later.";
+  }
+}
+
+// Function to generate emotional intelligence insights
+export async function generateAIEmotionalIntelligenceInsights(
+  traits: PersonalityTrait[],
+  demographics?: Demographics
+): Promise<string> {
+  try {
+    // Prepare traits data for AI input
+    const traitsData = traits.map(trait => 
+      `${trait.name}: ${trait.score}/10 (category: ${trait.category})`
+    ).join('\n');
+
+    // Use helper function to safely process demographics data
+    const demographicsData = safelyFormatDemographics(demographics);
+
+    // Create the prompt
+    const prompt = `
+As an emotional intelligence and interpersonal psychology expert, provide insightful analysis based on the following personality traits and demographics:
+
+PERSONALITY TRAITS:
+${traitsData}
+
+${demographicsData ? `DEMOGRAPHICS:\n${demographicsData}` : ''}
+
+Your analysis should include:
+1. EMOTIONAL AWARENESS: Assess this person's ability to recognize and understand their own emotions.
+2. EMPATHY PROFILE: Analyze how they likely perceive and respond to others' emotions.
+3. EMOTIONAL MANAGEMENT: Evaluate their approach to regulating emotions and handling stress.
+4. SOCIAL DYNAMICS: Describe their communication style and how they navigate interpersonal relationships.
+5. CONFLICT RESOLUTION: Assess their likely approach to disagreements and tensions.
+6. GROWTH OPPORTUNITIES: Suggest specific practices that could enhance their emotional intelligence.
+
+Format the response in a warm, supportive tone. Use markdown formatting. Make the insights constructive, balanced, and specific to the data provided without making inappropriate assumptions.
+`;
+
+    // Get response from Gemini
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    return text;
+  } catch (error) {
+    console.error('Error generating AI emotional intelligence insights:', error);
+    return "We're currently unable to generate AI-powered emotional intelligence insights. Please try again later.";
+  }
+}
+
+// Function to generate comprehensive trait analysis for multiple trait categories
+export async function generateAIComprehensiveTraitAnalysis(
+  traits: PersonalityTrait[],
+  demographics?: Demographics
+): Promise<string> {
+  try {
+    // Prepare traits data for AI input
+    const traitsData = traits.map(trait => 
+      `${trait.name}: ${trait.score}/10 (category: ${trait.category})`
+    ).join('\n');
+    
+    // Group traits by category
+    const traitsByCategory: Record<string, PersonalityTrait[]> = {};
+    
+    traits.forEach(trait => {
+      if (!traitsByCategory[trait.category]) {
+        traitsByCategory[trait.category] = [];
+      }
+      traitsByCategory[trait.category].push(trait);
+    });
+    
+    // Get categories present
+    const categories = Object.keys(traitsByCategory);
+    
+    // Use helper function to safely process demographics data
+    const demographicsData = safelyFormatDemographics(demographics);
+
+    // Create the prompt
+    const prompt = `
+As a personality analysis expert, provide a comprehensive, multidimensional analysis of this person based on their personality traits across multiple categories:
+
+PERSONALITY TRAITS BY CATEGORY:
+${categories.map(category => {
+  const categoryTraits = traitsByCategory[category].map(t => `${t.name}: ${t.score}/10`).join(', ');
+  return `${category.toUpperCase()}: ${categoryTraits}`;
+}).join('\n')}
+
+${demographicsData ? `DEMOGRAPHICS:\n${demographicsData}` : ''}
+
+Your analysis should include:
+1. INTEGRATED PROFILE: How the different trait categories interact to form a cohesive personality profile.
+2. CATEGORY INTERACTIONS: Specific insights on how traits across different categories influence each other (e.g., how emotional traits affect cognitive processes).
+3. PERSONAL GROWTH MAP: A balanced view of strengths and development opportunities across all categories.
+4. INTERPERSONAL DYNAMICS: How this multifaceted profile shapes relationships and communication.
+5. SITUATIONAL ADAPTABILITY: How this person likely adapts to different contexts and challenges.
+
+Format the response in sections with markdown headings. Use a professional but warm tone. Focus on providing unique insights that capture the complexity of how these different trait categories interact rather than analyzing each category separately.
+`;
+
+    // Get response from Gemini
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    return text;
+  } catch (error) {
+    console.error('Error generating AI comprehensive trait analysis:', error);
+    return "We're currently unable to generate an AI-powered comprehensive analysis. Please try again later.";
+  }
+}
+
+// New: AI-powered survey recommendation engine
+export interface SurveyRecommendation {
+  title: string;
+  description: string;
+  surveyType: string;
+  estimatedTime: number;
+  questionCount: number;
+  traits: string[];
+  recommendationScore: number;
+  reasonForRecommendation: string;
+}
+
+interface UserPreferences {
+  interests?: string[];
+  industry?: string;
+  preferredLength?: 'short' | 'medium' | 'long';
+  preferredTopics?: string[];
+  previousSurveys?: {
+    id: string;
+    title: string;
+    type: string;
+    completionDate?: Date;
+  }[];
+  userType?: 'personal' | 'business' | 'academic';
+  demographicData?: Demographics;
+}
+
+// Function to generate personalized survey recommendations based on user data
+export async function generateAISurveyRecommendations(
+  userPreferences: UserPreferences,
+  limit: number = 3
+): Promise<SurveyRecommendation[]> {
+  try {
+    // Format user preferences for the AI
+    const interestsData = userPreferences.interests ? `Interests: ${userPreferences.interests.join(', ')}` : '';
+    const industryData = userPreferences.industry ? `Industry: ${userPreferences.industry}` : '';
+    const lengthPreference = userPreferences.preferredLength ? `Preferred Survey Length: ${userPreferences.preferredLength}` : '';
+    const topicsData = userPreferences.preferredTopics ? `Preferred Topics: ${userPreferences.preferredTopics.join(', ')}` : '';
+    const userTypeData = userPreferences.userType ? `User Type: ${userPreferences.userType}` : '';
+    
+    // Format previous surveys if any
+    let previousSurveysData = '';
+    if (userPreferences.previousSurveys && userPreferences.previousSurveys.length > 0) {
+      previousSurveysData = 'Previous Surveys:\n' + userPreferences.previousSurveys.map(survey => 
+        `- ${survey.title} (Type: ${survey.type})${survey.completionDate ? ` completed on ${survey.completionDate.toISOString().split('T')[0]}` : ''}`
+      ).join('\n');
+    }
+    
+    // Get demographics if available
+    const demographicsData = userPreferences.demographicData 
+      ? safelyFormatDemographics(userPreferences.demographicData) 
+      : '';
+
+    // Create the prompt for the AI
+    const prompt = `
+As a survey recommendation engine, suggest ${limit} personalized surveys based on the following user data:
+
+${interestsData ? interestsData + '\n' : ''}${industryData ? industryData + '\n' : ''}${lengthPreference ? lengthPreference + '\n' : ''}${topicsData ? topicsData + '\n' : ''}${userTypeData ? userTypeData + '\n' : ''}
+${previousSurveysData ? previousSurveysData + '\n' : ''}
+${demographicsData ? 'DEMOGRAPHICS:\n' + demographicsData : ''}
+
+Provide recommendations in the following structured JSON format:
+[
+  {
+    "title": "Engaging and descriptive survey title",
+    "description": "Brief but compelling description of what the survey explores",
+    "surveyType": "One of: Personality Profile, Professional Profile, Consumer Behavior, Innovation Mindset, Sustainability Orientation, Digital Behavior, or Custom Survey",
+    "estimatedTime": "Estimated completion time in minutes (number)",
+    "questionCount": "Estimated number of questions (number)",
+    "traits": ["List", "of", "traits", "this", "survey", "measures"],
+    "recommendationScore": "A score from 1-100 indicating how well this matches the user (number)",
+    "reasonForRecommendation": "A brief explanation of why this survey is recommended specifically for this user"
+  }
+]
+
+Make sure each recommendation is distinctly different from the others. Use engaging, curiosity-driving language for titles and descriptions. Focus on providing truly personalized recommendations that consider all aspects of the user data provided. Don't make up additional data if not provided in the user profile.
+
+IMPORTANT: Respond ONLY with the JSON array and no other text.
+`;
+
+    // Get response from Gemini
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    // Parse the JSON response
+    try {
+      // Clean the response to ensure it's valid JSON
+      const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      const recommendations: SurveyRecommendation[] = JSON.parse(cleanedText);
+      
+      // Validate and limit results
+      return recommendations
+        .slice(0, limit)
+        .map(rec => ({
+          title: rec.title || 'Recommended Survey',
+          description: rec.description || 'A survey tailored to your preferences.',
+          surveyType: rec.surveyType || 'Custom Survey',
+          estimatedTime: typeof rec.estimatedTime === 'number' ? rec.estimatedTime : 10,
+          questionCount: typeof rec.questionCount === 'number' ? rec.questionCount : 25,
+          traits: Array.isArray(rec.traits) ? rec.traits : [],
+          recommendationScore: typeof rec.recommendationScore === 'number' ? 
+            Math.min(100, Math.max(1, rec.recommendationScore)) : 85,
+          reasonForRecommendation: rec.reasonForRecommendation || 'This survey matches your profile and preferences.'
+        }));
+    } catch (parseError) {
+      console.error('Error parsing AI survey recommendations:', parseError);
+      // Fallback to empty array if parsing fails
+      return [];
+    }
+  } catch (error) {
+    console.error('Error generating AI survey recommendations:', error);
+    return [];
+  }
+}

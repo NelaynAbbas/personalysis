@@ -1,0 +1,100 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#f5f7fa"/>
+  
+  <!-- Title -->
+  <text x="400" y="60" font-family="Arial" font-size="24" fill="#374151" font-weight="bold" text-anchor="middle">Personality Profile: Creative Innovator</text>
+  
+  <!-- Main Radar Chart Background -->
+  <circle cx="400" cy="320" r="200" fill="white" stroke="#e2e8f0" stroke-width="2"/>
+  
+  <!-- Radar Rings -->
+  <circle cx="400" cy="320" r="160" fill="none" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"/>
+  <circle cx="400" cy="320" r="120" fill="none" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"/>
+  <circle cx="400" cy="320" r="80" fill="none" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"/>
+  <circle cx="400" cy="320" r="40" fill="none" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"/>
+  
+  <!-- Radar Axes -->
+  <line x1="400" y1="120" x2="400" y2="520" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="200" y1="320" x2="600" y2="320" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="258" y1="178" x2="542" y2="462" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="258" y1="462" x2="542" y2="178" stroke="#e2e8f0" stroke-width="1"/>
+  
+  <!-- Axis Labels -->
+  <text x="400" y="110" font-family="Arial" font-size="14" fill="#4b5563" text-anchor="middle">Openness</text>
+  <text x="610" y="320" font-family="Arial" font-size="14" fill="#4b5563" text-anchor="start">Extraversion</text>
+  <text x="400" y="535" font-family="Arial" font-size="14" fill="#4b5563" text-anchor="middle">Agreeableness</text>
+  <text x="190" y="320" font-family="Arial" font-size="14" fill="#4b5563" text-anchor="end">Conscientiousness</text>
+  <text x="545" y="170" font-family="Arial" font-size="14" fill="#4b5563" text-anchor="middle">Curiosity</text>
+  <text x="255" y="170" font-family="Arial" font-size="14" fill="#4b5563" text-anchor="middle">Structure</text>
+  <text x="545" y="470" font-family="Arial" font-size="14" fill="#4b5563" text-anchor="middle">Empathy</text>
+  <text x="255" y="470" font-family="Arial" font-size="14" fill="#4b5563" text-anchor="middle">Resilience</text>
+  
+  <!-- User Profile Data Points -->
+  <circle cx="400" cy="140" r="6" fill="#667eea"/>
+  <circle cx="560" cy="320" r="6" fill="#667eea"/>
+  <circle cx="400" cy="380" r="6" fill="#667eea"/>
+  <circle cx="270" cy="320" r="6" fill="#667eea"/>
+  <circle cx="505" cy="205" r="6" fill="#667eea"/>
+  <circle cx="280" cy="205" r="6" fill="#667eea"/>
+  <circle cx="480" cy="425" r="6" fill="#667eea"/>
+  <circle cx="320" cy="425" r="6" fill="#667eea"/>
+  
+  <!-- Radar Polygon -->
+  <polygon points="400,140 560,320 400,380 270,320 280,205 505,205 480,425 320,425" 
+    fill="#667eea" fill-opacity="0.2" stroke="#667eea" stroke-width="2"/>
+  
+  <!-- Center Point -->
+  <circle cx="400" cy="320" r="8" fill="#667eea"/>
+  
+  <!-- Legend -->
+  <rect x="650" y="170" width="20" height="20" fill="#667eea" fill-opacity="0.2" stroke="#667eea" stroke-width="2"/>
+  <text x="680" y="185" font-family="Arial" font-size="14" fill="#374151" text-anchor="start">User Profile</text>
+  
+  <!-- Trait Scores -->
+  <rect x="50" y="100" width="120" height="400" rx="10" fill="white" stroke="#e2e8f0" stroke-width="2"/>
+  
+  <text x="110" y="130" font-family="Arial" font-size="16" fill="#374151" font-weight="bold" text-anchor="middle">Trait Scores</text>
+  
+  <text x="70" y="170" font-family="Arial" font-size="14" fill="#4b5563">Openness:</text>
+  <text x="150" y="170" font-family="Arial" font-size="14" fill="#4b5563" text-anchor="end">90%</text>
+  
+  <text x="70" y="200" font-family="Arial" font-size="14" fill="#4b5563">Extraversion:</text>
+  <text x="150" y="200" font-family="Arial" font-size="14" fill="#4b5563" text-anchor="end">80%</text>
+  
+  <text x="70" y="230" font-family="Arial" font-size="14" fill="#4b5563">Agreeableness:</text>
+  <text x="150" y="230" font-family="Arial" font-size="14" fill="#4b5563" text-anchor="end">70%</text>
+  
+  <text x="70" y="260" font-family="Arial" font-size="14" fill="#4b5563">Conscientiousness:</text>
+  <text x="150" y="260" font-family="Arial" font-size="14" fill="#4b5563" text-anchor="end">65%</text>
+  
+  <text x="70" y="290" font-family="Arial" font-size="14" fill="#4b5563">Curiosity:</text>
+  <text x="150" y="290" font-family="Arial" font-size="14" fill="#4b5563" text-anchor="end">85%</text>
+  
+  <text x="70" y="320" font-family="Arial" font-size="14" fill="#4b5563">Structure:</text>
+  <text x="150" y="320" font-family="Arial" font-size="14" fill="#4b5563" text-anchor="end">60%</text>
+  
+  <text x="70" y="350" font-family="Arial" font-size="14" fill="#4b5563">Empathy:</text>
+  <text x="150" y="350" font-family="Arial" font-size="14" fill="#4b5563" text-anchor="end">75%</text>
+  
+  <text x="70" y="380" font-family="Arial" font-size="14" fill="#4b5563">Resilience:</text>
+  <text x="150" y="380" font-family="Arial" font-size="14" fill="#4b5563" text-anchor="end">70%</text>
+  
+  <!-- Profile Summary Box -->
+  <rect x="630" y="220" width="150" height="200" rx="10" fill="white" stroke="#e2e8f0" stroke-width="2"/>
+  
+  <text x="705" y="250" font-family="Arial" font-size="16" fill="#374151" font-weight="bold" text-anchor="middle">Profile Summary</text>
+  
+  <text x="640" y="280" font-family="Arial" font-size="12" fill="#4b5563">• Creative thinker</text>
+  <text x="640" y="305" font-family="Arial" font-size="12" fill="#4b5563">• Highly social</text>
+  <text x="640" y="330" font-family="Arial" font-size="12" fill="#4b5563">• Adaptable approach</text>
+  <text x="640" y="355" font-family="Arial" font-size="12" fill="#4b5563">• Empathetic listener</text>
+  <text x="640" y="380" font-family="Arial" font-size="12" fill="#4b5563">• Curious explorer</text>
+  
+  <!-- Animation Hints -->
+  <circle cx="400" cy="140" r="10" fill="#667eea" fill-opacity="0.3">
+    <animate attributeName="r" values="6;10;6" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <text x="400" y="560" font-family="Arial" font-size="14" fill="#9ca3af" text-anchor="middle">© 2025 PersonalysisPro - Advanced Personality Analytics</text>
+</svg>

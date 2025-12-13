@@ -1,0 +1,20 @@
+/* Product Tour Styles */
+.product-tour-highlight {
+  position: relative;
+  z-index: 50;
+  animation: pulse 2s infinite;
+  box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.3);
+  border-radius: 4px;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--color-primary), 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(var(--color-primary), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--color-primary), 0);
+  }
+}

@@ -1,0 +1,312 @@
+  async getMarketingStrategies(companyId: number): Promise<any> {
+    console.log(`Fetching marketing strategies for company ID: ${companyId}`);
+    
+    try {
+      // Get business context for this company
+      const businessContexts = await db.query.businessContexts.findMany({
+        where: (businessContexts, { eq }) => eq(businessContexts.companyId, companyId)
+      });
+      
+      // Get customer segments for this company
+      const segments = await this.getCustomerSegments(companyId);
+      
+      // Get survey responses for personality trait analysis
+      const responses = await db.query.surveyResponses.findMany({
+        where: (surveyResponses, { eq }) => eq(surveyResponses.companyId, companyId)
+      });
+      
+      // Extract business information from context
+      let industry = 'Technology';
+      let productName = 'Personality Assessment';
+      let targetMarket = 'Enterprise';
+      
+      if (businessContexts.length > 0) {
+        const context = businessContexts[0];
+        industry = context.industry || industry;
+        productName = context.productName || productName;
+        targetMarket = context.targetMarket || targetMarket;
+      }
+      
+      // Extract target segments from customer segments
+      const targetSegments = segments.length > 0 
+        ? segments.slice(0, 3).map(segment => segment.name)
+        : ['HR Professionals', 'Team Leaders', 'C-Suite Executives'];
+      
+      // Analyze dominant personality traits from survey responses
+      const traitFrequency = {};
+      
+      responses.forEach(response => {
+        if (response.traits && Array.isArray(response.traits)) {
+          response.traits.forEach((trait: PersonalityTrait) => {
+            if (trait.name && trait.score && trait.score > 75) {
+              traitFrequency[trait.name] = (traitFrequency[trait.name] || 0) + 1;
+            }
+          });
+        }
+      });
+      
+      // Get top traits for targeted campaigns
+      const topTraits = Object.entries(traitFrequency)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([trait]) => trait);
+      
+      // If no traits found, use defaults
+      if (topTraits.length === 0) {
+        topTraits.push('Analytical', 'Collaborative', 'Innovative', 'Detail-Oriented', 'Empathetic');
+      }
+      
+      // Define marketing channels based on industry and target market
+      const channels = [];
+      
+      // LinkedIn is effective for all B2B
+      channels.push({
+        channelName: 'LinkedIn',
+        effectiveness: 80 + Math.floor(Math.random() * 16), // 80-95
+        costPerAcquisition: 90 + Math.floor(Math.random() * 21), // 90-110
+        recommendedBudget: 30000 + Math.floor(Math.random() * 10000) // 30-40k
+      });
+      
+      // Add industry-specific channels
+      if (industry === 'Technology') {
+        channels.push({
+          channelName: 'Tech Conferences',
+          effectiveness: 75 + Math.floor(Math.random() * 16),
+          costPerAcquisition: 160 + Math.floor(Math.random() * 41),
+          recommendedBudget: 40000 + Math.floor(Math.random() * 20000)
+        });
+      } else if (industry === 'Healthcare') {
+        channels.push({
+          channelName: 'Medical Journals',
+          effectiveness: 70 + Math.floor(Math.random() * 16),
+          costPerAcquisition: 150 + Math.floor(Math.random() * 51),
+          recommendedBudget: 25000 + Math.floor(Math.random() * 15000)
+        });
+      } else if (industry === 'Financial Services') {
+        channels.push({
+          channelName: 'Finance Publications',
+          effectiveness: 72 + Math.floor(Math.random() * 16),
+          costPerAcquisition: 180 + Math.floor(Math.random() * 41),
+          recommendedBudget: 35000 + Math.floor(Math.random() * 15000)
+        });
+      }
+      
+      // Add content marketing channels
+      channels.push({
+        channelName: 'Industry Blog',
+        effectiveness: 70 + Math.floor(Math.random() * 16),
+        costPerAcquisition: 110 + Math.floor(Math.random() * 31),
+        recommendedBudget: 20000 + Math.floor(Math.random() * 10000)
+      });
+      
+      // Add webinars/events which are effective for all industries
+      channels.push({
+        channelName: 'Webinars',
+        effectiveness: 75 + Math.floor(Math.random() * 16),
+        costPerAcquisition: 100 + Math.floor(Math.random() * 31),
+        recommendedBudget: 15000 + Math.floor(Math.random() * 10000)
+      });
+      
+      // Sort channels by effectiveness (highest first)
+      channels.sort((a, b) => b.effectiveness - a.effectiveness);
+      
+      // Generate messaging based on top personality traits
+      const keyMessages = [];
+      const valuePropositions = [];
+      
+      // Add industry-specific messaging
+      if (industry === 'Technology') {
+        keyMessages.push(
+          'AI-powered personality insights for tech teams',
+          'Data-driven approach to team building in tech organizations',
+          'Scientifically validated technology for personality assessment'
+        );
+        
+        valuePropositions.push(
+          'Optimize engineering team dynamics',
+          'Reduce developer turnover with better team fit',
+          'Increase innovation through diverse personality composition'
+        );
+      } else if (industry === 'Healthcare') {
+        keyMessages.push(
+          'Evidence-based personality assessment for healthcare teams',
+          'Improve patient care through better team dynamics',
+          'Clinically validated approach to healthcare staffing'
+        );
+        
+        valuePropositions.push(
+          'Reduce medical errors through improved communication',
+          'Increase patient satisfaction through better-matched care teams',
+          'Lower staff burnout through optimal role assignment'
+        );
+      } else if (industry === 'Financial Services') {
+        keyMessages.push(
+          'Risk-optimized team composition for financial organizations',
+          'Data-driven approach to financial team performance',
+          'Compliance-friendly personality assessment'
+        );
+        
+        valuePropositions.push(
+          'Reduce trading risk through balanced team composition',
+          'Improve client satisfaction through personality-matched advisors',
+          'Increase regulatory compliance through better team communication'
+        );
+      } else {
+        keyMessages.push(
+          'Data-driven people insights',
+          'Improve team performance through personality understanding',
+          'Scientifically validated assessment methodology'
+        );
+        
+        valuePropositions.push(
+          'Make better hiring decisions',
+          'Reduce team conflict and improve collaboration',
+          'Personalized development plans for every team member'
+        );
+      }
+      
+      // Determine appropriate tone of voice based on industry
+      let toneOfVoice = 'Professional, authoritative, yet approachable';
+      
+      if (industry === 'Technology') {
+        toneOfVoice = 'Technical, innovative, and data-driven';
+      } else if (industry === 'Healthcare') {
+        toneOfVoice = 'Caring, evidence-based, and trustworthy';
+      } else if (industry === 'Financial Services') {
+        toneOfVoice = 'Professional, conservative, with emphasis on security and compliance';
+      }
+      
+      // Generate campaign ideas based on top traits and industry
+      const campaignIdeas = [];
+      
+      // Use top traits for targeted campaigns
+      if (topTraits.includes('Analytical') || topTraits.includes('Logical')) {
+        campaignIdeas.push({
+          name: 'Data-Driven Team Building Series',
+          description: 'A series of white papers and webinars highlighting the measurable impact of personality assessment on team performance',
+          targetTrait: 'Analytical',
+          estimatedResponse: 3.5 + Math.random()
+        });
+      }
+      
+      if (topTraits.includes('Collaborative') || topTraits.includes('Empathetic')) {
+        campaignIdeas.push({
+          name: 'Team Harmony Calculator',
+          description: 'Interactive tool that gives a preview of team compatibility insights',
+          targetTrait: 'Collaborative',
+          estimatedResponse: 3.8 + Math.random()
+        });
+      }
+      
+      if (topTraits.includes('Innovative') || topTraits.includes('Creative')) {
+        campaignIdeas.push({
+          name: 'Innovation Personality Matrix',
+          description: 'Assessment tool showing how different personality types contribute to the innovation process',
+          targetTrait: 'Innovative',
+          estimatedResponse: 3.6 + Math.random()
+        });
+      }
+      
+      if (topTraits.includes('Detail-Oriented') || topTraits.includes('Conscientious')) {
+        campaignIdeas.push({
+          name: 'Precision Performance Blueprint',
+          description: 'Framework for optimizing team accuracy and attention to detail through personality composition',
+          targetTrait: 'Detail-Oriented',
+          estimatedResponse: 3.4 + Math.random()
+        });
+      }
+      
+      // If not enough campaign ideas, add generic ones
+      if (campaignIdeas.length < 2) {
+        campaignIdeas.push({
+          name: 'Personality at Work Series',
+          description: 'A series of industry reports showing how personality affects workplace dynamics',
+          targetTrait: topTraits[0] || 'Analytical',
+          estimatedResponse: 3.5 + Math.random()
+        });
+        
+        campaignIdeas.push({
+          name: 'ROI Calculator for Personality Assessment',
+          description: 'Interactive tool demonstrating the financial impact of improved team dynamics',
+          targetTrait: topTraits[1] || 'Practical',
+          estimatedResponse: 3.7 + Math.random()
+        });
+      }
+      
+      // Trim response rates to 1 decimal place
+      campaignIdeas.forEach(campaign => {
+        campaign.estimatedResponse = Math.round(campaign.estimatedResponse * 10) / 10;
+      });
+      
+      // Sort campaign ideas by estimated response (highest first)
+      campaignIdeas.sort((a, b) => b.estimatedResponse - a.estimatedResponse);
+      
+      // Construct marketing strategies
+      const contentStrategy = {
+        strategyId: 'mkt-1',
+        name: 'Content Marketing Program',
+        targetSegments,
+        channels: channels.slice(0, 3),
+        messaging: {
+          keyMessages,
+          toneOfVoice,
+          valuePropositions
+        },
+        campaignIdeas: campaignIdeas.slice(0, 2)
+      };
+      
+      const eventStrategy = {
+        strategyId: 'mkt-2',
+        name: 'Event-Based Outreach',
+        targetSegments,
+        channels: [
+          {
+            channelName: 'Industry Conferences',
+            effectiveness: 80 + Math.floor(Math.random() * 11),
+            costPerAcquisition: 200 + Math.floor(Math.random() * 51),
+            recommendedBudget: 50000 + Math.floor(Math.random() * 20000)
+          },
+          {
+            channelName: 'Executive Roundtables',
+            effectiveness: 85 + Math.floor(Math.random() * 11),
+            costPerAcquisition: 250 + Math.floor(Math.random() * 51),
+            recommendedBudget: 30000 + Math.floor(Math.random() * 15000)
+          },
+          {
+            channelName: 'Demo Workshops',
+            effectiveness: 88 + Math.floor(Math.random() * 8),
+            costPerAcquisition: 180 + Math.floor(Math.random() * 41),
+            recommendedBudget: 25000 + Math.floor(Math.random() * 10000)
+          }
+        ],
+        messaging: {
+          keyMessages: [
+            'Experience personality insights in action',
+            'See how leading organizations leverage personality data',
+            'Interactive demonstrations of our assessment platform'
+          ],
+          toneOfVoice,
+          valuePropositions
+        },
+        campaignIdeas: [
+          {
+            name: 'Executive Insight Series',
+            description: 'Exclusive events for C-level executives to experience personalized insights',
+            targetTrait: 'Leadership',
+            estimatedResponse: 4.2
+          },
+          {
+            name: 'Team Transformation Workshops',
+            description: 'Hands-on sessions for HR leaders to apply personality insights to real challenges',
+            targetTrait: 'Practical',
+            estimatedResponse: 4.5
+          }
+        ]
+      };
+      
+      return [contentStrategy, eventStrategy];
+    } catch (error) {
+      console.error(`Error fetching marketing strategies for company ${companyId}:`, error);
+      throw error;
+    }
+  }

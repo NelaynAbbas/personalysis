@@ -1,0 +1,218 @@
+config:
+  target: "http://localhost:5000"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      rampTo: 20
+      name: "Warm up phase"
+    - duration: 120
+      arrivalRate: 20
+      rampTo: 50
+      name: "Ramp up load"
+    - duration: 300
+      arrivalRate: 50
+      name: "Sustained load"
+  http:
+    timeout: 10  # Timeout in seconds
+  processor: "./load-test-functions.js"
+  environments:
+    production:
+      target: "https://api.personalysispro.com"
+      phases:
+        - duration: 60
+          arrivalRate: 2
+          rampTo: 10
+          name: "Production warm up"
+        - duration: 120
+          arrivalRate: 10
+          rampTo: 25
+          name: "Production ramp up"
+        - duration: 300
+          arrivalRate: 25
+          name: "Production sustained load"
+
+scenarios:
+  - name: "Anonymous user journey"
+    flow:
+      - get:
+          url: "/"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - get:
+          url: "/api/surveys/public"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - get:
+          url: "/how-it-works"
+          expect:
+            - statusCode: 200
+
+  - name: "Client user journey"
+    weight: 3
+    flow:
+      - function: "generateRandomCredentials"
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          capture:
+            - json: "$.token"
+              as: "token"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - get:
+          url: "/api/client/dashboard"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+      - think: 3
+      - get:
+          url: "/api/client/surveys"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          capture:
+            - json: "$[0].id"
+              as: "surveyId"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - get:
+          url: "/api/client/analytics/competitors"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+      - think: 3
+      - function: "generateSurveyResponse"
+      - post:
+          url: "/api/surveys/{{ surveyId }}/responses"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json: "{{ surveyResponse }}"
+          expect:
+            - statusCode: 201
+      - think: 2
+      - get:
+          url: "/api/client/analytics/market-fit"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - post:
+          url: "/api/auth/logout"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Admin user journey"
+    weight: 1
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "admin@personalysispro.com"
+            password: "{{ adminPassword }}"
+          capture:
+            - json: "$.token"
+              as: "adminToken"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - get:
+          url: "/api/admin/dashboard"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - get:
+          url: "/api/admin/users"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - think: 3
+      - get:
+          url: "/api/admin/licenses"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - function: "generateNewSurvey"
+      - post:
+          url: "/api/admin/surveys"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          json: "{{ newSurvey }}"
+          capture:
+            - json: "$.id"
+              as: "newSurveyId"
+          expect:
+            - statusCode: 201
+      - think: 3
+      - get:
+          url: "/api/admin/surveys/{{ newSurveyId }}"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - put:
+          url: "/api/admin/surveys/{{ newSurveyId }}/publish"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - post:
+          url: "/api/auth/logout"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+
+  - name: "API client journey"
+    weight: 2
+    flow:
+      - function: "generateApiCredentials"
+      - get:
+          url: "/api/v1/surveys"
+          headers:
+            X-API-Key: "{{ apiKey }}"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - get:
+          url: "/api/v1/business-intelligence/competitive-analysis"
+          headers:
+            X-API-Key: "{{ apiKey }}"
+          query:
+            company_id: "{{ companyId }}"
+          expect:
+            - statusCode: 200
+      - think: 3
+      - get:
+          url: "/api/v1/business-intelligence/customer-segments"
+          headers:
+            X-API-Key: "{{ apiKey }}"
+          query:
+            company_id: "{{ companyId }}"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - get:
+          url: "/api/v1/business-intelligence/revenue-forecasts"
+          headers:
+            X-API-Key: "{{ apiKey }}"
+          query:
+            company_id: "{{ companyId }}"
+          expect:
+            - statusCode: 200

@@ -1,0 +1,188 @@
+  async getSurveyAnalytics(surveyId: number): Promise<any> {
+    // Get the survey from storage
+    const survey = this.surveys.get(surveyId);
+    if (!survey) {
+      throw new Error(`Survey with ID ${surveyId} not found`);
+    }
+    
+    // Get all responses for this survey
+    const responses = Array.from(this.surveyResponses.values())
+      .filter(response => response.surveyId === surveyId);
+    
+    // Calculate basic metrics
+    const totalResponses = responses.length;
+    const completedResponses = responses.filter(r => r.completed).length;
+    const completionRate = totalResponses > 0 ? (completedResponses / totalResponses) * 100 : 0;
+    
+    // Calculate average satisfaction score
+    const satisfactionScores = responses
+      .filter(r => r.satisfactionScore !== null && r.satisfactionScore !== undefined)
+      .map(r => r.satisfactionScore);
+    
+    const averageSatisfactionScore = satisfactionScores.length > 0 
+      ? satisfactionScores.reduce((sum, score) => sum + score, 0) / satisfactionScores.length
+      : 0;
+    
+    // Extract traits from responses and organize by category
+    const traitsByCategory: Record<string, Array<{name: string, score: number}>> = {};
+    
+    responses.forEach(response => {
+      const traits = response.traits;
+      if (traits && typeof traits === 'object') {
+        Object.entries(traits).forEach(([traitName, traitData]) => {
+          // Handle different trait data structures
+          let score: number;
+          let category: string;
+          
+          if (typeof traitData === 'number') {
+            score = traitData;
+            category = this.getTraitCategory(traitName);
+          } else if (typeof traitData === 'object' && traitData !== null) {
+            score = (traitData as any).score || 0;
+            category = (traitData as any).category || this.getTraitCategory(traitName);
+          } else {
+            return; // Skip invalid trait data
+          }
+          
+          if (!traitsByCategory[category]) {
+            traitsByCategory[category] = [];
+          }
+          
+          // Only add if not already present
+          const existingTrait = traitsByCategory[category].find(t => t.name === traitName);
+          if (!existingTrait) {
+            traitsByCategory[category].push({ name: traitName, score });
+          } else {
+            // Update score by averaging
+            existingTrait.score = (existingTrait.score + score) / 2;
+          }
+        });
+      }
+    });
+    
+    // Format top traits
+    const topTraits = Object.entries(traitsByCategory)
+      .flatMap(([category, traits]) => {
+        // Sort traits by score in descending order
+        return traits.sort((a, b) => b.score - a.score)
+          // Take top 2 from each category
+          .slice(0, 2)
+          // Add category to each trait
+          .map(trait => ({ ...trait, category }));
+      })
+      // Take top 7 overall
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 7);
+    
+    // Process demographics
+    const genderCounts: Record<string, number> = {};
+    const ageCounts: Record<string, number> = {};
+    const locationCounts: Record<string, number> = {};
+    
+    responses.forEach(response => {
+      const demographics = response.demographics;
+      if (demographics && typeof demographics === 'object') {
+        // Process gender
+        if (demographics.gender) {
+          genderCounts[demographics.gender] = (genderCounts[demographics.gender] || 0) + 1;
+        }
+        
+        // Process age
+        if (demographics.age) {
+          ageCounts[demographics.age] = (ageCounts[demographics.age] || 0) + 1;
+        }
+        
+        // Process location
+        if (demographics.location) {
+          locationCounts[demographics.location] = (locationCounts[demographics.location] || 0) + 1;
+        }
+      }
+    });
+    
+    // Convert counts to percentage arrays
+    const genderDistribution = Object.entries(genderCounts).map(([label, count]) => ({
+      label,
+      value: Math.round((count / totalResponses) * 100)
+    }));
+    
+    const ageDistribution = Object.entries(ageCounts).map(([label, count]) => ({
+      label, 
+      value: Math.round((count / totalResponses) * 100)
+    }));
+    
+    const locationDistribution = Object.entries(locationCounts).map(([label, count]) => ({
+      label,
+      value: Math.round((count / totalResponses) * 100)
+    }));
+    
+    // Group responses by weeks (last 4 weeks)
+    const fourWeeksAgo = new Date();
+    fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
+    
+    const responsesByWeek: Record<string, number> = {
+      'Week 1': 0,
+      'Week 2': 0,
+      'Week 3': 0,
+      'Week 4': 0
+    };
+    
+    responses.forEach(response => {
+      const responseDate = new Date(response.createdAt);
+      
+      if (responseDate >= fourWeeksAgo) {
+        const daysAgo = Math.floor((new Date().getTime() - responseDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (daysAgo < 7) {
+          responsesByWeek['Week 4']++;
+        } else if (daysAgo < 14) {
+          responsesByWeek['Week 3']++;
+        } else if (daysAgo < 21) {
+          responsesByWeek['Week 2']++;
+        } else {
+          responsesByWeek['Week 1']++;
+        }
+      }
+    });
+    
+    // Format responses by period
+    const responsesByPeriod = Object.entries(responsesByWeek).map(([period, count]) => ({
+      period,
+      count
+    }));
+    
+    // Calculate month-over-month growth
+    const currentDate = new Date();
+    const thisMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const previousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+    
+    const thisMonthResponses = responses.filter(r => new Date(r.createdAt) >= thisMonth).length;
+    const previousMonthResponses = responses.filter(r => {
+      const date = new Date(r.createdAt);
+      return date >= previousMonth && date < thisMonth;
+    }).length;
+    
+    const respondentGrowth = previousMonthResponses > 0
+      ? ((thisMonthResponses - previousMonthResponses) / previousMonthResponses) * 100
+      : 0;
+    
+    return {
+      surveyId: surveyId,
+      title: survey.title,
+      responseCount: totalResponses,
+      completionRate: Math.round(completionRate * 10) / 10, // Round to 1 decimal place
+      averageSatisfactionScore: Math.round(averageSatisfactionScore * 10) / 10,
+      topTraits,
+      demographics: {
+        genderDistribution,
+        ageDistribution,
+        locationDistribution
+      },
+      responsesByPeriod,
+      monthOverMonthGrowth: {
+        respondents: Math.round(respondentGrowth * 10) / 10,
+        completion: 0, // Placeholder for future calculation
+        satisfaction: 0 // Placeholder for future calculation
+      },
+      lastUpdated: new Date()
+    };
+  }

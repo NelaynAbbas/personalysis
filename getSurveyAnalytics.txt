@@ -1,0 +1,149 @@
+  async getSurveyAnalytics(surveyId: number): Promise<any> {
+    console.log(`Fetching analytics for survey ID: ${surveyId}`);
+    
+    // Calculate analytics based on survey responses
+    // In a real implementation, this would query the database for the specific survey
+    // For now, we're using all company responses as a sample
+    
+    const responses = Array.from(this.surveyResponses.values())
+      .filter(r => r.id === surveyId || surveyId === 0); // If surveyId is 0, include all responses
+    
+    if (responses.length === 0) {
+      // Return default data if no responses found
+      return {
+        surveyId,
+        title: "Personal Values Survey",
+        responseCount: 0,
+        completionRate: 0,
+        averageSatisfactionScore: 0,
+        topTraits: [],
+        demographics: {
+          genderDistribution: [],
+          ageDistribution: [],
+          locationDistribution: []
+        },
+        responsesByPeriod: [],
+        monthOverMonthGrowth: {
+          respondents: 0,
+          completion: 0,
+          satisfaction: 0
+        },
+        marketSegments: [],
+        lastUpdated: new Date()
+      };
+    }
+    
+    // Calculate completion rate
+    const totalResponses = responses.length;
+    const completedResponses = responses.filter(r => r.completed).length;
+    const completionRate = totalResponses > 0 ? (completedResponses / totalResponses) * 100 : 0;
+    
+    // Get trait distribution
+    const traitDistribution: Record<string, number[]> = {};
+    responses.forEach(response => {
+      if (Array.isArray(response.traits)) {
+        response.traits.forEach((trait: PersonalityTrait) => {
+          if (!traitDistribution[trait.name]) {
+            traitDistribution[trait.name] = [];
+          }
+          traitDistribution[trait.name].push(trait.score);
+        });
+      }
+    });
+    
+    // Calculate average trait scores and find top traits
+    const averageTraits = Object.entries(traitDistribution).map(([name, scores]) => ({
+      name,
+      score: Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length),
+      category: responses[0].traits?.find(t => t.name === name)?.category || 'general'
+    }));
+    
+    // Sort traits by score
+    const topTraits = [...averageTraits].sort((a, b) => b.score - a.score).slice(0, 7);
+    
+    // Process demographic data
+    const genderCounts: Record<string, number> = {};
+    const ageCounts: Record<string, number> = {};
+    const locationCounts: Record<string, number> = {};
+    const marketSegmentCounts: Record<string, number> = {};
+    
+    responses.forEach(response => {
+      // Process demographics if available
+      if (response.demographics) {
+        const demo = response.demographics;
+        
+        // Gender distribution
+        if (demo.gender) {
+          genderCounts[demo.gender] = (genderCounts[demo.gender] || 0) + 1;
+        }
+        
+        // Age distribution
+        if (demo.age) {
+          let ageGroup = '55+';
+          if (demo.age < 25) ageGroup = '18-24';
+          else if (demo.age < 35) ageGroup = '25-34';
+          else if (demo.age < 45) ageGroup = '35-44';
+          else if (demo.age < 55) ageGroup = '45-54';
+          
+          ageCounts[ageGroup] = (ageCounts[ageGroup] || 0) + 1;
+        }
+        
+        // Location distribution
+        if (demo.location) {
+          locationCounts[demo.location] = (locationCounts[demo.location] || 0) + 1;
+        }
+      }
+      
+      // Market segment distribution
+      if (response.marketSegment) {
+        marketSegmentCounts[response.marketSegment] = (marketSegmentCounts[response.marketSegment] || 0) + 1;
+      }
+    });
+    
+    // Convert counts to distribution arrays
+    const genderDistribution = Object.entries(genderCounts).map(([label, value]) => ({ label, value }));
+    const ageDistribution = Object.entries(ageCounts).map(([label, value]) => ({ label, value }));
+    const locationDistribution = Object.entries(locationCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([label, value]) => ({ label, value }));
+    
+    // Convert market segments to percentage-based distribution
+    const marketSegments = Object.entries(marketSegmentCounts).map(([segment, count]) => ({
+      segment,
+      percentage: Math.round((count / totalResponses) * 100)
+    })).sort((a, b) => b.percentage - a.percentage);
+    
+    // Simulate response growth by period (weeks)
+    const responsesByPeriod = [
+      { period: "Week 1", count: Math.floor(totalResponses * 0.2) },
+      { period: "Week 2", count: Math.floor(totalResponses * 0.3) },
+      { period: "Week 3", count: Math.floor(totalResponses * 0.4) },
+      { period: "Week 4", count: Math.floor(totalResponses * 0.1) }
+    ];
+    
+    // Simulate month-over-month growth
+    const monthOverMonthGrowth = {
+      respondents: 15.2,
+      completion: 2.5,
+      satisfaction: 1.8
+    };
+    
+    return {
+      surveyId,
+      title: "Personal Values Survey",
+      responseCount: totalResponses,
+      completionRate: parseFloat(completionRate.toFixed(1)),
+      averageSatisfactionScore: 8.4, // This would be calculated from actual satisfaction data in a real implementation
+      topTraits,
+      demographics: {
+        genderDistribution,
+        ageDistribution,
+        locationDistribution
+      },
+      responsesByPeriod,
+      monthOverMonthGrowth,
+      marketSegments,
+      lastUpdated: new Date()
+    };
+  }

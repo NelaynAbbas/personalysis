@@ -1,0 +1,33 @@
+Something went wrong
+Badge is not defined
+Try Again(Keyboard shortcut: Ctrl+R or Cmd+R)
+Attempt Recovery
+Return to Homepage(Keyboard shortcut: Alt+H)
+
+Error Details (Development Only)
+(Keyboard shortcut: Alt+D)
+Error:
+
+ReferenceError: Badge is not defined
+    at https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/pages/SurveyCollaboration.tsx:1150:190
+    at Array.map (<anonymous>)
+    at SurveyCollaboration (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/pages/SurveyCollaboration.tsx:1115:24)
+    at renderWithHooks (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=7254788f:11548:26)
+    at updateFunctionComponent (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=7254788f:14582:28)
+    at beginWork (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=7254788f:15924:22)
+    at beginWork$1 (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=7254788f:19753:22)
+    at performUnitOfWork (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=7254788f:19198:20)
+    at workLoopSync (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=7254788f:19137:13)
+    at renderRootSync (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=7254788f:19116:15)
+Component Stack:
+
+
+    at SurveyCollaboration (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/pages/SurveyCollaboration.tsx:54:27)
+    at Route (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=7254788f:323:16)
+    at Switch (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=7254788f:379:17)
+    at div
+    at AccessibilityProvider (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/hooks/use-accessibility.tsx:44:41)
+    at ToastProvider (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/hooks/use-toast.ts:10:33)
+    at ErrorBoundary (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/components/ErrorBoundary.tsx:25:5)
+    at QueryClientProvider (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=7254788f:2805:3)
+    at App

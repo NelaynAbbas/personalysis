@@ -1,0 +1,36 @@
+Something went wrong
+ArrowLeft is not defined
+Try Again(Keyboard shortcut: Ctrl+R or Cmd+R)
+Attempt Recovery
+Return to Homepage(Keyboard shortcut: Alt+H)
+
+Error Details (Development Only)
+(Keyboard shortcut: Alt+D)
+Error:
+
+ReferenceError: ArrowLeft is not defined
+    at QuestionCard (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/components/survey/QuestionCard.tsx:446:40)
+    at renderWithHooks (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c7f9c65:11548:26)
+    at mountIndeterminateComponent (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c7f9c65:14926:21)
+    at beginWork (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c7f9c65:15914:22)
+    at beginWork$1 (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c7f9c65:19753:22)
+    at performUnitOfWork (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c7f9c65:19198:20)
+    at workLoopSync (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c7f9c65:19137:13)
+    at renderRootSync (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c7f9c65:19116:15)
+    at recoverFromConcurrentError (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c7f9c65:18736:28)
+    at performConcurrentWorkOnRoot (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c7f9c65:18684:30)
+Component Stack:
+
+
+    at QuestionCard (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/components/survey/QuestionCard.tsx:49:3)
+    at div
+    at main
+    at SurveyPage (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/pages/SurveyPage.tsx:32:41)
+    at Route (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=1c7f9c65:323:16)
+    at Switch (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=1c7f9c65:379:17)
+    at div
+    at AccessibilityProvider (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/hooks/use-accessibility.tsx:44:41)
+    at ToastProvider (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/hooks/use-toast.ts:10:33)
+    at ErrorBoundary (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/components/ErrorBoundary.tsx:25:5)
+    at QueryClientProvider (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=1c7f9c65:2805:3)
+    at App

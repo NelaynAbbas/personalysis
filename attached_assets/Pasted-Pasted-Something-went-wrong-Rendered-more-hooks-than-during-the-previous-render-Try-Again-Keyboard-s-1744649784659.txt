@@ -1,0 +1,34 @@
+Pasted-Something-went-wrong-Rendered-more-hooks-than-during-the-previous-render-Try-Again-Keyboard-shortcu-1744649762975.txt
+Something went wrong
+Rendered more hooks than during the previous render.
+Try Again(Keyboard shortcut: Ctrl+R or Cmd+R)
+Attempt Recovery
+Return to Homepage(Keyboard shortcut: Alt+H)
+
+Error Details (Development Only)
+(Keyboard shortcut: Alt+D)
+Error:
+
+Error: Rendered more hooks than during the previous render.
+    at updateWorkInProgressHook (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c7f9c65:11678:21)
+    at updateEffectImpl (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c7f9c65:12074:22)
+    at updateEffect (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c7f9c65:12099:18)
+    at Object.useEffect (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c7f9c65:12703:22)
+    at useEffect (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-QCHXOAYK.js?v=1c7f9c65:1078:29)
+    at AdminConsole (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/pages/AdminConsole.tsx:101:3)
+    at renderWithHooks (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c7f9c65:11548:26)
+    at updateFunctionComponent (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c7f9c65:14582:28)
+    at beginWork (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c7f9c65:15924:22)
+    at beginWork$1 (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=1c7f9c65:19753:22)
+Component Stack:
+
+
+    at AdminConsole (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/pages/AdminConsole.tsx:43:35)
+    at Route (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=1c7f9c65:323:16)
+    at Switch (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=1c7f9c65:379:17)
+    at div
+    at AccessibilityProvider (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/hooks/use-accessibility.tsx:44:41)
+    at ToastProvider (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/hooks/use-toast.ts:10:33)
+    at ErrorBoundary (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/components/ErrorBoundary.tsx:25:5)
+    at QueryClientProvider (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=1c7f9c65:2805:3)
+    at App

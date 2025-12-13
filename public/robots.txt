@@ -1,0 +1,30 @@
+User-agent: *
+Allow: /
+Allow: /use-cases
+Allow: /how-it-works
+Allow: /dashboard
+Allow: /survey/*
+Allow: /collaboration
+
+# Disallow admin and sensitive areas
+Disallow: /admin
+Disallow: /api/
+Disallow: /private/
+Disallow: /*.json$
+Disallow: /*?*
+
+# Allow specific search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+# Crawl-delay for courtesy
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://personalysispro.com/sitemap.xml

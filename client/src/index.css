@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&display=swap');
+@import './styles/product-tour.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground min-h-screen overflow-x-hidden;
+  }
+
+:root {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+}
+
+input, textarea, select, button {
+    @apply text-base;
+    font-size: 16px; /* Prevents zoom on iOS */
+}
+  
+  .font-display {
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  .text-primary-dark {
+    color: hsl(220, 70%, 22%);
+  }
+  
+  .text-secondary {
+    color: hsl(215, 65%, 35%);
+  }
+  
+  .text-accent {
+    color: hsl(210, 60%, 45%);
+  }
+  
+  .bg-secondary {
+    background-color: hsl(215, 65%, 35%);
+  }
+  
+  .bg-accent {
+    background-color: hsl(210, 60%, 45%);
+  }
+  
+  .bg-primary-dark {
+    background-color: hsl(220, 70%, 22%);
+  }
+  
+  /* Documentation article styling */
+  .article-content h2 {
+    @apply text-2xl font-bold text-gray-900 mb-4 mt-6;
+  }
+  
+  .article-content h3 {
+    @apply text-xl font-semibold text-gray-800 mb-3 mt-5;
+  }
+  
+  .article-content p {
+    @apply text-gray-700 mb-4 leading-relaxed;
+  }
+  
+  .article-content ul, .article-content ol {
+    @apply mb-4 ml-6;
+  }
+  
+  .article-content ul {
+    @apply list-disc;
+  }
+  
+  .article-content ol {
+    @apply list-decimal;
+  }
+  
+  .article-content li {
+    @apply mb-2 text-gray-700;
+  }
+  
+  .article-content strong {
+    @apply font-semibold text-gray-900;
+  }
+  
+  .article-content table {
+    @apply w-full border-collapse mb-4;
+  }
+  
+  .article-content table th, .article-content table td {
+    @apply border border-gray-200 p-2 text-sm;
+  }
+  
+  .article-content table th {
+    @apply bg-gray-50 font-semibold text-gray-800;
+  }
+  
+  .article-content a {
+    @apply text-primary hover:underline;
+  }
+  
+  /* Progress bar styling */
+  .rounded-progress .absolute {
+    border-radius: 9999px;
+  }
+  
+  /* Animations for survey components */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  
+  @keyframes slideIn {
+    from { transform: translateX(-10px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  
+  /* Apply animations to survey components */
+  .option-card {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+}

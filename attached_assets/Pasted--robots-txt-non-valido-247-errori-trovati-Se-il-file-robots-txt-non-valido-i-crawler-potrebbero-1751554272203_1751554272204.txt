@@ -1,0 +1,747 @@
+
+robots.txt non è valido 247 errori trovati
+Se il file robots.txt non è valido, i crawler potrebbero non essere in grado di capire come vuoi che il tuo sito web venga sottoposto a scansione o indicizzato. Scopri di più sul file robots.txt.
+Line #
+Content
+Error
+1
+<!DOCTYPE html>
+Syntax not understood
+2
+<html lang="en">
+Syntax not understood
+3
+<head>
+Syntax not understood
+4
+<style data-vite-theme="" data-inject-first="">:root {
+Unknown directive
+5
+--background: 205 94% 97%;
+Unknown directive
+6
+--foreground: 221 100% 3%;
+Unknown directive
+7
+--muted: 205 91% 87%;
+Unknown directive
+8
+--muted-foreground: 221 100% 3%;
+Unknown directive
+9
+--popover: 205 94% 97%;
+Unknown directive
+10
+--popover-foreground: 221 100% 3%;
+Unknown directive
+11
+--card: 205 94% 97%;
+Unknown directive
+12
+--card-foreground: 221 100% 3%;
+Unknown directive
+13
+--border: 205 91% 87%;
+Unknown directive
+14
+--input: 205 91% 87%;
+Unknown directive
+15
+--primary: 198 100% 29%;
+Unknown directive
+16
+--primary-foreground: 205 51% 98%;
+Unknown directive
+17
+--secondary: 205 100% 92%;
+Unknown directive
+18
+--secondary-foreground: 221 100% 3%;
+Unknown directive
+19
+--accent: 205 100% 92%;
+Unknown directive
+20
+--accent-foreground: 221 100% 3%;
+Unknown directive
+21
+--destructive: 0 84.2% 60.2%;
+Unknown directive
+22
+--destructive-foreground: 60 9.1% 97.8%;
+Unknown directive
+23
+--ring: 198 100% 29%;
+Unknown directive
+24
+--radius: 0.5rem;
+Unknown directive
+25
+}
+Syntax not understood
+26
+.dark {
+Syntax not understood
+27
+--background: 205 38% 9%;
+Unknown directive
+28
+--foreground: 205 91% 87%;
+Unknown directive
+29
+--muted: 200 100% 14%;
+Unknown directive
+30
+--muted-foreground: 205 91% 87%;
+Unknown directive
+31
+--popover: 205 38% 9%;
+Unknown directive
+32
+--popover-foreground: 205 91% 87%;
+Unknown directive
+33
+--card: 205 38% 9%;
+Unknown directive
+34
+--card-foreground: 205 91% 87%;
+Unknown directive
+35
+--border: 200 100% 14%;
+Unknown directive
+36
+--input: 200 100% 14%;
+Unknown directive
+37
+--primary: 202 82% 57%;
+Unknown directive
+38
+--primary-foreground: 205 87% 99%;
+Unknown directive
+39
+--secondary: 200 100% 14%;
+Unknown directive
+40
+--secondary-foreground: 205 91% 87%;
+Unknown directive
+41
+--accent: 200 100% 14%;
+Unknown directive
+42
+--accent-foreground: 205 91% 87%;
+Unknown directive
+43
+--destructive: 0 62.8% 30.6%;
+Unknown directive
+44
+--destructive-foreground: 0 0% 98%;
+Unknown directive
+45
+--ring: 202 82% 57%;
+Unknown directive
+46
+--radius: 0.5rem;
+Unknown directive
+47
+}</style>
+Syntax not understood
+49
+<meta charset="UTF-8" />
+Syntax not understood
+50
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+Syntax not understood
+52
+<!-- Primary Meta Tags -->
+Syntax not understood
+53
+<title>PersonalysisPro | AI-Powered Business Intelligence & Personality Analytics Platform</title>
+Syntax not understood
+54
+<meta name="title" content="PersonalysisPro | AI-Powered Business Intelligence & Personality Analytics Platform">
+Syntax not understood
+55
+<meta name="description" content="Transform personality data into actionable business insights with PersonalysisPro. Enterprise-grade AI personality analytics, customer segmentation, competitive intelligence, and market research platform trusted by industry leaders.">
+Syntax not understood
+56
+<meta name="keywords" content="personality analytics, business intelligence, customer segmentation, market research, AI analytics, personality profiling, B2B SaaS, competitive intelligence, customer insights, personality assessment">
+Syntax not understood
+57
+<meta name="author" content="PersonalysisPro">
+Syntax not understood
+58
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+Unknown directive
+59
+<link rel="canonical" href="https://personalysispro.com/">
+Unknown directive
+61
+<!-- Open Graph / Facebook -->
+Syntax not understood
+62
+<meta property="og:type" content="website">
+Unknown directive
+63
+<meta property="og:url" content="https://personalysispro.com/">
+Unknown directive
+64
+<meta property="og:title" content="PersonalysisPro | AI-Powered Business Intelligence & Personality Analytics Platform">
+Unknown directive
+65
+<meta property="og:description" content="Transform personality data into actionable business insights with PersonalysisPro. Enterprise-grade AI personality analytics, customer segmentation, competitive intelligence, and market research platform trusted by industry leaders.">
+Unknown directive
+66
+<meta property="og:image" content="https://personalysispro.com/og-image.jpg">
+Unknown directive
+67
+<meta property="og:image:width" content="1200">
+Unknown directive
+68
+<meta property="og:image:height" content="630">
+Unknown directive
+69
+<meta property="og:image:alt" content="PersonalysisPro - AI-Powered Business Intelligence Platform Dashboard">
+Unknown directive
+70
+<meta property="og:site_name" content="PersonalysisPro">
+Unknown directive
+71
+<meta property="og:locale" content="en_US">
+Unknown directive
+73
+<!-- Twitter -->
+Syntax not understood
+74
+<meta property="twitter:card" content="summary_large_image">
+Unknown directive
+75
+<meta property="twitter:url" content="https://personalysispro.com/">
+Unknown directive
+76
+<meta property="twitter:title" content="PersonalysisPro | AI-Powered Business Intelligence & Personality Analytics Platform">
+Unknown directive
+77
+<meta property="twitter:description" content="Transform personality data into actionable business insights with PersonalysisPro. Enterprise-grade AI personality analytics, customer segmentation, competitive intelligence, and market research platform trusted by industry leaders.">
+Unknown directive
+78
+<meta property="twitter:image" content="https://personalysispro.com/og-image.jpg">
+Unknown directive
+79
+<meta property="twitter:image:alt" content="PersonalysisPro - AI-Powered Business Intelligence Platform Dashboard">
+Unknown directive
+80
+<meta name="twitter:creator" content="@PersonalysisPro">
+Unknown directive
+81
+<meta name="twitter:site" content="@PersonalysisPro">
+Unknown directive
+83
+<!-- Security and Performance -->
+Syntax not understood
+84
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+Syntax not understood
+85
+<meta name="referrer" content="origin-when-cross-origin">
+Syntax not understood
+86
+<meta name="theme-color" content="#1a73e8">
+Syntax not understood
+87
+<meta name="msapplication-TileColor" content="#1a73e8">
+Syntax not understood
+88
+<meta name="apple-mobile-web-app-capable" content="yes">
+Syntax not understood
+89
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+Syntax not understood
+90
+<meta name="apple-mobile-web-app-title" content="PersonalysisPro">
+Syntax not understood
+92
+<!-- DNS Prefetch for Performance -->
+Syntax not understood
+93
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+Syntax not understood
+94
+<link rel="dns-prefetch" href="//fonts.gstatic.com">
+Syntax not understood
+95
+<link rel="dns-prefetch" href="//api.personalysispro.com">
+Syntax not understood
+97
+<!-- Preconnect for Performance -->
+Syntax not understood
+98
+<link rel="preconnect" href="https://fonts.googleapis.com">
+Unknown directive
+99
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+Unknown directive
+101
+<!-- Fonts with display=swap for CLS optimization -->
+Syntax not understood
+102
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+Unknown directive
+103
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=swap" rel="stylesheet">
+Unknown directive
+105
+<!-- Favicons and App Icons -->
+Syntax not understood
+106
+<link rel="icon" href="/favicon.ico" sizes="any">
+Syntax not understood
+107
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+Syntax not understood
+108
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+Syntax not understood
+109
+<link rel="manifest" href="/manifest.json">
+Syntax not understood
+111
+<!-- Structured Data - Organization with Navigation -->
+Syntax not understood
+112
+<script type="application/ld+json">
+Syntax not understood
+113
+{
+Syntax not understood
+114
+"@context": "https://schema.org",
+Unknown directive
+115
+"@type": "Organization",
+Unknown directive
+116
+"name": "PersonalysisPro",
+Unknown directive
+117
+"alternateName": "PersonalysisPro AI",
+Unknown directive
+118
+"url": "https://personalysispro.com",
+Unknown directive
+119
+"logo": "https://personalysispro.com/logo.png",
+Unknown directive
+120
+"description": "Enterprise-grade AI-powered personality analytics and business intelligence platform that transforms personality data into actionable business insights for customer segmentation, competitive intelligence, and market research.",
+Unknown directive
+121
+"foundingDate": "2024",
+Unknown directive
+122
+"contactPoint": {
+Unknown directive
+123
+"@type": "ContactPoint",
+Unknown directive
+124
+"telephone": "+1-555-PERSONA",
+Unknown directive
+125
+"contactType": "Customer Service",
+Unknown directive
+126
+"availableLanguage": "English"
+Unknown directive
+127
+},
+Syntax not understood
+128
+"sameAs": [
+Unknown directive
+129
+"https://linkedin.com/company/personalysispro",
+Unknown directive
+130
+"https://twitter.com/personalysispro"
+Unknown directive
+131
+],
+Syntax not understood
+132
+"address": {
+Unknown directive
+133
+"@type": "PostalAddress",
+Unknown directive
+134
+"addressCountry": "US"
+Unknown directive
+135
+},
+Syntax not understood
+136
+"mainEntityOfPage": {
+Unknown directive
+137
+"@type": "WebPage",
+Unknown directive
+138
+"@id": "https://personalysispro.com/"
+Unknown directive
+139
+},
+Syntax not understood
+140
+"parentOrganization": {
+Unknown directive
+141
+"@type": "Organization",
+Unknown directive
+142
+"name": "PersonalysisPro Inc."
+Unknown directive
+143
+}
+Syntax not understood
+144
+}
+Syntax not understood
+145
+</script>
+Syntax not understood
+147
+<!-- Structured Data - WebSite with Sitelinks -->
+Syntax not understood
+148
+<script type="application/ld+json">
+Syntax not understood
+149
+{
+Syntax not understood
+150
+"@context": "https://schema.org",
+Unknown directive
+151
+"@type": "WebSite",
+Unknown directive
+152
+"name": "PersonalysisPro",
+Unknown directive
+153
+"alternateName": "PersonalysisPro AI Platform",
+Unknown directive
+154
+"url": "https://personalysispro.com",
+Unknown directive
+155
+"description": "Enterprise-grade AI-powered personality analytics and business intelligence platform for customer segmentation, competitive intelligence, and market research",
+Unknown directive
+156
+"potentialAction": {
+Unknown directive
+157
+"@type": "SearchAction",
+Unknown directive
+158
+"target": "https://personalysispro.com/search?q={search_term_string}",
+Unknown directive
+159
+"query-input": "required name=search_term_string"
+Unknown directive
+160
+},
+Syntax not understood
+161
+"mainEntity": {
+Unknown directive
+162
+"@type": "ItemList",
+Unknown directive
+163
+"itemListElement": [
+Unknown directive
+164
+{
+Syntax not understood
+165
+"@type": "SiteNavigationElement",
+Unknown directive
+166
+"position": 1,
+Unknown directive
+167
+"name": "Use Cases",
+Unknown directive
+168
+"description": "Industry-specific applications of AI personality analytics",
+Unknown directive
+169
+"url": "https://personalysispro.com/use-cases"
+Unknown directive
+170
+},
+Syntax not understood
+171
+{
+Syntax not understood
+172
+"@type": "SiteNavigationElement",
+Unknown directive
+173
+"position": 2,
+Unknown directive
+174
+"name": "How It Works",
+Unknown directive
+175
+"description": "Learn about our AI-powered personality analytics process",
+Unknown directive
+176
+"url": "https://personalysispro.com/how-it-works"
+Unknown directive
+177
+},
+Syntax not understood
+178
+{
+Syntax not understood
+179
+"@type": "SiteNavigationElement",
+Unknown directive
+180
+"position": 3,
+Unknown directive
+181
+"name": "Dashboard",
+Unknown directive
+182
+"description": "Access your business intelligence dashboard",
+Unknown directive
+183
+"url": "https://personalysispro.com/dashboard"
+Unknown directive
+184
+},
+Syntax not understood
+185
+{
+Syntax not understood
+186
+"@type": "SiteNavigationElement",
+Unknown directive
+187
+"position": 4,
+Unknown directive
+188
+"name": "Collaboration",
+Unknown directive
+189
+"description": "Real-time team collaboration features",
+Unknown directive
+190
+"url": "https://personalysispro.com/collaboration"
+Unknown directive
+191
+}
+Syntax not understood
+192
+]
+Syntax not understood
+193
+}
+Syntax not understood
+194
+}
+Syntax not understood
+195
+</script>
+Syntax not understood
+197
+<!-- Structured Data - SoftwareApplication -->
+Syntax not understood
+198
+<script type="application/ld+json">
+Syntax not understood
+199
+{
+Syntax not understood
+200
+"@context": "https://schema.org",
+Unknown directive
+201
+"@type": "SoftwareApplication",
+Unknown directive
+202
+"name": "PersonalysisPro",
+Unknown directive
+203
+"applicationCategory": "BusinessApplication",
+Unknown directive
+204
+"operatingSystem": "Web",
+Unknown directive
+205
+"description": "AI-powered personality analytics platform for customer segmentation, market research, and competitive intelligence",
+Unknown directive
+206
+"url": "https://personalysispro.com",
+Unknown directive
+207
+"offers": {
+Unknown directive
+208
+"@type": "Offer",
+Unknown directive
+209
+"price": "0",
+Unknown directive
+210
+"priceCurrency": "USD",
+Unknown directive
+211
+"description": "Free trial available"
+Unknown directive
+212
+},
+Syntax not understood
+213
+"aggregateRating": {
+Unknown directive
+214
+"@type": "AggregateRating",
+Unknown directive
+215
+"ratingValue": "4.8",
+Unknown directive
+216
+"reviewCount": "127"
+Unknown directive
+217
+}
+Syntax not understood
+218
+}
+Syntax not understood
+219
+</script>
+Syntax not understood
+221
+<!-- Structured Data - BreadcrumbList for Navigation -->
+Syntax not understood
+222
+<script type="application/ld+json">
+Syntax not understood
+223
+{
+Syntax not understood
+224
+"@context": "https://schema.org",
+Unknown directive
+225
+"@type": "BreadcrumbList",
+Unknown directive
+226
+"itemListElement": [
+Unknown directive
+227
+{
+Syntax not understood
+228
+"@type": "ListItem",
+Unknown directive
+229
+"position": 1,
+Unknown directive
+230
+"name": "Home",
+Unknown directive
+231
+"item": "https://personalysispro.com/"
+Unknown directive
+232
+},
+Syntax not understood
+233
+{
+Syntax not understood
+234
+"@type": "ListItem",
+Unknown directive
+235
+"position": 2,
+Unknown directive
+236
+"name": "Use Cases",
+Unknown directive
+237
+"item": "https://personalysispro.com/use-cases"
+Unknown directive
+238
+},
+Syntax not understood
+239
+{
+Syntax not understood
+240
+"@type": "ListItem",
+Unknown directive
+241
+"position": 3,
+Unknown directive
+242
+"name": "How It Works",
+Unknown directive
+243
+"item": "https://personalysispro.com/how-it-works"
+Unknown directive
+244
+},
+Syntax not understood
+245
+{
+Syntax not understood
+246
+"@type": "ListItem",
+Unknown directive
+247
+"position": 4,
+Unknown directive
+248
+"name": "Dashboard",
+Unknown directive
+249
+"item": "https://personalysispro.com/dashboard"
+Unknown directive
+250
+}
+Syntax not understood
+251
+]
+Syntax not understood
+252
+}
+Syntax not understood
+253
+</script>
+Syntax not understood
+254
+<script type="module" crossorigin src="/assets/index-C1Y6XH4L.js"></script>
+Syntax not understood
+255
+<link rel="stylesheet" crossorigin href="/assets/index-D9ZIEwoO.css">
+Syntax not understood
+256
+</head>
+Syntax not understood
+257
+<body>
+Syntax not understood
+258
+<div id="root"></div>
+Syntax not understood
+259
+</body>
+Syntax not understood
+260
+</html>
+Syntax not understood

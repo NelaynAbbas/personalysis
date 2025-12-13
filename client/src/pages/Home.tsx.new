@@ -1,0 +1,212 @@
+import { useLocation } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import { toast } from "@/hooks/use-toast";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription, 
+  DialogFooter 
+} from "@/components/ui/dialog";
+
+const Home = () => {
+  const [, setLocation] = useLocation();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [company, setCompany] = useState("");
+  const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  
+  const handleStartSurvey = () => {
+    setLocation('/survey');
+  };
+  
+  const handleDemoRequest = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setName("");
+      setEmail("");
+      setCompany("");
+      setMessage("");
+      
+      toast({
+        title: "Demo Request Received",
+        description: "Thank you for your interest! Our team will contact you shortly.",
+      });
+    }, 1000);
+  };
+  
+  const handleBusinessLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+    
+    // Simulate login process
+    setTimeout(() => {
+      setIsLoggingIn(false);
+      
+      if (username === "demo" && password === "demo123") {
+        setShowLoginDialog(false);
+        setUsername("");
+        setPassword("");
+        
+        // Redirect to the dashboard
+        setLocation('/dashboard');
+        
+        toast({
+          title: "Login Successful",
+          description: "Welcome to your business dashboard.",
+        });
+      } else {
+        toast({
+          title: "Login Failed",
+          description: "Invalid credentials. Try demo/demo123 for the demo account.",
+          variant: "destructive"
+        });
+      }
+    }, 1000);
+  };
+  
+  return (
+    <div>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center max-w-3xl mx-auto">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-gray-900 mb-6">
+            Unlock the Power of <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Personality</span> Insights
+          </h1>
+          <p className="text-xl text-gray-600 mb-10">
+            Our gamified personality assessment helps businesses understand customer behavior, 
+            decision-making patterns, and preferences through a quick 10-question survey.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
+            <Button
+              size="lg"
+              onClick={handleStartSurvey}
+              className="bg-primary hover:bg-primary-dark text-white rounded-md px-8 py-4 text-lg"
+            >
+              Take the Assessment
+              <i className="material-icons ml-2">psychology</i>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => setShowLoginDialog(true)}
+              className="border-primary text-primary hover:bg-primary/10 rounded-md px-8 py-4 text-lg"
+            >
+              Business Login
+              <i className="material-icons ml-2">business</i>
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left mb-20">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4">
+                <i className="material-icons text-primary">insights</i>
+              </div>
+              <h3 className="text-xl font-display font-bold mb-2">Deep Personality Insights</h3>
+              <p className="text-gray-600">
+                Analyze over 35 personality traits, decision styles, and behavioral patterns.
+              </p>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex items-center justify-center w-12 h-12 bg-secondary/10 rounded-full mb-4">
+                <i className="material-icons text-secondary">integration_instructions</i>
+              </div>
+              <h3 className="text-xl font-display font-bold mb-2">Seamless CRM Integration</h3>
+              <p className="text-gray-600">
+                Export data directly to your existing CRM systems for personalized marketing.
+              </p>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex items-center justify-center w-12 h-12 bg-accent/10 rounded-full mb-4">
+                <i className="material-icons text-accent">dashboard</i>
+              </div>
+              <h3 className="text-xl font-display font-bold mb-2">Interactive Dashboard</h3>
+              <p className="text-gray-600">
+                Monitor results, track trends, and extract actionable business intelligence.
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Business Login</DialogTitle>
+            <DialogDescription>
+              Sign in to access your business dashboard
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleBusinessLogin} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="username" className="text-sm font-medium">
+                Username
+              </label>
+              <Input
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter your username"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium">
+                Password
+              </label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+            
+            <DialogFooter className="mt-6">
+              <Button
+                type="submit"
+                className="w-full bg-primary hover:bg-primary-dark text-white"
+                disabled={isLoggingIn}
+              >
+                {isLoggingIn ? (
+                  <>
+                    <i className="material-icons animate-spin mr-2">refresh</i>
+                    Signing in...
+                  </>
+                ) : (
+                  "Sign In"
+                )}
+              </Button>
+            </DialogFooter>
+            
+            <div className="text-center text-sm text-muted-foreground mt-4">
+              <p>Demo credentials:</p>
+              <p>Username: <strong>demo</strong> / Password: <strong>demo123</strong></p>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default Home;

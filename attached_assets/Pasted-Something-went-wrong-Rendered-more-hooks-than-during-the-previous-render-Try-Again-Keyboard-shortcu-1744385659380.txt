@@ -1,0 +1,32 @@
+Something went wrong
+Rendered more hooks than during the previous render.
+Try Again(Keyboard shortcut: Ctrl+R or Cmd+R)
+Attempt Recovery
+Return to Homepage(Keyboard shortcut: Alt+H)
+
+Error Details (Development Only)
+(Keyboard shortcut: Alt+D)
+Error:
+
+Error: Rendered more hooks than during the previous render.
+    at updateWorkInProgressHook (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=029ad404:11678:21)
+    at updateEffectImpl (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=029ad404:12074:22)
+    at updateEffect (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=029ad404:12099:18)
+    at Object.useEffect (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=029ad404:12703:22)
+    at useEffect (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-3TFVT2CW.js?v=029ad404:1078:29)
+    at ResultsPage (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/pages/ResultsPage.tsx?t=1744385308779:137:3)
+    at renderWithHooks (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=029ad404:11548:26)
+    at updateFunctionComponent (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=029ad404:14582:28)
+    at beginWork (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=029ad404:15924:22)
+    at beginWork$1 (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=029ad404:19753:22)
+Component Stack:
+
+
+    at ResultsPage (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/pages/ResultsPage.tsx?t=1744385308779:29:47)
+    at Route (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=029ad404:323:16)
+    at Switch (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=029ad404:379:17)
+    at div
+    at AccessibilityProvider (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/hooks/use-accessibility.tsx:44:41)
+    at ErrorBoundary (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/src/components/ErrorBoundary.tsx:25:5)
+    at QueryClientProvider (https://80a8d680-ec68-42b4-8ad3-b557ea0a51b5-00-5urcoh3p6qvs.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=029ad404:2805:3)
+    at App
