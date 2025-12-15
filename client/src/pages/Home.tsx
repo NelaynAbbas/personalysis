@@ -16,6 +16,7 @@ import type { IconType } from "react-icons";
 import HeroImage from "../components/HeroImage";
 import PersonalityTraitsChart from "../components/PersonalityTraitsChart";
 import { apiRequest } from "../lib/queryClient";
+import { useTranslation } from "react-i18next";
 
 // Client Logos Component with Static Layout
 const ClientLogosCarousel = () => {
@@ -63,6 +64,7 @@ const gamifiedSurvey = "/img/illustrations/gamified-survey.svg";
 const complianceSeals = "/img/illustrations/compliance-seals.png";
 
 const Home = () => {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showDemoDialog, setShowDemoDialog] = useState(false);
@@ -158,8 +160,8 @@ const Home = () => {
 
       // Show success message
       toast({
-        title: "Demo Request Received",
-        description: "Thank you! We'll contact you shortly to schedule your personalized demo.",
+        title: t('pages.login.demoRequestReceived'),
+        description: t('pages.login.demoRequestDescription'),
       });
 
       // Reset form
@@ -178,8 +180,8 @@ const Home = () => {
     } catch (error) {
       console.error("Error submitting demo request:", error);
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to submit demo request. Please try again.",
+        title: t('common.error'),
+        description: error instanceof Error ? error.message : t('errors.somethingWentWrong'),
         variant: "destructive"
       });
     } finally {
@@ -240,32 +242,32 @@ const Home = () => {
             <div className="text-left">
               <div className="inline-flex items-center px-4 py-2 bg-primary/10 rounded-full text-sm font-medium text-primary mb-6" aria-label="Product category">
                 <Sparkles className="w-4 h-4 mr-2" aria-hidden="true" />
-                AI-Powered Business Intelligence Platform
+                {t('pages.home.hero.badge')}
               </div>
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-                Transform Personality Data into <br/>
+                {t('pages.home.hero.title')} <br/>
                 <span className="bg-gradient-to-r from-primary to-indigo-500 bg-clip-text text-transparent">
-                  Actionable Business Intelligence
+                  {t('pages.home.hero.titleHighlight')}
                 </span>
               </h1>
               <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                Reveal deep customer insights with AI-driven personality analytics to fuel strategic, measurable growth.
+                {t('pages.home.hero.subtitle')}
               </p>
               <nav className="flex flex-col sm:flex-row gap-4" role="navigation" aria-label="Primary actions">
                 <Button size="lg" className="rounded-full shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-indigo-500 hover:from-primary/90 hover:to-indigo-600 transition-all duration-200" onClick={() => setShowDemoDialog(true)} aria-describedby="demo-button-description">
                   <Calendar className="w-5 h-5 mr-2" aria-hidden="true" />
-                  Book a Demo
+                  {t('pages.home.hero.bookDemo')}
                 </Button>
                 <Link href="/how-it-works" aria-describedby="how-it-works-link-description">
                   <Button size="lg" variant="outline" className="rounded-full border-2">
                     <Info className="w-5 h-5 mr-2" aria-hidden="true" />
-                    How It Works
+                    {t('pages.home.hero.howItWorks')}
                   </Button>
                 </Link>
               </nav>
               <div className="sr-only">
-                <span id="demo-button-description">Schedule a personalized demo to see PersonalysisPro's AI-powered personality analytics in action</span>
-                <span id="how-it-works-link-description">Learn about our comprehensive personality profiling and business intelligence process</span>
+                <span id="demo-button-description">{t('pages.home.hero.demoDescription')}</span>
+                <span id="how-it-works-link-description">{t('pages.home.hero.howItWorksDescription')}</span>
               </div>
             </div>
             <div className="relative">
@@ -282,11 +284,11 @@ const Home = () => {
           <div className="text-center mb-16">
             <div className="inline-flex items-center px-4 py-2 bg-primary/10 rounded-full text-sm font-medium text-primary mb-4" role="note">
               <Sparkles className="w-4 h-4 mr-2" aria-hidden="true" />
-              Predict Consumer Behavior with AI
+              {t('pages.home.features.badge')}
             </div>
-            <h2 id="features-heading" className="text-4xl font-bold mb-6">Advanced Personality Analytics</h2>
+            <h2 id="features-heading" className="text-4xl font-bold mb-6">{t('pages.home.features.title')}</h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              A powerful AI platform that blends psychology, analytics, and machine learning to unlock customer understanding, competitive positioning, and strategic market insights.
+              {t('pages.home.features.subtitle')}
             </p>
           </div>
 
@@ -296,13 +298,12 @@ const Home = () => {
                 <div className="rounded-full w-14 h-14 flex items-center justify-center bg-primary/10 mb-6 group-hover:bg-primary/20 transition-colors duration-300">
                   <BrainCircuit className="h-7 w-7 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-4 group-hover:text-primary transition-colors duration-300">Gamified Micro-Experiences</h3>
-                <p className="text-gray-600 mb-6">Interactive surveys designed to drive engagement and collect rich psychographic data effortlessly.
-</p>
+                <h3 className="text-xl font-semibold mb-4 group-hover:text-primary transition-colors duration-300">{t('pages.home.features.gamified.title')}</h3>
+                <p className="text-gray-600 mb-6">{t('pages.home.features.gamified.description')}</p>
                 <div className="mt-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <Link href="/how-it-works#ai-analysis">
                     <Button variant="ghost" className="p-0 h-auto text-primary font-medium flex items-center">
-                      Learn more <ArrowRight className="ml-2 h-4 w-4" />
+                      {t('pages.home.features.gamified.learnMore')} <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
                 </div>
@@ -314,13 +315,12 @@ const Home = () => {
                 <div className="rounded-full w-14 h-14 flex items-center justify-center bg-primary/10 mb-6 group-hover:bg-primary/20 transition-colors duration-300">
                   <FileKey className="h-7 w-7 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-4 group-hover:text-primary transition-colors duration-300">Identify Psychographic Profiles</h3>
-                <p className="text-gray-600 mb-6">Advanced algorithms uncover actionable insights from customer behavior, going beyond traditional A/B testing to optimize decision-making.
-</p>
+                <h3 className="text-xl font-semibold mb-4 group-hover:text-primary transition-colors duration-300">{t('pages.home.features.psychographic.title')}</h3>
+                <p className="text-gray-600 mb-6">{t('pages.home.features.psychographic.description')}</p>
                 <div className="mt-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <Link href="/how-it-works#integrations">
                     <Button variant="ghost" className="p-0 h-auto text-primary font-medium flex items-center">
-                      Learn more <ArrowRight className="ml-2 h-4 w-4" />
+                      {t('pages.home.features.gamified.learnMore')} <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
                 </div>
@@ -332,12 +332,12 @@ const Home = () => {
                 <div className="rounded-full w-14 h-14 flex items-center justify-center bg-primary/10 mb-6 group-hover:bg-primary/20 transition-colors duration-300">
                   <Lock className="h-7 w-7 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-4 group-hover:text-primary transition-colors duration-300">Hyper-Personalized CTAs</h3>
-                <p className="text-gray-600 mb-6">Dynamic call-to-action generation designed to deliver tailored offers, recommendations, and messages that maximize engagement.</p>
+                <h3 className="text-xl font-semibold mb-4 group-hover:text-primary transition-colors duration-300">{t('pages.home.features.ctas.title')}</h3>
+                <p className="text-gray-600 mb-6">{t('pages.home.features.ctas.description')}</p>
                 <div className="mt-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <Link href="/how-it-works#security">
                     <Button variant="ghost" className="p-0 h-auto text-primary font-medium flex items-center">
-                      Learn more <ArrowRight className="ml-2 h-4 w-4" />
+                      {t('pages.home.features.gamified.learnMore')} <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
                 </div>
@@ -349,29 +349,29 @@ const Home = () => {
             <div className="order-2 md:order-1">
               <div className="inline-flex items-center px-4 py-2 bg-primary/10 rounded-full text-sm font-medium text-primary mb-4">
                 <BarChart className="w-4 h-4 mr-2" />
-                Business Intelligence
+                {t('pages.home.features.businessIntelligence.badge')}
               </div>
-              <h3 className="text-3xl font-bold mb-6">Turn Insights Into Strategic Advantage</h3>
+              <h3 className="text-3xl font-bold mb-6">{t('pages.home.features.businessIntelligence.title')}</h3>
               <p className="text-lg text-gray-600 mb-6">
-                Gain strategic clarity through a Business Intelligence Suite that decode behavior patterns and transform psychographic data into decision-ready business insights.
+                {t('pages.home.features.businessIntelligence.subtitle')}
               </p>
               <ul className="space-y-4 mb-8">
                 <li className="flex items-start">
                   <CheckCircle className="text-primary mr-3 h-6 w-6 mt-0.5 flex-shrink-0" />
-                  <span>Dashboards highlight campaign performance and audience engagement</span>
+                  <span>{t('pages.home.features.businessIntelligence.feature1')}</span>
                 </li>
                 <li className="flex items-start">
                   <CheckCircle className="text-primary mr-3 h-6 w-6 mt-0.5 flex-shrink-0" />
-                  <span>Traits, behaviors and recommended products charts uncover drivers of decision-making and loyalty</span>
+                  <span>{t('pages.home.features.businessIntelligence.feature2')}</span>
                 </li>
                 <li className="flex items-start">
                   <CheckCircle className="text-primary mr-3 h-6 w-6 mt-0.5 flex-shrink-0" />
-                  <span>Compare against industry benchmarks, market fit, features priorities and much more</span>
+                  <span>{t('pages.home.features.businessIntelligence.feature3')}</span>
                 </li>
               </ul>
               <Link href="/how-it-works#visual-analytics">
                 <Button className="rounded-full">
-                  Explore more
+                  {t('pages.home.features.businessIntelligence.exploreMore')}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
@@ -395,11 +395,11 @@ const Home = () => {
           <div className="text-center mb-16">
             <div className="inline-flex items-center px-4 py-2 bg-primary/10 rounded-full text-sm font-medium text-primary mb-4">
               <Users className="w-4 h-4 mr-2" />
-              Tailored for any Industry
+              {t('pages.home.industries.badge')}
             </div>
-            <h2 className="text-4xl font-bold mb-6">Industry-Specific Solutions</h2>
+            <h2 className="text-4xl font-bold mb-6">{t('pages.home.industries.title')}</h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              From market validation to hyper-personalized engagement, PersonalysisPro adapts to any industry’s needs to drive performance.
+              {t('pages.home.industries.subtitle')}
             </p>
           </div>
 
@@ -412,24 +412,24 @@ const Home = () => {
                     <i className="material-icons text-xl">account_balance</i>
                   </div>
                 </div>
-                <h3 className="text-2xl font-semibold mb-4 group-hover:text-primary transition-colors duration-300">Finance & Insurance</h3>
-                <p className="text-gray-600 mb-6">Move beyond past data with predictive psychographic insights that let you design products, content, and acquisition strategies aligned with deeper consumer traits.</p>
+                <h3 className="text-2xl font-semibold mb-4 group-hover:text-primary transition-colors duration-300">{t('pages.home.industries.finance.title')}</h3>
+                <p className="text-gray-600 mb-6">{t('pages.home.industries.finance.description')}</p>
                 <ul className="space-y-4 mb-6">
                   <li className="flex items-start">
                     <CheckCircle className="text-green-500 mr-3 h-5 w-5 mt-0.5 flex-shrink-0" />
-                    <span>Hyper-personalized campaigns based on personality clusters</span>
+                    <span>{t('pages.home.industries.finance.benefit1')}</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="text-green-500 mr-3 h-5 w-5 mt-0.5 flex-shrink-0" />
-                    <span>Identify communication styles that improve conversion</span>
+                    <span>{t('pages.home.industries.finance.benefit2')}</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="text-green-500 mr-3 h-5 w-5 mt-0.5 flex-shrink-0" />
-                    <span>Refine product targeting with risk and trust indicators</span>
+                    <span>{t('pages.home.industries.finance.benefit3')}</span>
                   </li>
                 </ul>
                 <Button variant="ghost" className="p-0 h-auto text-primary font-medium flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  Learn more <ArrowRight className="ml-2 h-4 w-4" />
+                  {t('pages.home.features.gamified.learnMore')} <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -442,24 +442,24 @@ const Home = () => {
                     <i className="material-icons text-xl">health_and_safety</i>
                   </div>
                 </div>
-                <h3 className="text-2xl font-semibold mb-4 group-hover:text-purple-600 transition-colors duration-300">Market Research & Insight Providers</h3>
-                <p className="text-gray-600 mb-6">Add new layer of behavioral intelligence for every project and transform traditional surveys into immersive, data-rich psychographic experiences.</p>
+                <h3 className="text-2xl font-semibold mb-4 group-hover:text-purple-600 transition-colors duration-300">{t('pages.home.industries.marketResearch.title')}</h3>
+                <p className="text-gray-600 mb-6">{t('pages.home.industries.marketResearch.description')}</p>
                 <ul className="space-y-4 mb-6">
                   <li className="flex items-start">
                     <CheckCircle className="text-green-500 mr-3 h-5 w-5 mt-0.5 flex-shrink-0" />
-                    <span>Reveal emotional motivators behind consumer choices</span>
+                    <span>{t('pages.home.industries.marketResearch.benefit1')}</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="text-green-500 mr-3 h-5 w-5 mt-0.5 flex-shrink-0" />
-                    <span>Deliver premium insights to win higher-value clients</span>
+                    <span>{t('pages.home.industries.marketResearch.benefit2')}</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="text-green-500 mr-3 h-5 w-5 mt-0.5 flex-shrink-0" />
-                    <span>Automated underwriting based on AI personality data</span>
+                    <span>{t('pages.home.industries.marketResearch.benefit3')}</span>
                   </li>
                 </ul>
                 <Button variant="ghost" className="p-0 h-auto text-purple-600 font-medium flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  Learn more <ArrowRight className="ml-2 h-4 w-4" />
+                  {t('pages.home.features.gamified.learnMore')} <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -472,24 +472,24 @@ const Home = () => {
                     <i className="material-icons text-xl">shopping_cart</i>
                   </div>
                 </div>
-                <h3 className="text-2xl font-semibold mb-4 group-hover:text-green-600 transition-colors duration-300">Marketing Agencie & E-commerce</h3>
-                <p className="text-gray-600 mb-6">Transform your marketing strategy with deep personality-based insights that predict consumer behavior and preferences.</p>
+                <h3 className="text-2xl font-semibold mb-4 group-hover:text-green-600 transition-colors duration-300">{t('pages.home.industries.marketing.title')}</h3>
+                <p className="text-gray-600 mb-6">{t('pages.home.industries.marketing.description')}</p>
                 <ul className="space-y-4 mb-6">
                   <li className="flex items-start">
                     <CheckCircle className="text-green-500 mr-3 h-5 w-5 mt-0.5 flex-shrink-0" />
-                    <span>Hyper-personalized campaigns with predictive segmentation</span>
+                    <span>{t('pages.home.industries.marketing.benefit1')}</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="text-green-500 mr-3 h-5 w-5 mt-0.5 flex-shrink-0" />
-                    <span>Increased conversion rates with psychometric targeting</span>
+                    <span>{t('pages.home.industries.marketing.benefit2')}</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="text-green-500 mr-3 h-5 w-5 mt-0.5 flex-shrink-0" />
-                    <span>Enhanced product recommendations with personality matching</span>
+                    <span>{t('pages.home.industries.marketing.benefit3')}</span>
                   </li>
                 </ul>
                 <Button variant="ghost" className="p-0 h-auto text-green-600 font-medium flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  Learn more <ArrowRight className="ml-2 h-4 w-4" />
+                  {t('pages.home.features.gamified.learnMore')} <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -502,24 +502,24 @@ const Home = () => {
                     <i className="material-icons text-xl">trending_up</i>
                   </div>
                 </div>
-                <h3 className="text-2xl font-semibold mb-4 group-hover:text-amber-600 transition-colors duration-300">Venture Capital & Business Builders</h3>
-                <p className="text-gray-600 mb-6">Gain a competitive edge in investment decisions with market fit insights so you can shape, pivot, or scale ventures based on cognitive resonance with your audience.</p>
+                <h3 className="text-2xl font-semibold mb-4 group-hover:text-amber-600 transition-colors duration-300">{t('pages.home.industries.venture.title')}</h3>
+                <p className="text-gray-600 mb-6">{t('pages.home.industries.venture.description')}</p>
                 <ul className="space-y-4 mb-6">
                   <li className="flex items-start">
                     <CheckCircle className="text-green-500 mr-3 h-5 w-5 mt-0.5 flex-shrink-0" />
-                    <span>Define feature priorities based on the market gap</span>
+                    <span>{t('pages.home.industries.venture.benefit1')}</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="text-green-500 mr-3 h-5 w-5 mt-0.5 flex-shrink-0" />
-                    <span>Focus group simulation with just a prompt</span>
+                    <span>{t('pages.home.industries.venture.benefit2')}</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="text-green-500 mr-3 h-5 w-5 mt-0.5 flex-shrink-0" />
-                    <span>Define makret, pricing strategies and revenue forecast </span>
+                    <span>{t('pages.home.industries.venture.benefit3')}</span>
                   </li>
                 </ul>
                 <Button variant="ghost" className="p-0 h-auto text-amber-600 font-medium flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  Learn more <ArrowRight className="ml-2 h-4 w-4" />
+                  {t('pages.home.features.gamified.learnMore')} <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -530,39 +530,39 @@ const Home = () => {
       {/* Benefits Section */}
       <section className="bg-gray-50 py-12 md:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-12">Why Choose PersonalysisPro?</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">{t('pages.home.benefits.title')}</h2>
           <div className="grid md:grid-cols-2 gap-12">
             <div>
-              <h3 className="text-2xl font-semibold mb-4">Drive Business Growth</h3>
+              <h3 className="text-2xl font-semibold mb-4">{t('pages.home.benefits.growth.title')}</h3>
               <ul className="space-y-4">
                 <li className="flex items-start">
                   <i className="material-icons text-primary mr-2">check_circle</i>
-                  <span>Increase customer retention by up to 40%</span>
+                  <span>{t('pages.home.benefits.growth.benefit1')}</span>
                 </li>
                 <li className="flex items-start">
                   <i className="material-icons text-primary mr-2">check_circle</i>
-                  <span>Optimize marketing campaigns with personality-based targeting</span>
+                  <span>{t('pages.home.benefits.growth.benefit2')}</span>
                 </li>
                 <li className="flex items-start">
                   <i className="material-icons text-primary mr-2">check_circle</i>
-                  <span>Reduce customer acquisition costs</span>
+                  <span>{t('pages.home.benefits.growth.benefit3')}</span>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="text-2xl font-semibold mb-4">Actionable Insights</h3>
+              <h3 className="text-2xl font-semibold mb-4">{t('pages.home.benefits.insights.title')}</h3>
               <ul className="space-y-4">
                 <li className="flex items-start">
                   <i className="material-icons text-primary mr-2">check_circle</i>
-                  <span>Launch engaging personality surveys in minutes. No dev team required.</span>
+                  <span>{t('pages.home.benefits.insights.benefit1')}</span>
                 </li>
                 <li className="flex items-start">
                   <i className="material-icons text-primary mr-2">check_circle</i>
-                  <span>Predictive analysis for customer preferences</span>
+                  <span>{t('pages.home.benefits.insights.benefit2')}</span>
                 </li>
                 <li className="flex items-start">
                   <i className="material-icons text-primary mr-2">check_circle</i>
-                  <span>Auto-generate hyper-personalized CTAs based on profile traits</span>
+                  <span>{t('pages.home.benefits.insights.benefit3')}</span>
                 </li>
               </ul>
             </div>
@@ -573,10 +573,10 @@ const Home = () => {
       {/* Client Logos Section */}
       <section className="py-10 md:py-14 w-full bg-gray-50" aria-labelledby="clients-heading">
         <div className="w-full text-center">
-          <h2 id="clients-heading" className="text-2xl md:text-3xl font-bold mb-4">Trusted by Industry Leaders</h2>
-          <p className="text-gray-600 mb-8">Join innovative companies and gain an edge over competitors</p>
+          <h2 id="clients-heading" className="text-2xl md:text-3xl font-bold mb-4">{t('pages.home.clients.title')}</h2>
+          <p className="text-gray-600 mb-8">{t('pages.home.clients.subtitle')}</p>
 
-          <div className="w-full max-w-[100vw] overflow-hidden" role="img" aria-label="Logo carousel of companies using PersonalysisPro">
+          <div className="w-full max-w-[100vw] overflow-hidden" role="img" aria-label={t('pages.home.clients.ariaLabel')}>
             <ClientLogosCarousel />
           </div>
           
@@ -587,17 +587,17 @@ const Home = () => {
       {/* CTA Section */}
       <section className="bg-primary text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-6">Ready to Transform Your Business?</h2>
+          <h2 className="text-3xl font-bold mb-6">{t('pages.home.cta.title')}</h2>
           <p className="text-xl mb-8 opacity-90">
-            Discover how PersonalysisPro can help your business understand customers at a deeper level and make more informed strategic decisions.
+            {t('pages.home.cta.subtitle')}
           </p>
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             variant="secondary"
             onClick={() => setShowDemoDialog(true)}
             className="bg-white text-primary hover:bg-gray-100"
           >
-            Schedule a Demo
+            {t('pages.home.cta.scheduleDemo')}
           </Button>
         </div>
       </section>
@@ -608,14 +608,14 @@ const Home = () => {
       <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Business Login</DialogTitle>
+            <DialogTitle>{t('pages.home.loginDialog.title')}</DialogTitle>
             <DialogDescription>
-              Sign in to access your dashboard
+              {t('pages.home.loginDialog.description')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <Button onClick={() => setLocation("/login")} className="w-full">
-              Continue to Login
+              {t('pages.home.loginDialog.continueToLogin')}
             </Button>
           </div>
         </DialogContent>
@@ -625,135 +625,135 @@ const Home = () => {
       <Dialog open={showDemoDialog} onOpenChange={setShowDemoDialog}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle className="text-2xl">Request a Demo</DialogTitle>
+            <DialogTitle className="text-2xl">{t('pages.home.demoDialog.title')}</DialogTitle>
             <DialogDescription>
-              Fill the form to request a dedicated demo for PersonalysisPro.
+              {t('pages.home.demoDialog.description')}
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleDemoRequest} className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName">Name *</Label>
+                <Label htmlFor="firstName">{t('pages.home.demoDialog.name')} *</Label>
                 <Input
                   id="firstName"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="Your first name"
+                  placeholder={t('pages.home.demoDialog.namePlaceholder')}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="lastName">Surname *</Label>
+                <Label htmlFor="lastName">{t('pages.home.demoDialog.surname')} *</Label>
                 <Input
                   id="lastName"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Your last name"
+                  placeholder={t('pages.home.demoDialog.surnamePlaceholder')}
                   required
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email address *</Label>
+              <Label htmlFor="email">{t('pages.home.demoDialog.email')} *</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="your.email@company.com"
+                placeholder={t('pages.home.demoDialog.emailPlaceholder')}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone *</Label>
+              <Label htmlFor="phone">{t('pages.home.demoDialog.phone')} *</Label>
               <Input
                 id="phone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="+1 (555) 000-0000"
+                placeholder={t('pages.home.demoDialog.phonePlaceholder')}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="role">Role *</Label>
+              <Label htmlFor="role">{t('pages.home.demoDialog.role')} *</Label>
               <Select value={role} onValueChange={setRole} required>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select your role" />
+                  <SelectValue placeholder={t('pages.home.demoDialog.selectRole')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ceo">CEO / Founder</SelectItem>
-                  <SelectItem value="cto">CTO / Technical Director</SelectItem>
-                  <SelectItem value="cmo">CMO / Marketing Director</SelectItem>
-                  <SelectItem value="product">Product Manager</SelectItem>
-                  <SelectItem value="sales">Sales Manager</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="ceo">{t('pages.home.demoDialog.ceo')}</SelectItem>
+                  <SelectItem value="cto">{t('pages.home.demoDialog.cto')}</SelectItem>
+                  <SelectItem value="cmo">{t('pages.home.demoDialog.cmo')}</SelectItem>
+                  <SelectItem value="product">{t('pages.home.demoDialog.product')}</SelectItem>
+                  <SelectItem value="sales">{t('pages.home.demoDialog.sales')}</SelectItem>
+                  <SelectItem value="other">{t('pages.home.demoDialog.other')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="company">Company *</Label>
+              <Label htmlFor="company">{t('pages.home.demoDialog.company')} *</Label>
               <Input
                 id="company"
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
-                placeholder="Your company name"
+                placeholder={t('pages.home.demoDialog.companyPlaceholder')}
                 required
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="industry">Industry *</Label>
+                <Label htmlFor="industry">{t('pages.home.demoDialog.industry')} *</Label>
                 <Select value={industry} onValueChange={setIndustry} required>
                   <SelectTrigger id="industry">
-                    <SelectValue placeholder="Select industry" />
+                    <SelectValue placeholder={t('pages.home.demoDialog.selectIndustry')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Technology">Technology</SelectItem>
-                    <SelectItem value="Marketing">Marketing & Advertising</SelectItem>
-                    <SelectItem value="Retail">Retail & E-commerce</SelectItem>
-                    <SelectItem value="Financial">Financial Services</SelectItem>
-                    <SelectItem value="Healthcare">Healthcare</SelectItem>
-                    <SelectItem value="Education">Education</SelectItem>
-                    <SelectItem value="Manufacturing">Manufacturing</SelectItem>
-                    <SelectItem value="Consulting">Consulting</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
+                    <SelectItem value="Technology">{t('pages.home.demoDialog.technology')}</SelectItem>
+                    <SelectItem value="Marketing">{t('pages.home.demoDialog.marketing')}</SelectItem>
+                    <SelectItem value="Retail">{t('pages.home.demoDialog.retail')}</SelectItem>
+                    <SelectItem value="Financial">{t('pages.home.demoDialog.financial')}</SelectItem>
+                    <SelectItem value="Healthcare">{t('pages.home.demoDialog.healthcare')}</SelectItem>
+                    <SelectItem value="Education">{t('pages.home.demoDialog.education')}</SelectItem>
+                    <SelectItem value="Manufacturing">{t('pages.home.demoDialog.manufacturing')}</SelectItem>
+                    <SelectItem value="Consulting">{t('pages.home.demoDialog.consulting')}</SelectItem>
+                    <SelectItem value="Other">{t('pages.home.demoDialog.other')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="companySize">Company Size *</Label>
+                <Label htmlFor="companySize">{t('pages.home.demoDialog.companySize')} *</Label>
                 <Select value={companySize} onValueChange={setCompanySize} required>
                   <SelectTrigger id="companySize">
-                    <SelectValue placeholder="Select size" />
+                    <SelectValue placeholder={t('pages.home.demoDialog.selectSize')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1-10">1-10 employees</SelectItem>
-                    <SelectItem value="11-50">11-50 employees</SelectItem>
-                    <SelectItem value="51-200">51-200 employees</SelectItem>
-                    <SelectItem value="201-500">201-500 employees</SelectItem>
-                    <SelectItem value="501-1000">501-1000 employees</SelectItem>
-                    <SelectItem value="1000+">1000+ employees</SelectItem>
+                    <SelectItem value="1-10">{t('pages.home.demoDialog.size1to10')}</SelectItem>
+                    <SelectItem value="11-50">{t('pages.home.demoDialog.size11to50')}</SelectItem>
+                    <SelectItem value="51-200">{t('pages.home.demoDialog.size51to200')}</SelectItem>
+                    <SelectItem value="201-500">{t('pages.home.demoDialog.size201to500')}</SelectItem>
+                    <SelectItem value="501-1000">{t('pages.home.demoDialog.size501to1000')}</SelectItem>
+                    <SelectItem value="1000+">{t('pages.home.demoDialog.size1000plus')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="message">Message (Optional)</Label>
+              <Label htmlFor="message">{t('pages.home.demoDialog.message')}</Label>
               <Textarea
                 id="message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Tell us about your specific needs or questions..."
+                placeholder={t('pages.home.demoDialog.messagePlaceholder')}
                 className="resize-none"
                 rows={4}
               />
@@ -761,7 +761,7 @@ const Home = () => {
 
             <DialogFooter className="mt-6">
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Submitting..." : "Book Your Demo"}
+                {isSubmitting ? t('pages.home.demoDialog.submitting') : t('pages.home.demoDialog.bookDemo')}
               </Button>
             </DialogFooter>
           </form>

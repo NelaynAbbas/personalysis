@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import CollaborationWidget from "@/components/survey/CollaborationWidget";
+import { useTranslation } from "react-i18next";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -125,6 +126,7 @@ function mapApiTemplateToSurveyTemplate(apiTemplate: any): SurveyTemplate {
 }
 
 export default function SurveyCreate() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -352,8 +354,8 @@ export default function SurveyCreate() {
   const handleSaveQuestions = () => {
     if (questions.length < 1) {
       toast({
-        title: "At least one question required",
-        description: "Please add at least one question before saving.",
+        title: t('pages.surveyCreate.questions.atLeastOneRequired'),
+        description: t('pages.surveyCreate.questions.addQuestionBeforeSaving'),
         variant: "destructive"
       });
       return;
@@ -363,8 +365,8 @@ export default function SurveyCreate() {
     setQuestionsSaved(true);
     setIsEditingQuestions(false);
     toast({
-      title: "Questions saved",
-      description: "Your questions have been saved. You can now continue to metadata.",
+      title: t('pages.surveyCreate.questions.questionsSaved'),
+      description: t('pages.surveyCreate.questions.questionsDescription'),
     });
   };
 
@@ -373,8 +375,8 @@ export default function SurveyCreate() {
     setQuestions(JSON.parse(JSON.stringify(savedQuestions))); // Deep copy
     setIsEditingQuestions(false);
     toast({
-      title: "Changes cancelled",
-      description: "Your changes have been reverted to the last saved state.",
+      title: t('pages.surveyCreate.questions.changesCancelled'),
+      description: t('pages.surveyCreate.questions.changesReverted'),
     });
   };
 
@@ -386,28 +388,28 @@ export default function SurveyCreate() {
   const handleCreateSurvey = async () => {
     if (!surveyName.trim()) {
       toast({
-        title: "Survey name required",
-        description: "Please enter a name for your survey.",
+        title: t('pages.surveyCreate.validation.surveyNameRequired'),
+        description: t('pages.surveyCreate.validation.surveyNameRequiredDescription'),
         variant: "destructive"
       });
       return;
     }
     if (questions.length < 1 || !questionsSaved) {
       toast({ 
-        title: questions.length < 1 ? "Add at least one question" : "Save questions first", 
-        description: questions.length < 1 ? "Please add a question before continuing." : "Please save your questions before creating the survey.", 
+        title: questions.length < 1 ? t('pages.surveyCreate.validation.addAtLeastOneQuestion') : t('pages.surveyCreate.validation.saveQuestionsFirst'), 
+        description: questions.length < 1 ? t('pages.surveyCreate.validation.addQuestionDescription') : t('pages.surveyCreate.validation.saveQuestionsDescription'), 
         variant: "destructive" 
       });
       setActiveTab("questions");
       return;
     }
     if (!expiryDate) {
-      toast({ title: "Expiry date required", description: "Please select an expiry date.", variant: "destructive" });
+      toast({ title: t('pages.surveyCreate.validation.expiryDateRequired'), description: t('pages.surveyCreate.validation.expiryDateRequiredDescription'), variant: "destructive" });
       setActiveTab("settings");
       return;
     }
     if (!Number.isFinite(responseLimit) || responseLimit <= 0) {
-      toast({ title: "Response limit required", description: "Enter a positive number.", variant: "destructive" });
+      toast({ title: t('pages.surveyCreate.validation.responseLimitRequired'), description: t('pages.surveyCreate.validation.responseLimitDescription'), variant: "destructive" });
       setActiveTab("settings");
       return;
     }
@@ -483,8 +485,8 @@ export default function SurveyCreate() {
       const responseData = await response.json();
 
       toast({
-        title: "Survey created successfully!",
-        description: "Your new survey is ready to be shared.",
+        title: t('pages.surveyCreate.toast.surveyCreated'),
+        description: t('pages.surveyCreate.toast.surveyCreatedDescription'),
       });
 
       // Invalidate the surveys query cache so dashboard shows the new survey
@@ -496,8 +498,8 @@ export default function SurveyCreate() {
       
     } catch (error) {
       toast({
-        title: "Failed to create survey",
-        description: "There was a problem creating your survey. Please try again.",
+        title: t('pages.surveyCreate.toast.createFailed'),
+        description: t('pages.surveyCreate.toast.createFailedDescription'),
         variant: "destructive"
       });
       console.error(error);
@@ -510,17 +512,17 @@ export default function SurveyCreate() {
     <div className="container mx-auto py-12 px-4 max-w-6xl">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center">
-          <Button 
-            variant="ghost" 
-            className="mr-4" 
+          <Button
+            variant="ghost"
+            className="mr-4"
             onClick={() => setLocation('/dashboard')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
+            {t('pages.surveyCreate.backToDashboard')}
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Create New Survey</h1>
-            <p className="text-muted-foreground">Design your survey, select question sets, and customize survey experiences</p>
+            <h1 className="text-3xl font-bold">{t('pages.surveyCreate.title')}</h1>
+            <p className="text-muted-foreground">{t('pages.surveyCreate.subtitle')}</p>
           </div>
         </div>
         
@@ -537,27 +539,27 @@ export default function SurveyCreate() {
         <TabsList className="grid grid-cols-6 max-w-5xl mb-8">
           <TabsTrigger value="templates">
             <Layers className="h-4 w-4 mr-2" />
-            Survey Templates
+            {t('pages.surveyCreate.tabs.templates')}
           </TabsTrigger>
           <TabsTrigger value="questions">
             <LayoutGrid className="h-4 w-4 mr-2" />
-            Questions
+            {t('pages.surveyCreate.tabs.questions')}
           </TabsTrigger>
           <TabsTrigger value="metadata">
             <FileText className="h-4 w-4 mr-2" />
-            Survey Metadata
+            {t('pages.surveyCreate.tabs.metadata')}
           </TabsTrigger>
           <TabsTrigger value="business-context">
             <Briefcase className="h-4 w-4 mr-2" />
-            Business Context
+            {t('pages.surveyCreate.tabs.businessContext')}
           </TabsTrigger>
           <TabsTrigger value="settings">
             <FileText className="h-4 w-4 mr-2" />
-            Survey Settings
+            {t('pages.surveyCreate.tabs.settings')}
           </TabsTrigger>
           <TabsTrigger value="final">
             <Eye className="h-4 w-4 mr-2" />
-            Final Preview
+            {t('pages.surveyCreate.tabs.finalPreview')}
           </TabsTrigger>
         </TabsList>
         
@@ -567,13 +569,13 @@ export default function SurveyCreate() {
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4"></div>
-                <p className="text-muted-foreground">Loading templates...</p>
+                <p className="text-muted-foreground">{t('pages.surveyCreate.templates.loading')}</p>
               </div>
             </div>
           ) : templatesError ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
-                <p className="text-destructive">Failed to load templates</p>
+                <p className="text-destructive">{t('pages.surveyCreate.templates.failed')}</p>
                 <p className="text-sm text-muted-foreground mt-2">
                   {(templatesError as Error).message || 'Unknown error occurred'}
                 </p>
@@ -582,23 +584,23 @@ export default function SurveyCreate() {
           ) : surveyTemplates.length === 0 ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
-                <p className="text-muted-foreground">No templates available</p>
+                <p className="text-muted-foreground">{t('pages.surveyCreate.templates.noTemplates')}</p>
               </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Start from scratch */}
-              <Card 
-                key="scratch" 
+              <Card
+                key="scratch"
                 className={`relative overflow-hidden ${selectedTemplate === "scratch" ? 'border-primary ring-2 ring-primary/20' : ''}`}
               >
                 <CardHeader className="pb-3">
-                  <CardTitle>Start from scratch</CardTitle>
-                  <CardDescription>Create a new survey by adding your own questions.</CardDescription>
+                  <CardTitle>{t('pages.surveyCreate.templates.startFromScratch')}</CardTitle>
+                  <CardDescription>{t('pages.surveyCreate.templates.startFromScratchDescription')}</CardDescription>
                 </CardHeader>
                 <CardFooter className="gap-2">
                   <Button variant={selectedTemplate === "scratch" ? "default" : "outline"} className="w-full" onClick={() => setSelectedTemplate("scratch")}>
-                    {selectedTemplate === "scratch" ? "Selected" : "Use this"}
+                    {selectedTemplate === "scratch" ? t('pages.surveyCreate.templates.selected') : t('pages.surveyCreate.templates.useThis')}
                   </Button>
                 </CardFooter>
               </Card>
@@ -609,37 +611,37 @@ export default function SurveyCreate() {
               >
                 {template.recommended && (
                   <div className="absolute top-0 right-0">
-                    <Badge className="m-2 bg-primary">Recommended</Badge>
+                    <Badge className="m-2 bg-primary">{t('pages.surveyCreate.templates.recommended')}</Badge>
                   </div>
                 )}
-                
+
                 <CardHeader className="pb-3">
                   <CardTitle>{template.title}</CardTitle>
                   <CardDescription className="line-clamp-2">
                     {template.description}
                   </CardDescription>
                 </CardHeader>
-                
+
                 <CardContent>
                   <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
                     <div className="flex items-center">
                       <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
-                      <span>{template.estimatedTime} min</span>
+                      <span>{template.estimatedTime} {t('pages.surveyCreate.templates.minutes')}</span>
                     </div>
                     <div className="flex items-center">
                       <MessageSquare className="h-4 w-4 mr-2 text-muted-foreground" />
-                      <span>{template.questionCount} questions</span>
+                      <span>{template.questionCount} {t('pages.surveyCreate.templates.questionsCount')}</span>
                     </div>
                   </div>
-                  
+
                   {template.traits.length > 0 && (
                     <div className="mb-4">
-                      <p className="text-xs text-muted-foreground mb-2">Measures traits:</p>
+                      <p className="text-xs text-muted-foreground mb-2">{t('pages.surveyCreate.templates.measuresTraits')}</p>
                       <div className="flex flex-wrap gap-1">
                         {template.traits.map((trait, i) => (
-                          <Badge 
-                            key={i} 
-                            variant="outline" 
+                          <Badge
+                            key={i}
+                            variant="outline"
                             className="text-xs"
                           >
                             {trait}
@@ -649,16 +651,16 @@ export default function SurveyCreate() {
                     </div>
                   )}
                 </CardContent>
-                
+
                 <CardFooter className="flex gap-2">
-                  <Button 
-                    variant={selectedTemplate === template.id ? "default" : "outline"} 
+                  <Button
+                    variant={selectedTemplate === template.id ? "default" : "outline"}
                     className="flex-1"
                     onClick={() => setSelectedTemplate(template.id)}
                   >
-                    {selectedTemplate === template.id ? "Selected" : "Select"}
+                    {selectedTemplate === template.id ? t('pages.surveyCreate.templates.selected') : t('pages.surveyCreate.templates.select')}
                   </Button>
-                  <Button variant="outline" className="flex-1" onClick={() => setLocation(`/templates/${template.id}/view`)}>View</Button>
+                  <Button variant="outline" className="flex-1" onClick={() => setLocation(`/templates/${template.id}/view`)}>{t('pages.surveyCreate.templates.view')}</Button>
                 </CardFooter>
               </Card>
               ))}
@@ -671,18 +673,18 @@ export default function SurveyCreate() {
         <TabsContent value="questions">
           <Card>
             <CardHeader>
-              <CardTitle>Questions</CardTitle>
-              <CardDescription>Edit questions or add new ones. At least one question is required.</CardDescription>
+              <CardTitle>{t('pages.surveyCreate.questions.title')}</CardTitle>
+              <CardDescription>{t('pages.surveyCreate.questions.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Tabs value={questionSubTab} onValueChange={setQuestionSubTab} className="w-full">
                 <TabsList className="grid grid-cols-2 max-w-sm">
-                  <TabsTrigger value="customize">Customize</TabsTrigger>
-                  <TabsTrigger value="preview">Preview</TabsTrigger>
+                  <TabsTrigger value="customize">{t('pages.surveyCreate.questions.customize')}</TabsTrigger>
+                  <TabsTrigger value="preview">{t('pages.surveyCreate.questions.preview')}</TabsTrigger>
                 </TabsList>
                 <TabsContent value="customize" className="space-y-4 pt-4">
                   {questionsLoading ? (
-                    <div className="text-sm text-muted-foreground">Loading questions…</div>
+                    <div className="text-sm text-muted-foreground">{t('pages.surveyCreate.questions.loading')}</div>
                   ) : (
                     <div className="space-y-4">
                       {(isEditingQuestions ? questions : savedQuestions)
@@ -693,9 +695,9 @@ export default function SurveyCreate() {
                             <div className="flex items-center gap-2 font-medium w-full">
                               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm">{idx + 1}</span>
                               {isEditingQuestions ? (
-                                <Input className="w-full" value={q.question} placeholder="Question text" onChange={(e) => updateQuestion(q.id, { question: e.target.value })} />
+                                <Input className="w-full" value={q.question} placeholder={t('pages.surveyCreate.questions.questionText')} onChange={(e) => updateQuestion(q.id, { question: e.target.value })} />
                               ) : (
-                                <div className="w-full p-2 text-sm border rounded bg-muted/50">{q.question || "Untitled question"}</div>
+                                <div className="w-full p-2 text-sm border rounded bg-muted/50">{q.question || t('pages.surveyCreate.questions.untitled')}</div>
                               )}
                             </div>
                             {isEditingQuestions && (
@@ -717,7 +719,7 @@ export default function SurveyCreate() {
                           <>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                             <div>
-                              <Label>Question Type</Label>
+                              <Label>{t('pages.surveyCreate.questions.questionType')}</Label>
                               {isEditingQuestions ? (
                                 <Select value={q.questionType} onValueChange={(v) => updateQuestion(q.id, { questionType: v })}>
                                   <SelectTrigger>
@@ -742,28 +744,28 @@ export default function SurveyCreate() {
                               {isEditingQuestions ? (
                                 <>
                                   <input type="checkbox" checked={q.required} onChange={(e) => updateQuestion(q.id, { required: e.target.checked })} />
-                                  <Label>Required Question</Label>
+                                  <Label>{t('pages.surveyCreate.questions.requiredQuestion')}</Label>
                                 </>
                               ) : (
-                                <div className="text-sm text-muted-foreground">{q.required ? "Required" : "Optional"}</div>
+                                <div className="text-sm text-muted-foreground">{q.required ? t('pages.surveyCreate.questions.required') : t('pages.surveyCreate.questions.optional')}</div>
                               )}
                             </div>
                           </div>
 
                           {/* Help text */}
                           <div className="mb-3">
-                            <Label>Help Text (Optional)</Label>
+                            <Label>{t('pages.surveyCreate.questions.helpText')}</Label>
                             {isEditingQuestions ? (
-                              <Textarea value={q.helpText || ""} onChange={(e) => updateQuestion(q.id, { helpText: e.target.value })} placeholder="Enter additional instructions for this question" />
+                              <Textarea value={q.helpText || ""} onChange={(e) => updateQuestion(q.id, { helpText: e.target.value })} placeholder={t('pages.surveyCreate.questions.helpTextPlaceholder')} />
                             ) : (
-                              <div className="p-2 text-sm border rounded bg-muted/50 min-h-[60px]">{q.helpText || "No help text"}</div>
+                              <div className="p-2 text-sm border rounded bg-muted/50 min-h-[60px]">{q.helpText || t('pages.surveyCreate.questions.noHelpText')}</div>
                             )}
                           </div>
 
                           {/* Options per type */}
                           {q.questionType === 'multiple-choice' && (
                             <div className="space-y-2">
-                              <Label>Answer Options</Label>
+                              <Label>{t('pages.surveyCreate.questions.answerOptions')}</Label>
                               {(q.options || []).map((opt, i) => (
                                 <div key={opt.id || i} className="flex gap-2 items-center">
                                   {isEditingQuestions ? (
@@ -777,7 +779,7 @@ export default function SurveyCreate() {
                                         const copy = [...(q.options || [])];
                                         copy.splice(i, 1);
                                         updateQuestion(q.id, { options: copy });
-                                      }}>Remove</Button>
+                                      }}>{t('pages.surveyCreate.questions.remove')}</Button>
                                     </>
                                   ) : (
                                     <div className="p-2 text-sm border rounded bg-muted/50 w-full">{opt.text || `Option ${i + 1}`}</div>
@@ -785,14 +787,14 @@ export default function SurveyCreate() {
                                 </div>
                               ))}
                               {isEditingQuestions && (
-                                <Button variant="outline" onClick={() => updateQuestion(q.id, { options: [...(q.options || []), { id: `opt_${Date.now()}`, text: '' }] })}>Add Option</Button>
+                                <Button variant="outline" onClick={() => updateQuestion(q.id, { options: [...(q.options || []), { id: `opt_${Date.now()}`, text: '' }] })}>{t('pages.surveyCreate.questions.addOption')}</Button>
                               )}
                             </div>
                           )}
 
                           {q.questionType === 'ranking' && (
                             <div className="space-y-2">
-                              <Label>Ranking Items</Label>
+                              <Label>{t('pages.surveyCreate.questions.rankingItems')}</Label>
                               {(q.options || []).map((opt, i) => (
                                 <div key={opt.id || i} className="flex gap-2 items-center">
                                   {isEditingQuestions ? (
@@ -806,7 +808,7 @@ export default function SurveyCreate() {
                                         const copy = [...(q.options || [])];
                                         copy.splice(i, 1);
                                         updateQuestion(q.id, { options: copy });
-                                      }}>Remove</Button>
+                                      }}>{t('pages.surveyCreate.questions.remove')}</Button>
                                     </>
                                   ) : (
                                     <div className="p-2 text-sm border rounded bg-muted/50 w-full">{opt.text || `Item ${i + 1}`}</div>
@@ -814,7 +816,7 @@ export default function SurveyCreate() {
                                 </div>
                               ))}
                               {isEditingQuestions && (
-                                <Button variant="outline" onClick={() => updateQuestion(q.id, { options: [...(q.options || []), { id: `opt_${Date.now()}`, text: '' }] })}>Add Item</Button>
+                                <Button variant="outline" onClick={() => updateQuestion(q.id, { options: [...(q.options || []), { id: `opt_${Date.now()}`, text: '' }] })}>{t('pages.surveyCreate.questions.addItem')}</Button>
                               )}
                             </div>
                           )}
@@ -822,7 +824,7 @@ export default function SurveyCreate() {
                           {q.questionType === 'slider' && (
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <Label>Min Label</Label>
+                                <Label>{t('pages.surveyCreate.questions.minLabel')}</Label>
                                 {isEditingQuestions ? (
                                   <Input value={q.sliderConfig?.minLabel ?? ''} onChange={(e) => updateQuestion(q.id, { sliderConfig: { ...(q.sliderConfig || {}), minLabel: e.target.value } })} />
                                 ) : (
@@ -830,7 +832,7 @@ export default function SurveyCreate() {
                                 )}
                               </div>
                               <div>
-                                <Label>Max Label</Label>
+                                <Label>{t('pages.surveyCreate.questions.maxLabel')}</Label>
                                 {isEditingQuestions ? (
                                   <Input value={q.sliderConfig?.maxLabel ?? ''} onChange={(e) => updateQuestion(q.id, { sliderConfig: { ...(q.sliderConfig || {}), maxLabel: e.target.value } })} />
                                 ) : (
@@ -842,14 +844,14 @@ export default function SurveyCreate() {
 
                           {q.questionType === 'scenario' && (
                             <div className="space-y-2">
-                              <Label>Scenario Text</Label>
+                              <Label>{t('pages.surveyCreate.questions.scenarioText')}</Label>
                               {isEditingQuestions ? (
                                 <Textarea value={q.scenarioText || ''} onChange={(e) => updateQuestion(q.id, { scenarioText: e.target.value })} />
                               ) : (
                                 <div className="p-2 text-sm border rounded bg-muted/50 min-h-[60px]">{q.scenarioText || 'No scenario text'}</div>
                               )}
                               <div className="space-y-2">
-                                <Label>Options</Label>
+                                <Label>{t('pages.surveyCreate.questions.options')}</Label>
                                 {(q.options || []).map((opt, i) => (
                                   <div key={opt.id || i} className="flex gap-2 items-center">
                                     {isEditingQuestions ? (
@@ -863,7 +865,7 @@ export default function SurveyCreate() {
                                           const copy = [...(q.options || [])];
                                           copy.splice(i, 1);
                                           updateQuestion(q.id, { options: copy });
-                                        }}>Remove</Button>
+                                        }}>{t('pages.surveyCreate.questions.remove')}</Button>
                                       </>
                                     ) : (
                                       <div className="p-2 text-sm border rounded bg-muted/50 w-full">{opt.text || `Option ${i + 1}`}</div>
@@ -889,13 +891,13 @@ export default function SurveyCreate() {
                                         copy[i] = { ...(copy[i] || {}), id: opt.id || `opt_${Date.now()}`, text: e.target.value } as any;
                                         updateQuestion(q.id, { options: copy });
                                       }} />
-                                      <Input className="overflow-hidden text-ellipsis whitespace-nowrap" value={opt.image || ''} placeholder="Image URL (optional)" onChange={(e) => {
+                                      <Input className="overflow-hidden text-ellipsis whitespace-nowrap" value={opt.image || ''} placeholder={t('pages.surveyCreate.questions.imageUrl')} onChange={(e) => {
                                         const copy = [...(q.options || [])];
                                         copy[i] = { ...(copy[i] || {}), id: opt.id || `opt_${Date.now()}`, image: e.target.value } as any;
                                         updateQuestion(q.id, { options: copy });
                                       }} />
                                       <div className="md:col-span-2">
-                                        <Input value={opt.description || ''} placeholder="Description (optional)" onChange={(e) => {
+                                        <Input value={opt.description || ''} placeholder={t('pages.surveyCreate.questions.descriptionOptional')} onChange={(e) => {
                                           const copy = [...(q.options || [])];
                                           copy[i] = { ...(copy[i] || {}), id: opt.id || `opt_${Date.now()}`, description: e.target.value } as any;
                                           updateQuestion(q.id, { options: copy });
@@ -906,7 +908,7 @@ export default function SurveyCreate() {
                                           const copy = [...(q.options || [])];
                                           copy.splice(i, 1);
                                           updateQuestion(q.id, { options: copy });
-                                        }}>Remove</Button>
+                                        }}>{t('pages.surveyCreate.questions.remove')}</Button>
                                       </div>
                                     </>
                                   ) : (
@@ -928,14 +930,14 @@ export default function SurveyCreate() {
                         </Card>
                       ))}
                       {questions.length === 0 && (
-                        <div className="text-sm text-muted-foreground">No questions yet. Click Add Question.</div>
+                        <div className="text-sm text-muted-foreground">{t('pages.surveyCreate.questions.noQuestions')}</div>
                       )}
                     </div>
                   )}
                 </TabsContent>
                 <TabsContent value="preview" className="space-y-6 pt-4">
                   {(isEditingQuestions ? questions : savedQuestions).length === 0 ? (
-                    <div className="text-sm text-muted-foreground">No questions to preview.</div>
+                    <div className="text-sm text-muted-foreground">{t('pages.surveyCreate.questions.noQuestionsPreview')}</div>
                   ) : (
                     (isEditingQuestions ? questions : savedQuestions).map((q, idx) => (
                       <div key={q.id} className="space-y-3">
@@ -1051,27 +1053,27 @@ export default function SurveyCreate() {
             <div className="border-t p-4 flex justify-between items-center">
               <div className="flex items-center gap-3">
                 {isEditingQuestions && (
-                  <Button onClick={addQuestion}>Add Question</Button>
+                  <Button onClick={addQuestion}>{t('pages.surveyCreate.questions.addQuestion')}</Button>
                 )}
               </div>
               <div className="flex items-center gap-2">
                 {!questionsSaved ? (
                   <Button onClick={handleSaveQuestions} disabled={questions.length < 1}>
-                    Save Questions
+                    {t('pages.surveyCreate.questions.saveQuestions')}
                   </Button>
                 ) : (
                   <>
                     {!isEditingQuestions ? (
                       <Button onClick={handleEditQuestions}>
-                        Edit Questions
+                        {t('pages.surveyCreate.questions.editQuestions')}
                       </Button>
                     ) : (
                       <>
                         <Button variant="outline" onClick={handleCancelQuestions}>
-                          Cancel
+                          {t('common.cancel')}
                         </Button>
                         <Button onClick={handleSaveQuestions} disabled={questions.length < 1}>
-                          Save
+                          {t('common.save')}
                         </Button>
                       </>
                     )}
@@ -1086,9 +1088,9 @@ export default function SurveyCreate() {
         <TabsContent value="business-context">
           <Card>
             <CardHeader>
-              <CardTitle>Define Survey Context</CardTitle>
+              <CardTitle>{t('pages.surveyCreate.businessContext.title')}</CardTitle>
               <CardDescription>
-                Provide details about the product, target market, and business challenges to personalize the survey
+                {t('pages.surveyCreate.businessContext.description')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-8">
@@ -1096,67 +1098,67 @@ export default function SurveyCreate() {
               <div>
                 <h3 className="text-lg font-medium mb-3 flex items-center">
                   <Briefcase className="h-5 w-5 mr-2 text-primary" />
-                  Product Information
+                  {t('pages.surveyCreate.businessContext.productInformation')}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="product-name">Product Name</Label>
+                      <Label htmlFor="product-name">{t('pages.surveyCreate.businessContext.productName')}</Label>
                       <Input
                         id="product-name"
                         value={productName}
                         onChange={(e) => setProductName(e.target.value)}
-                        placeholder="Name of the product or service"
+                        placeholder={t('pages.surveyCreate.businessContext.productNamePlaceholder')}
                         className="mt-1"
                       />
                     </div>
-                    
+
                     <div>
-                      <Label htmlFor="product-category">Product Category</Label>
+                      <Label htmlFor="product-category">{t('pages.surveyCreate.businessContext.productCategory')}</Label>
                       <Input
                         id="product-category"
                         value={productCategory}
                         onChange={(e) => setProductCategory(e.target.value)}
-                        placeholder="Category or industry"
+                        placeholder={t('pages.surveyCreate.businessContext.productCategoryPlaceholder')}
                         className="mt-1"
                       />
                     </div>
                   </div>
-                  
+
                   <div>
-                    <Label htmlFor="product-description">Product Description</Label>
+                    <Label htmlFor="product-description">{t('pages.surveyCreate.businessContext.productDescription')}</Label>
                     <Textarea
                       id="product-description"
                       value={productDescription}
                       onChange={(e) => setProductDescription(e.target.value)}
-                      placeholder="Describe what the product does and its main benefits"
+                      placeholder={t('pages.surveyCreate.businessContext.productDescriptionPlaceholder')}
                       className="mt-1"
                       rows={3}
                     />
-                    
+
                     <div className="mt-4">
-                      <Label htmlFor="value-proposition">Value Proposition</Label>
+                      <Label htmlFor="value-proposition">{t('pages.surveyCreate.businessContext.valueProposition')}</Label>
                       <Textarea
                         id="value-proposition"
                         value={valueProposition}
                         onChange={(e) => setValueProposition(e.target.value)}
-                        placeholder="What makes this product unique or valuable to customers"
+                        placeholder={t('pages.surveyCreate.businessContext.valuePropositionPlaceholder')}
                         className="mt-1"
                         rows={2}
                       />
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Product Features */}
                 <div className="mt-4">
-                  <Label htmlFor="product-features">Key Features</Label>
+                  <Label htmlFor="product-features">{t('pages.surveyCreate.businessContext.keyFeatures')}</Label>
                   <div className="flex mt-1">
                     <Input
                       id="new-feature"
                       value={newFeature}
                       onChange={(e) => setNewFeature(e.target.value)}
-                      placeholder="Add a product feature"
+                      placeholder={t('pages.surveyCreate.businessContext.addFeaturePlaceholder')}
                       className="flex-1"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -1165,12 +1167,12 @@ export default function SurveyCreate() {
                         }
                       }}
                     />
-                    <Button 
-                      type="button" 
-                      onClick={addFeature} 
+                    <Button
+                      type="button"
+                      onClick={addFeature}
                       className="ml-2"
                     >
-                      Add
+                      {t('pages.surveyCreate.businessContext.add')}
                     </Button>
                   </div>
                   
@@ -1197,44 +1199,44 @@ export default function SurveyCreate() {
               </div>
               
               <Separator />
-              
+
               {/* Target Market */}
               <div>
                 <h3 className="text-lg font-medium mb-3 flex items-center">
                   <Target className="h-5 w-5 mr-2 text-primary" />
-                  Target Market
+                  {t('pages.surveyCreate.businessContext.targetMarket')}
                 </h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="industry">Industry</Label>
+                    <Label htmlFor="industry">{t('pages.surveyCreate.businessContext.industry')}</Label>
                     <Select value={industry} onValueChange={setIndustry}>
                       <SelectTrigger id="industry" className="mt-1">
-                        <SelectValue placeholder="Select industry" />
+                        <SelectValue placeholder={t('pages.surveyCreate.businessContext.selectIndustry')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="technology">Technology</SelectItem>
-                        <SelectItem value="finance">Finance</SelectItem>
-                        <SelectItem value="healthcare">Healthcare</SelectItem>
-                        <SelectItem value="education">Education</SelectItem>
-                        <SelectItem value="retail">Retail</SelectItem>
-                        <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                        <SelectItem value="hospitality">Hospitality</SelectItem>
-                        <SelectItem value="media">Media & Entertainment</SelectItem>
-                        <SelectItem value="professional_services">Professional Services</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                        <SelectItem value="technology">{t('pages.surveyCreate.businessContext.industries.technology')}</SelectItem>
+                        <SelectItem value="finance">{t('pages.surveyCreate.businessContext.industries.finance')}</SelectItem>
+                        <SelectItem value="healthcare">{t('pages.surveyCreate.businessContext.industries.healthcare')}</SelectItem>
+                        <SelectItem value="education">{t('pages.surveyCreate.businessContext.industries.education')}</SelectItem>
+                        <SelectItem value="retail">{t('pages.surveyCreate.businessContext.industries.retail')}</SelectItem>
+                        <SelectItem value="manufacturing">{t('pages.surveyCreate.businessContext.industries.manufacturing')}</SelectItem>
+                        <SelectItem value="hospitality">{t('pages.surveyCreate.businessContext.industries.hospitality')}</SelectItem>
+                        <SelectItem value="media">{t('pages.surveyCreate.businessContext.industries.media')}</SelectItem>
+                        <SelectItem value="professional_services">{t('pages.surveyCreate.businessContext.industries.professionalServices')}</SelectItem>
+                        <SelectItem value="other">{t('pages.surveyCreate.businessContext.industries.other')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div>
-                    <Label htmlFor="target-market">Target Segments</Label>
+                    <Label htmlFor="target-market">{t('pages.surveyCreate.businessContext.targetSegments')}</Label>
                     <div className="flex mt-1">
                       <Input
                         id="new-target-market"
                         value={newTargetMarket}
                         onChange={(e) => setNewTargetMarket(e.target.value)}
-                        placeholder="Add a target segment"
+                        placeholder={t('pages.surveyCreate.businessContext.addSegmentPlaceholder')}
                         className="flex-1"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
@@ -1243,12 +1245,12 @@ export default function SurveyCreate() {
                           }
                         }}
                       />
-                      <Button 
-                        type="button" 
-                        onClick={addTargetMarket} 
+                      <Button
+                        type="button"
+                        onClick={addTargetMarket}
                         className="ml-2"
                       >
-                        Add
+                        {t('pages.surveyCreate.businessContext.add')}
                       </Button>
                     </div>
                     
@@ -1276,13 +1278,13 @@ export default function SurveyCreate() {
                 
                 {/* Pain Points */}
                 <div className="mt-4">
-                  <Label htmlFor="pain-points">Pain Points</Label>
+                  <Label htmlFor="pain-points">{t('pages.surveyCreate.businessContext.painPoints')}</Label>
                   <div className="flex mt-1">
                     <Input
                       id="new-pain-point"
                       value={newPainPoint}
                       onChange={(e) => setNewPainPoint(e.target.value)}
-                      placeholder="Add a customer pain point"
+                      placeholder={t('pages.surveyCreate.businessContext.addPainPointPlaceholder')}
                       className="flex-1"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -1291,12 +1293,12 @@ export default function SurveyCreate() {
                         }
                       }}
                     />
-                    <Button 
-                      type="button" 
-                      onClick={addPainPoint} 
+                    <Button
+                      type="button"
+                      onClick={addPainPoint}
                       className="ml-2"
                     >
-                      Add
+                      {t('pages.surveyCreate.businessContext.add')}
                     </Button>
                   </div>
                   
@@ -1323,47 +1325,47 @@ export default function SurveyCreate() {
               </div>
               
               <Separator />
-              
+
               {/* Competitor Analysis */}
               <div>
                 <h3 className="text-lg font-medium mb-3 flex items-center">
                   <Users className="h-5 w-5 mr-2 text-primary" />
-                  Competitor Analysis
+                  {t('pages.surveyCreate.businessContext.competitorAnalysis')}
                 </h3>
-                
+
                 <div className="mb-4">
-                  <Label>Competitors</Label>
+                  <Label>{t('pages.surveyCreate.businessContext.competitors')}</Label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-1">
                     <Input
                       value={newCompetitorName}
                       onChange={(e) => setNewCompetitorName(e.target.value)}
-                      placeholder="Competitor name"
+                      placeholder={t('pages.surveyCreate.businessContext.competitorName')}
                     />
                     <div className="flex">
                       <Input
                         value={newCompetitorUrl}
                         onChange={(e) => setNewCompetitorUrl(e.target.value)}
-                        placeholder="Website URL (optional)"
+                        placeholder={t('pages.surveyCreate.businessContext.websiteUrl')}
                         className="flex-1"
                       />
-                      <Button 
-                        type="button" 
-                        onClick={addCompetitor} 
+                      <Button
+                        type="button"
+                        onClick={addCompetitor}
                         className="ml-2"
                       >
-                        Add
+                        {t('pages.surveyCreate.businessContext.add')}
                       </Button>
                     </div>
                   </div>
                 </div>
-                
+
                 {competitors.length > 0 && (
                   <div className="border rounded-md p-4 bg-muted/30">
-                    <h4 className="text-sm font-medium mb-2">Added Competitors</h4>
+                    <h4 className="text-sm font-medium mb-2">{t('pages.surveyCreate.businessContext.addedCompetitors')}</h4>
                     <div className="space-y-2">
                       {competitors.map((competitor, index) => (
-                        <div 
-                          key={index} 
+                        <div
+                          key={index}
                           className="flex items-center justify-between p-2 bg-background rounded border"
                         >
                           <div>
@@ -1374,12 +1376,12 @@ export default function SurveyCreate() {
                               </p>
                             )}
                           </div>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => removeCompetitor(index)}
                           >
-                            Remove
+                            {t('common.delete')}
                           </Button>
                         </div>
                       ))}
@@ -1387,14 +1389,14 @@ export default function SurveyCreate() {
                   </div>
                 )}
               </div>
-              
+
               <div className="p-4 bg-muted/50 rounded-md border-l-4 border-primary">
                 <div className="flex items-start gap-3">
                   <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="font-medium">Why provide business context?</h4>
+                    <h4 className="font-medium">{t('pages.surveyCreate.businessContext.whyProvideContext')}</h4>
                     <p className="text-sm mt-1">
-                      This context will be used to personalize survey questions, adapt the survey tone, and generate AI-powered insights that are specifically tailored to your product and market. The more context you provide, the more targeted and valuable the survey results will be.
+                      {t('pages.surveyCreate.businessContext.contextExplanation')}
                     </p>
                   </div>
                 </div>
@@ -1407,18 +1409,18 @@ export default function SurveyCreate() {
         <TabsContent value="metadata">
           <Card>
             <CardHeader>
-              <CardTitle>Survey Metadata</CardTitle>
+              <CardTitle>{t('pages.surveyCreate.metadata.title')}</CardTitle>
               <CardDescription>
-                Provide survey name, type, time estimate, and demographic toggles
+                {t('pages.surveyCreate.metadata.description')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="survey-name">Survey Name*</Label>
+                    <Label htmlFor="survey-name">{t('pages.surveyCreate.metadata.surveyName')}</Label>
                     <div className="mt-1">
-                      <SurveyNameGenerator 
+                      <SurveyNameGenerator
                         initialName={surveyName}
                         surveyType={(surveyTemplates.find(t => t.id === selectedTemplate)?.type || 'custom').toLowerCase()}
                         onSelectName={setSurveyName}
@@ -1426,60 +1428,60 @@ export default function SurveyCreate() {
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="survey-type">Survey Type*</Label>
+                    <Label htmlFor="survey-type">{t('pages.surveyCreate.metadata.surveyType')}</Label>
                     <Select value={selectedSurveyType} onValueChange={setSelectedSurveyType}>
                       <SelectTrigger id="survey-type" className="mt-1">
                         <SelectValue placeholder="Select survey type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Personality Profile">Personality Profile</SelectItem>
-                        <SelectItem value="Professional Profile">Professional Profile</SelectItem>
-                        <SelectItem value="Consumer Behavior">Consumer Behavior</SelectItem>
-                        <SelectItem value="Innovation Mindset">Innovation Mindset</SelectItem>
-                        <SelectItem value="Sustainability Orientation">Sustainability Orientation</SelectItem>
-                        <SelectItem value="Digital Behavior">Digital Behavior</SelectItem>
-                        <SelectItem value="Custom Survey">Custom Survey</SelectItem>
+                        <SelectItem value="Personality Profile">{t('pages.surveyCreate.metadata.surveyTypes.personalityProfile')}</SelectItem>
+                        <SelectItem value="Professional Profile">{t('pages.surveyCreate.metadata.surveyTypes.professionalProfile')}</SelectItem>
+                        <SelectItem value="Consumer Behavior">{t('pages.surveyCreate.metadata.surveyTypes.consumerBehavior')}</SelectItem>
+                        <SelectItem value="Innovation Mindset">{t('pages.surveyCreate.metadata.surveyTypes.innovationMindset')}</SelectItem>
+                        <SelectItem value="Sustainability Orientation">{t('pages.surveyCreate.metadata.surveyTypes.sustainabilityOrientation')}</SelectItem>
+                        <SelectItem value="Digital Behavior">{t('pages.surveyCreate.metadata.surveyTypes.digitalBehavior')}</SelectItem>
+                        <SelectItem value="Custom Survey">{t('pages.surveyCreate.metadata.surveyTypes.customSurvey')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div>
-                    <Label htmlFor="survey-description">Survey Description</Label>
+                    <Label htmlFor="survey-description">{t('pages.surveyCreate.metadata.surveyDescription')}</Label>
                     <Textarea
                       id="survey-description"
                       value={surveyDescription}
                       onChange={(e) => setSurveyDescription(e.target.value)}
-                      placeholder="Describe what this survey is about"
+                      placeholder={t('pages.surveyCreate.metadata.descriptionPlaceholder')}
                       className="mt-1"
                       rows={3}
                     />
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="estimated-time">Estimated Time (minutes)*</Label>
+                    <Label htmlFor="estimated-time">{t('pages.surveyCreate.metadata.estimatedTime')}</Label>
                     <Input id="estimated-time" type="number" value={estimatedTime} onChange={(e) => setEstimatedTime(Math.max(1, parseInt(e.target.value || '0')))} className="mt-1" />
                   </div>
                   <div>
-                    <Label htmlFor="welcome-message">Welcome Message</Label>
+                    <Label htmlFor="welcome-message">{t('pages.surveyCreate.metadata.welcomeMessage')}</Label>
                     <Textarea
                       id="welcome-message"
                       value={welcomeMessage}
                       onChange={(e) => setWelcomeMessage(e.target.value)}
-                      placeholder="Message shown at the start of survey"
+                      placeholder={t('pages.surveyCreate.metadata.welcomeMessagePlaceholder')}
                       className="mt-1"
                       rows={3}
                     />
                   </div>
-                  
+
                   <div>
-                    <Label htmlFor="completion-message">Completion Message</Label>
+                    <Label htmlFor="completion-message">{t('pages.surveyCreate.metadata.completionMessage')}</Label>
                     <Textarea
                       id="completion-message"
                       value={completionMessage}
                       onChange={(e) => setCompletionMessage(e.target.value)}
-                      placeholder="Message shown at the end of survey"
+                      placeholder={t('pages.surveyCreate.metadata.completionMessagePlaceholder')}
                       className="mt-1"
                       rows={3}
                     />
@@ -1490,17 +1492,17 @@ export default function SurveyCreate() {
               <Separator />
               
               <div>
-                <h3 className="text-lg font-medium mb-3">Demographic Data Collection</h3>
+                <h3 className="text-lg font-medium mb-3">{t('pages.surveyCreate.metadata.demographicData')}</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Choose which demographic information to collect from respondents. This data helps with segmentation and analysis.
+                  {t('pages.surveyCreate.metadata.demographicDataDescription')}
                 </p>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="collect-age">Age</Label>
-                        <p className="text-xs text-muted-foreground">Collect respondent's age</p>
+                        <Label htmlFor="collect-age">{t('pages.surveyCreate.metadata.collectAge')}</Label>
+                        <p className="text-xs text-muted-foreground">{t('pages.surveyCreate.metadata.collectAgeDescription')}</p>
                       </div>
                       <Switch
                         id="collect-age"
@@ -1508,11 +1510,11 @@ export default function SurveyCreate() {
                         onCheckedChange={setCollectAge}
                       />
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="collect-gender">Gender</Label>
-                        <p className="text-xs text-muted-foreground">Collect respondent's gender</p>
+                        <Label htmlFor="collect-gender">{t('pages.surveyCreate.metadata.collectGender')}</Label>
+                        <p className="text-xs text-muted-foreground">{t('pages.surveyCreate.metadata.collectGenderDescription')}</p>
                       </div>
                       <Switch
                         id="collect-gender"
@@ -1520,11 +1522,11 @@ export default function SurveyCreate() {
                         onCheckedChange={setCollectGender}
                       />
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="collect-location">Location</Label>
-                        <p className="text-xs text-muted-foreground">Collect respondent's location</p>
+                        <Label htmlFor="collect-location">{t('pages.surveyCreate.metadata.collectLocation')}</Label>
+                        <p className="text-xs text-muted-foreground">{t('pages.surveyCreate.metadata.collectLocationDescription')}</p>
                       </div>
                       <Switch
                         id="collect-location"
@@ -1533,12 +1535,12 @@ export default function SurveyCreate() {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="collect-education">Education</Label>
-                        <p className="text-xs text-muted-foreground">Collect education level</p>
+                        <Label htmlFor="collect-education">{t('pages.surveyCreate.metadata.collectEducation')}</Label>
+                        <p className="text-xs text-muted-foreground">{t('pages.surveyCreate.metadata.collectEducationDescription')}</p>
                       </div>
                       <Switch
                         id="collect-education"
@@ -1546,11 +1548,11 @@ export default function SurveyCreate() {
                         onCheckedChange={setCollectEducation}
                       />
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="collect-income">Income</Label>
-                        <p className="text-xs text-muted-foreground">Collect income range</p>
+                        <Label htmlFor="collect-income">{t('pages.surveyCreate.metadata.collectIncome')}</Label>
+                        <p className="text-xs text-muted-foreground">{t('pages.surveyCreate.metadata.collectIncomeDescription')}</p>
                       </div>
                       <Switch
                         id="collect-income"
@@ -1565,16 +1567,16 @@ export default function SurveyCreate() {
               <Separator />
               
               <div>
-                <h3 className="text-lg font-medium mb-3">AI Responses</h3>
+                <h3 className="text-lg font-medium mb-3">{t('pages.surveyCreate.metadata.aiResponses')}</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Generate AI-powered responses to supplement real respondent data for testing and analysis.
+                  {t('pages.surveyCreate.metadata.aiResponsesDescription')}
                 </p>
-                
+
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="enable-ai-responses">Enable AI Responses</Label>
-                      <p className="text-xs text-muted-foreground">Generate synthetic responses using AI</p>
+                      <Label htmlFor="enable-ai-responses">{t('pages.surveyCreate.metadata.enableAiResponses')}</Label>
+                      <p className="text-xs text-muted-foreground">{t('pages.surveyCreate.metadata.enableAiResponsesDescription')}</p>
                     </div>
                     <Switch
                       id="enable-ai-responses"
@@ -1592,35 +1594,35 @@ export default function SurveyCreate() {
         <TabsContent value="settings">
           <Card>
             <CardHeader>
-              <CardTitle>Survey Settings</CardTitle>
+              <CardTitle>{t('pages.surveyCreate.settings.title')}</CardTitle>
               <CardDescription>
-                Configure advanced settings for your survey
+                {t('pages.surveyCreate.settings.description')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="text-lg font-medium mb-4">Survey Options</h3>
-                  
+                  <h3 className="text-lg font-medium mb-4">{t('pages.surveyCreate.settings.surveyOptions')}</h3>
+
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="survey-active">Survey Active</Label>
-                        <p className="text-xs text-muted-foreground">Allow new responses</p>
+                        <Label htmlFor="survey-active">{t('pages.surveyCreate.settings.surveyActive')}</Label>
+                        <p className="text-xs text-muted-foreground">{t('pages.surveyCreate.settings.surveyActiveDescription')}</p>
                       </div>
                       <Switch id="survey-active" checked={isActive} onCheckedChange={setIsActive} />
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="is-public">Public Survey</Label>
-                        <p className="text-xs text-muted-foreground">List survey publicly</p>
+                        <Label htmlFor="is-public">{t('pages.surveyCreate.settings.publicSurvey')}</Label>
+                        <p className="text-xs text-muted-foreground">{t('pages.surveyCreate.settings.publicSurveyDescription')}</p>
                       </div>
                       <Switch id="is-public" checked={isPublic} onCheckedChange={setIsPublic} />
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="ai-insights">AI Insights</Label>
-                        <p className="text-xs text-muted-foreground">Enable AI-powered personality insights</p>
+                        <Label htmlFor="ai-insights">{t('pages.surveyCreate.settings.aiInsights')}</Label>
+                        <p className="text-xs text-muted-foreground">{t('pages.surveyCreate.settings.aiInsightsDescription')}</p>
                       </div>
                       <Switch
                         id="ai-insights"
@@ -1628,11 +1630,11 @@ export default function SurveyCreate() {
                         onCheckedChange={setEnableAIInsights}
                       />
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="social-sharing">Social Sharing</Label>
-                        <p className="text-xs text-muted-foreground">Allow respondents to share results</p>
+                        <Label htmlFor="social-sharing">{t('pages.surveyCreate.settings.socialSharing')}</Label>
+                        <p className="text-xs text-muted-foreground">{t('pages.surveyCreate.settings.socialSharingDescription')}</p>
                       </div>
                       <Switch
                         id="social-sharing"
@@ -1640,11 +1642,11 @@ export default function SurveyCreate() {
                         onCheckedChange={setEnableSocialSharing}
                       />
                     </div>
-                    
+
                     <div className="space-y-3">
                       <div className="space-y-2">
-                        <Label>Response Identification</Label>
-                        <p className="text-xs text-muted-foreground">Choose how respondents identify themselves</p>
+                        <Label>{t('pages.surveyCreate.settings.responseIdentification')}</Label>
+                        <p className="text-xs text-muted-foreground">{t('pages.surveyCreate.settings.responseIdentificationDescription')}</p>
                       </div>
                       <div className="flex flex-col space-y-2">
                         <div className="flex items-center space-x-2">
@@ -1660,7 +1662,7 @@ export default function SurveyCreate() {
                             className="h-4 w-4"
                           />
                           <Label htmlFor="anonymous-responses" className="font-normal cursor-pointer">
-                            Anonymous Responses
+                            {t('pages.surveyCreate.settings.anonymousResponses')}
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -1676,15 +1678,15 @@ export default function SurveyCreate() {
                             className="h-4 w-4"
                           />
                           <Label htmlFor="require-email-create" className="font-normal cursor-pointer">
-                            Require Email
+                            {t('pages.surveyCreate.settings.requireEmail')}
                           </Label>
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="collect-demographics">Collect Demographics</Label>
-                        <p className="text-xs text-muted-foreground">Collect age, gender, location</p>
+                        <Label htmlFor="collect-demographics">{t('pages.surveyCreate.settings.collectDemographics')}</Label>
+                        <p className="text-xs text-muted-foreground">{t('pages.surveyCreate.settings.collectDemographicsDescription')}</p>
                       </div>
                       <Switch id="collect-demographics" checked={collectDemographics} onCheckedChange={setCollectDemographics} />
                     </div>
@@ -1692,11 +1694,11 @@ export default function SurveyCreate() {
                 </div>
                 
                 <div>
-                  <h3 className="text-lg font-medium mb-4">Survey Configuration</h3>
-                  
+                  <h3 className="text-lg font-medium mb-4">{t('pages.surveyCreate.settings.surveyConfiguration')}</h3>
+
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="response-limit">Response Limit</Label>
+                      <Label htmlFor="response-limit">{t('pages.surveyCreate.settings.responseLimit')}</Label>
                       <Input
                         id="response-limit"
                         type="number"
@@ -1704,14 +1706,14 @@ export default function SurveyCreate() {
                         onChange={(e) => setResponseLimit(parseInt(e.target.value) || 0)}
                         className="mt-1"
                       />
-                      <p className="text-xs text-muted-foreground mt-1">Maximum number of responses to collect</p>
+                      <p className="text-xs text-muted-foreground mt-1">{t('pages.surveyCreate.settings.responseLimitDescription')}</p>
                     </div>
                     <div>
-                      <Label htmlFor="expiry-date">Expiry Date</Label>
-                      <Input 
-                        id="expiry-date" 
-                        type="date" 
-                        value={expiryDate} 
+                      <Label htmlFor="expiry-date">{t('pages.surveyCreate.settings.expiryDate')}</Label>
+                      <Input
+                        id="expiry-date"
+                        type="date"
+                        value={expiryDate}
                         min={new Date().toISOString().split('T')[0]}
                         onChange={(e) => {
                           const selectedDate = e.target.value;
@@ -1719,32 +1721,32 @@ export default function SurveyCreate() {
                           if (selectedDate >= today) {
                             setExpiryDate(selectedDate);
                           }
-                        }} 
-                        className="mt-1" 
+                        }}
+                        className="mt-1"
                       />
-                      <p className="text-xs text-muted-foreground mt-1">Select today or a future date</p>
-                      <p className="text-xs text-muted-foreground mt-1">Survey will close on this date</p>
+                      <p className="text-xs text-muted-foreground mt-1">{t('pages.surveyCreate.settings.expiryDateDescription')}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{t('pages.surveyCreate.settings.surveyWillClose')}</p>
                     </div>
-                    
+
                     <div>
-                      <Label htmlFor="survey-language">Survey Language</Label>
-                      <Select 
-                        value={surveyLanguage} 
+                      <Label htmlFor="survey-language">{t('pages.surveyCreate.settings.surveyLanguage')}</Label>
+                      <Select
+                        value={surveyLanguage}
                         onValueChange={setSurveyLanguage}
                       >
                         <SelectTrigger id="survey-language" className="mt-1">
                           <SelectValue placeholder="Select language" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="en">English</SelectItem>
-                          <SelectItem value="es">Spanish</SelectItem>
-                          <SelectItem value="fr">French</SelectItem>
-                          <SelectItem value="de">German</SelectItem>
-                          <SelectItem value="ja">Japanese</SelectItem>
-                          <SelectItem value="zh">Chinese</SelectItem>
+                          <SelectItem value="en">{t('pages.surveyCreate.settings.languages.en')}</SelectItem>
+                          <SelectItem value="es">{t('pages.surveyCreate.settings.languages.es')}</SelectItem>
+                          <SelectItem value="fr">{t('pages.surveyCreate.settings.languages.fr')}</SelectItem>
+                          <SelectItem value="de">{t('pages.surveyCreate.settings.languages.de')}</SelectItem>
+                          <SelectItem value="ja">{t('pages.surveyCreate.settings.languages.ja')}</SelectItem>
+                          <SelectItem value="zh">{t('pages.surveyCreate.settings.languages.zh')}</SelectItem>
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-muted-foreground mt-1">Primary language for survey questions</p>
+                      <p className="text-xs text-muted-foreground mt-1">{t('pages.surveyCreate.settings.surveyLanguageDescription')}</p>
                     </div>
                   </div>
                 </div>
@@ -1752,14 +1754,13 @@ export default function SurveyCreate() {
               
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="advanced">
-                  <AccordionTrigger className="text-base font-medium">Advanced Options</AccordionTrigger>
+                  <AccordionTrigger className="text-base font-medium">{t('pages.surveyCreate.settings.advancedOptions')}</AccordionTrigger>
                   <AccordionContent>
                     <div className="p-4 bg-muted/50 rounded-md mt-2">
                       <div className="flex items-start gap-3 text-sm">
                         <Info className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                         <p>
-                          Advanced survey options like branching logic, custom question types, and advanced validation rules 
-                          can be configured after creating the survey using the Survey Editor.
+                          {t('pages.surveyCreate.settings.advancedOptionsDescription')}
                         </p>
                       </div>
                     </div>
@@ -1772,10 +1773,9 @@ export default function SurveyCreate() {
             <div className="flex items-start gap-3">
               <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
               <div>
-                <h4 className="font-medium text-amber-700">Important Note</h4>
+                <h4 className="font-medium text-amber-700">{t('pages.surveyCreate.settings.importantNote')}</h4>
                 <p className="text-sm text-amber-600 mt-1">
-                  Once created, this survey will count against your survey quota. You can pause, 
-                  edit or delete the survey after creation from the dashboard.
+                  {t('pages.surveyCreate.settings.importantNoteDescription')}
                 </p>
               </div>
             </div>
@@ -1786,34 +1786,36 @@ export default function SurveyCreate() {
         <TabsContent value="final">
           <Card>
             <CardHeader>
-              <CardTitle>Final Preview</CardTitle>
-              <CardDescription>Review all details before creating the survey.</CardDescription>
+              <CardTitle>{t('pages.surveyCreate.finalPreview.title')}</CardTitle>
+              <CardDescription>{t('pages.surveyCreate.finalPreview.description')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <h3 className="font-medium mb-2">Metadata</h3>
-                <div className="text-sm">Name: {surveyName || '—'}</div>
-                <div className="text-sm">Language: {surveyLanguage}</div>
-                <div className="text-sm">Estimated Time: {(surveyTemplates.find(t => t.id === selectedTemplate)?.estimatedTime) || 10} minutes</div>
+                <h3 className="font-medium mb-2">{t('pages.surveyCreate.finalPreview.metadata')}</h3>
+                <div className="text-sm"><span className="font-bold text-base">{t('pages.surveyCreate.finalPreview.name')}:</span> {surveyName || '—'}</div>
+                <div className="text-sm"><span className="font-bold text-base">{t('pages.surveyCreate.finalPreview.language')}:</span> {surveyLanguage}</div>
+                <div className="text-sm"><span className="font-bold text-base">{t('pages.surveyCreate.finalPreview.estimatedTime')}:</span> {(surveyTemplates.find(t => t.id === selectedTemplate)?.estimatedTime) || 10} {t('pages.surveyCreate.finalPreview.minutes')}</div>
               </div>
               <div>
-                <h3 className="font-medium mb-2">Questions ({questions.length})</h3>
+                <h3 className="font-medium mb-2">
+                  {t('pages.surveyCreate.finalPreview.questionsCount', { count: questions.length })}
+                </h3>
                 <ul className="list-disc pl-5 text-sm space-y-1">
-                  {questions.map((q) => (<li key={q.id}>{q.question || '(untitled)'} - {q.questionType}</li>))}
+                  {questions.map((q) => (<li key={q.id}>{q.question || t('pages.surveyCreate.finalPreview.untitled')} - {q.questionType}</li>))}
                 </ul>
               </div>
               <div>
-                <h3 className="font-medium mb-2">Settings</h3>
+                <h3 className="font-medium mb-2">{t('pages.surveyCreate.finalPreview.settings')}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                  <div>Active: {String(isActive)}</div>
-                  <div>Public: {String(isPublic)}</div>
-                  <div>Anonymous: {String(allowAnonymous)}</div>
-                  <div>Require Email: {String(requireEmail)}</div>
-                  <div>Collect Demographics: {String(collectDemographics)}</div>
-                  <div>AI Insights: {String(enableAIInsights)}</div>
-                  <div>Social Sharing: {String(enableSocialSharing)}</div>
-                  <div>Response Limit: {responseLimit}</div>
-                  <div>Expiry Date: {expiryDate}</div>
+                  <div><span className="font-bold text-base">{t('pages.surveyCreate.finalPreview.active')}:</span> {String(isActive)}</div>
+                  <div><span className="font-bold text-base">{t('pages.surveyCreate.finalPreview.public')}:</span> {String(isPublic)}</div>
+                  <div><span className="font-bold text-base">{t('pages.surveyCreate.finalPreview.anonymous')}:</span> {String(allowAnonymous)}</div>
+                  <div><span className="font-bold text-base">{t('pages.surveyCreate.finalPreview.requireEmail')}:</span> {String(requireEmail)}</div>
+                  <div><span className="font-bold text-base">{t('pages.surveyCreate.finalPreview.collectDemographics')}:</span> {String(collectDemographics)}</div>
+                  <div><span className="font-bold text-base">{t('pages.surveyCreate.finalPreview.aiInsights')}:</span> {String(enableAIInsights)}</div>
+                  <div><span className="font-bold text-base">{t('pages.surveyCreate.finalPreview.socialSharing')}:</span> {String(enableSocialSharing)}</div>
+                  <div><span className="font-bold text-base">{t('pages.surveyCreate.finalPreview.responseLimit')}:</span> {responseLimit}</div>
+                  <div><span className="font-bold text-base">{t('pages.surveyCreate.finalPreview.expiryDate')}:</span> {expiryDate}</div>
                 </div>
               </div>
             </CardContent>
@@ -1825,53 +1827,53 @@ export default function SurveyCreate() {
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-background rounded-lg shadow-lg p-6 max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-4">Survey Created Successfully!</h2>
-            <p className="mb-6">Your survey is ready to be shared or previewed.</p>
+            <h2 className="text-2xl font-bold mb-4">{t('pages.surveyCreate.successModal.title')}</h2>
+            <p className="mb-6">{t('pages.surveyCreate.successModal.description')}</p>
             
             <div className="grid grid-cols-2 gap-4 mb-6">
-              <Button 
-                variant="outline" 
-                className="w-full" 
+              <Button
+                variant="outline"
+                className="w-full"
                 onClick={() => setLocation(`/dashboard/survey/${createdSurveyId}`)}
               >
                 <Eye className="h-4 w-4 mr-2" />
-                Preview Survey
+                {t('pages.surveyCreate.successModal.previewSurvey')}
               </Button>
-              
-              <Button 
-                variant="outline" 
-                className="w-full" 
+
+              <Button
+                variant="outline"
+                className="w-full"
                 onClick={() => setLocation(`/survey/share/${createdSurveyId}`)}
               >
                 <Share className="h-4 w-4 mr-2" />
-                Share Survey
+                {t('pages.surveyCreate.successModal.shareSurvey')}
               </Button>
-              
-              <Button 
-                variant="outline" 
-                className="w-full" 
+
+              <Button
+                variant="outline"
+                className="w-full"
                 onClick={() => setLocation('/survey/collaborate')}
               >
                 <MessageSquare className="h-4 w-4 mr-2" />
-                Collaborate
+                {t('pages.surveyCreate.successModal.collaborate')}
               </Button>
-              
-              <Button 
-                variant="default" 
-                className="w-full" 
+
+              <Button
+                variant="default"
+                className="w-full"
                 onClick={() => setLocation('/dashboard')}
               >
-                Return to Dashboard
+                {t('pages.surveyCreate.successModal.returnToDashboard')}
               </Button>
             </div>
-            
+
             <div className="flex justify-end">
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setShowSuccessModal(false)}
               >
-                Close
+                {t('pages.surveyCreate.successModal.close')}
               </Button>
             </div>
           </div>
@@ -1884,32 +1886,32 @@ export default function SurveyCreate() {
           <div className="flex items-center gap-3">
             {activeTab === "templates" && (
               <Button variant="outline" onClick={() => setLocation('/dashboard')}>
-                Cancel
+                {t('common.cancel')}
               </Button>
             )}
             {activeTab === "questions" && (
               <Button variant="outline" onClick={() => setActiveTab("templates")}>
-                Back
+                {t('common.back')}
               </Button>
             )}
             {activeTab === "metadata" && (
               <Button variant="outline" onClick={() => setActiveTab("questions")}>
-                Back
+                {t('common.back')}
               </Button>
             )}
             {activeTab === "business-context" && (
               <Button variant="outline" onClick={() => setActiveTab("metadata")}>
-                Back
+                {t('common.back')}
               </Button>
             )}
             {activeTab === "settings" && (
               <Button variant="outline" onClick={() => setActiveTab("business-context")}>
-                Back
+                {t('common.back')}
               </Button>
             )}
             {activeTab === "final" && (
               <Button variant="outline" onClick={() => setActiveTab("settings")}>
-                Back
+                {t('common.back')}
               </Button>
             )}
           </div>
@@ -1917,54 +1919,54 @@ export default function SurveyCreate() {
           <div className="flex items-center gap-3">
             {activeTab === "templates" && (
               <Button onClick={() => setActiveTab("questions")} disabled={!selectedTemplate}>
-                Continue to Questions
+                {t('pages.surveyCreate.navigation.continueToQuestions')}
               </Button>
             )}
             {activeTab === "questions" && (
-              <Button 
-                onClick={() => setActiveTab("metadata")} 
+              <Button
+                onClick={() => setActiveTab("metadata")}
                 disabled={!questionsSaved || isEditingQuestions || questions.length < 1}
               >
-                Continue to Metadata
+                {t('pages.surveyCreate.navigation.continueToMetadata')}
               </Button>
             )}
             {activeTab === "metadata" && (
-              <Button 
+              <Button
                 onClick={() => setActiveTab("business-context")}
                 disabled={!surveyName.trim()}
               >
-                Continue to Business Context
+                {t('pages.surveyCreate.navigation.continueToBusinessContext')}
               </Button>
             )}
             {activeTab === "business-context" && (
               <Button onClick={() => setActiveTab("settings")}>
-                Continue to Settings
+                {t('pages.surveyCreate.navigation.continueToSettings')}
               </Button>
             )}
             {activeTab === "settings" && (
-              <Button 
-                onClick={() => setActiveTab("final")} 
-                disabled={!(responseLimit > 0 && expiryDate && surveyLanguage)} 
+              <Button
+                onClick={() => setActiveTab("final")}
+                disabled={!(responseLimit > 0 && expiryDate && surveyLanguage)}
                 className="gap-2"
               >
-                Continue to Final Preview
+                {t('pages.surveyCreate.navigation.continueToFinalPreview')}
               </Button>
             )}
             {activeTab === "final" && (
-              <Button 
-                onClick={handleCreateSurvey} 
+              <Button
+                onClick={handleCreateSurvey}
                 disabled={isCreating}
                 className="gap-2"
               >
                 {isCreating ? (
                   <>
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-                    Creating...
+                    {t('pages.surveyCreate.navigation.creating')}
                   </>
                 ) : (
                   <>
                     <PlusCircle className="h-4 w-4" />
-                    Create Survey
+                    {t('pages.surveyCreate.navigation.createSurvey')}
                   </>
                 )}
               </Button>

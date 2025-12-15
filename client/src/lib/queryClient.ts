@@ -322,11 +322,12 @@ export function updateQueryCache(type: string, data: any): void {
     'integrationUpdate': ['/api/integrations'],
     'licenseUpdate': ['/api/licenses'],
     'analyticsUpdate': [
-      '/api/analytics', 
+      '/api/analytics',
       '/api/company/*/analytics'
     ],
     'clientUpdate': ['/api/clients'],
-    'deploymentUpdate': ['/api/deployments']
+    'deploymentUpdate': ['/api/deployments'],
+    'notificationUpdate': ['/api/admin/notifications', 'admin-notifications']
   };
 
   // Get the query keys to invalidate

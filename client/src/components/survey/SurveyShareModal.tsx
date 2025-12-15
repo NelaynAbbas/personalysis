@@ -228,9 +228,9 @@ export function SurveyShareModal({
       <DialogContent className="sm:max-w-[600px] md:max-w-[750px]">
         <DialogHeader className="flex flex-row items-center justify-between">
           <div>
-            <DialogTitle className="text-2xl">Share Your Results</DialogTitle>
+            <DialogTitle className="text-2xl">Share Survey with Others</DialogTitle>
             <DialogDescription>
-              Invite others to take the same survey or share your results
+              Share this survey link so others can take it and get their results
             </DialogDescription>
           </div>
           {isGenerated && (
@@ -287,13 +287,13 @@ export function SurveyShareModal({
               </div>
             </div>
             
-            <div className="p-4 bg-gray-50 rounded-lg mt-4">
+            <div className="p-4 bg-blue-50 rounded-lg mt-4">
               <div className="flex items-start gap-2">
-                <Info className="h-5 w-5 text-blue-500 mt-0.5" />
+                <Info className="h-5 w-5 text-blue-600 mt-0.5" />
                 <div>
                   <h4 className="font-medium text-sm">How it works</h4>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Anyone with this link can take the same survey. Results are kept private for each respondent.
+                  <p className="text-sm text-gray-700 mt-1">
+                    Anyone with this link can take the survey and get their personalized results. Each respondent's results are kept private and separate.
                   </p>
                 </div>
               </div>

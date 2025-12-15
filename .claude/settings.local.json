@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e:*)",
+      "Bash(node -p:*)",
+      "Bash(wc:*)",
+      "Bash(node batch_translate_survey.js:*)",
+      "Bash(node:*)",
+      "Bash(for f in *.json)",
+      "Bash(find:*)",
+      "Bash(grep:*)"
+    ]
+  }
+}

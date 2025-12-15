@@ -138,13 +138,13 @@ const DemoRequestForm: React.FC = () => {
     return (
       <Card className="w-full max-w-lg mx-auto">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Thank You!</CardTitle>
-          <CardDescription className="text-center">
-            Your demo request has been successfully submitted. Our team will contact you shortly.
-          </CardDescription>
+          <CardTitle className="text-3xl text-center mb-4">Thank You!</CardTitle>
         </CardHeader>
         <CardContent className="text-center">
-          <p className="mb-4">
+          <p className="text-lg mb-4 leading-relaxed">
+            Your demo request has been successfully submitted. Our team will contact you shortly.
+          </p>
+          <p className="text-lg mb-8 leading-relaxed">
             In the meantime, feel free to explore more of our platform's capabilities.
           </p>
           <Button onClick={() => setIsSubmitted(false)}>Request Another Demo</Button>

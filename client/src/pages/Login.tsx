@@ -1,5 +1,6 @@
 
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,10 +21,10 @@ import { EnhancedFormField } from "@/components/ui/enhanced-form-field";
 import { ProgressIndicator } from "@/components/ui/progress-indicator";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { Label } from "@/components/ui/label";
-import { 
+import {
   Dialog,
-  DialogContent, 
-  DialogHeader, 
+  DialogContent,
+  DialogHeader,
   DialogTitle,
   DialogDescription,
   DialogFooter
@@ -62,6 +63,7 @@ const registerSchema = z.object({
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function Login() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const { setAuthenticated, setUser } = useAuth();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -156,16 +158,16 @@ export default function Login() {
           }
 
           toast({
-            title: "Login Successful",
-            description: `Welcome back, ${userData.user?.firstName || userData.user?.username || 'User'}!`,
+            title: t('success.loginSuccess'),
+            description: `${t('auth.login.welcome')}, ${userData.user?.firstName || userData.user?.username || 'User'}!`,
           });
         } catch (error: any) {
           console.error("Error with demo login:", error);
           setIsLoggingIn(false);
           setFormError(error.message || 'Demo login failed');
           toast({
-            title: "Login Error",
-            description: error.message || "Demo login failed. Please try again.",
+            title: t('errors.error'),
+            description: error.message || t('errors.somethingWentWrong'),
             variant: "destructive"
           });
         }
@@ -237,14 +239,14 @@ export default function Login() {
           });
 
           toast({
-            title: "Admin Login Successful",
-            description: `Welcome back, ${userData.user?.firstName || userData.user?.username || 'Admin'}!`,
+            title: t('success.loginSuccess'),
+            description: `${t('auth.login.welcome')}, ${userData.user?.firstName || userData.user?.username || 'Admin'}!`,
           });
         } catch (error) {
           console.error("❌ CLIENT DEBUG - Error with admin login:", error);
           toast({
-            title: "Login Error",
-            description: "Admin login failed. Please try again.",
+            title: t('errors.error'),
+            description: t('errors.somethingWentWrong'),
             variant: "destructive"
           });
         }
@@ -307,16 +309,16 @@ export default function Login() {
       }
       
       toast({
-        title: "Login Successful",
-        description: `Welcome back, ${userData.firstName || userData.username}!`,
+        title: t('success.loginSuccess'),
+        description: `${t('auth.login.welcome')}, ${userData.firstName || userData.username}!`,
       });
     } catch (error: any) {
       setIsLoggingIn(false);
-      setFormError(error.message || 'Authentication failed. Please check your credentials.');
-      
+      setFormError(error.message || t('errors.pleaseLogin'));
+
       toast({
-        title: "Login Failed",
-        description: error.message || "Authentication failed. Please try again.",
+        title: t('errors.error'),
+        description: error.message || t('errors.somethingWentWrong'),
         variant: "destructive"
       });
     }
@@ -355,18 +357,18 @@ export default function Login() {
       // Registration successful
       setIsRegistering(false);
       setActiveTab("login");
-      
+
       toast({
-        title: "Registration Successful",
-        description: "Your account has been created. You can now log in.",
+        title: t('success.signupSuccess'),
+        description: t('auth.signup.accountCreated'),
       });
     } catch (error: any) {
       setIsRegistering(false);
-      setFormError(error.message || 'Registration failed. Please try again.');
-      
+      setFormError(error.message || t('errors.somethingWentWrong'));
+
       toast({
-        title: "Registration Failed",
-        description: error.message || "Failed to create account. Please try again.",
+        title: t('errors.error'),
+        description: error.message || t('errors.somethingWentWrong'),
         variant: "destructive"
       });
     }
@@ -375,15 +377,15 @@ export default function Login() {
   const handleDemoSubmit = async () => {
     if (!demoFirstName || !demoLastName || !demoEmail || !demoCompany || !demoPhone || !demoRole || !demoIndustry || !demoCompanySize) {
       toast({
-        title: "Missing Information",
-        description: "Please fill out all required fields.",
+        title: t('validation.required'),
+        description: t('validation.required'),
         variant: "destructive"
       });
       return;
     }
-    
+
     setIsSubmittingDemo(true);
-    
+
     try {
       // Prepare the demo request data for API
       const demoRequestData = {
@@ -410,13 +412,13 @@ export default function Login() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to submit demo request");
+        throw new Error(errorData.message || t('errors.somethingWentWrong'));
       }
 
       // Clear form fields after successful submission
       setIsSubmittingDemo(false);
       setShowDemoConfirmation(false);
-      
+
       // Reset form fields
       setDemoFirstName('');
       setDemoLastName('');
@@ -427,17 +429,17 @@ export default function Login() {
       setDemoIndustry('');
       setDemoCompanySize('');
       setDemoMessage('');
-      
+
       toast({
-        title: "Demo Request Received",
-        description: "Thank you! We'll contact you shortly to schedule your personalized demo.",
+        title: t('pages.login.demoRequestReceived'),
+        description: t('pages.login.demoRequestDescription'),
       });
     } catch (error) {
       console.error("Error submitting demo request:", error);
       setIsSubmittingDemo(false);
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to submit demo request. Please try again.",
+        title: t('errors.error'),
+        description: error instanceof Error ? error.message : t('errors.somethingWentWrong'),
         variant: "destructive"
       });
     }
@@ -452,14 +454,14 @@ export default function Login() {
               Personalysis<span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-indigo-500">Pro</span>
             </div>
           </div>
-          <CardTitle className="text-2xl text-center font-bold">Business Platform Access</CardTitle>
+          <CardTitle className="text-2xl text-center font-bold">{t('pages.login.businessPlatformAccess')}</CardTitle>
           <CardDescription className="text-center">
-            Log in to your organization's account to analyze customer insights and drive business decisions.
+            {t('pages.login.loginDescription')}
             <br />
             <span className="text-xs text-muted-foreground mt-1 block">
-            
+
               <br/>
-          
+
             </span>
           </CardDescription>
         </CardHeader>
@@ -478,38 +480,40 @@ export default function Login() {
               <EnhancedFormField
                 form={loginForm}
                 name="username"
-                label="Email"
+                label={t('auth.login.email')}
                 type="email"
                 placeholder="johndoe@personalysispro.com"
                 required={true}
                 autoComplete="email"
               />
-            
+
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <FormLabel 
+                  <FormLabel
                     className="after:content-['*'] after:ml-0.5 after:text-red-500"
                     htmlFor="password"
                   >
-                    Password
+                    {t('auth.login.password')}
                   </FormLabel>
-                  <div 
-                    onClick={() => setLocation('/reset-password')} 
+                  {/*
+                  <div
+                    onClick={() => setLocation('/reset-password')}
                     className="text-xs text-primary hover:text-primary-dark cursor-pointer"
                   >
-                    Forgot password?
+                    {t('auth.login.forgotPassword')}
                   </div>
+                  */}
                 </div>
                 <EnhancedFormField
                   form={loginForm}
                   name="password"
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder={t('auth.login.password')}
                   required={true}
                   autoComplete="current-password"
                 />
               </div>
-            
+
               <FormField
                 control={loginForm.control}
                 name="remember"
@@ -520,40 +524,40 @@ export default function Login() {
                         checked={field.value}
                         onCheckedChange={field.onChange}
                         id="remember"
-                        aria-label="Remember me for 30 days"
+                        aria-label={t('auth.login.rememberMe')}
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel 
+                      <FormLabel
                         htmlFor="remember"
                         className="text-sm font-normal text-gray-500 cursor-pointer"
                       >
-                        Remember me for 30 days
+                        {t('auth.login.rememberMe')}
                       </FormLabel>
                     </div>
                   </FormItem>
                 )}
               />
-            
-              <Button 
-                type="submit" 
+
+              <Button
+                type="submit"
                 className="w-full bg-primary hover:bg-primary-dark text-white"
                 disabled={isLoggingIn}
-                aria-label="Sign in to your account"
+                aria-label={t('auth.login.loginButton')}
               >
                 {isLoggingIn ? (
                   <>
-                    <ProgressIndicator 
-                      isLoading={isLoggingIn} 
-                      loadingText="" 
-                      variant="spinner" 
-                      size="sm" 
+                    <ProgressIndicator
+                      isLoading={isLoggingIn}
+                      loadingText=""
+                      variant="spinner"
+                      size="sm"
                       className="mr-2"
                     />
-                    Signing in...
+                    {t('auth.login.loggingIn')}
                   </>
                 ) : (
-                  "Sign In"
+                  t('auth.login.loginButton')
                 )}
               </Button>
             </form>
@@ -568,19 +572,19 @@ export default function Login() {
               size="sm"
               onClick={() => setShowDemoConfirmation(true)}
             >
-              Book a Demo
+              {t('pages.login.bookDemo')}
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => window.location.href = "/contact"}
             >
-              Need Help?
+              {t('pages.login.needHelp')}
             </Button>
           </div>
           <div className="text-center text-xs text-gray-500 mt-4 space-y-2">
             <p>GRS Ventures Limited<strong></strong></p>
-            <p> All rights reserved <strong> </strong></p>
+            <p>{t('pages.login.allRightsReserved')}<strong> </strong></p>
           </div>
         </CardFooter>
       </Card>
@@ -591,40 +595,40 @@ export default function Login() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Info className="h-5 w-5 text-primary" />
-              Book a Product Demo
+              {t('pages.login.bookProductDemo')}
             </DialogTitle>
             <DialogDescription>
-              Fill out the form below to schedule a personalized demo of our personality assessment platform for your business.
+              {t('pages.login.demoFormDescription')}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="demoFirstName" className="after:content-['*'] after:ml-0.5 after:text-red-500">Name</Label>
+                <Label htmlFor="demoFirstName" className="after:content-['*'] after:ml-0.5 after:text-red-500">{t('pages.login.firstName')}</Label>
                 <Input
                   id="demoFirstName"
                   value={demoFirstName}
                   onChange={(e) => setDemoFirstName(e.target.value)}
-                  placeholder="Your first name"
+                  placeholder={t('pages.login.yourFirstName')}
                   required
                 />
               </div>
-              
+
               <div className="grid gap-2">
-                <Label htmlFor="demoLastName" className="after:content-['*'] after:ml-0.5 after:text-red-500">Surname</Label>
+                <Label htmlFor="demoLastName" className="after:content-['*'] after:ml-0.5 after:text-red-500">{t('pages.login.surname')}</Label>
                 <Input
                   id="demoLastName"
                   value={demoLastName}
                   onChange={(e) => setDemoLastName(e.target.value)}
-                  placeholder="Your last name"
+                  placeholder={t('pages.login.yourLastName')}
                   required
                 />
               </div>
             </div>
-            
+
             <div className="grid gap-2">
-              <Label htmlFor="demoEmail" className="after:content-['*'] after:ml-0.5 after:text-red-500">Email address</Label>
+              <Label htmlFor="demoEmail" className="after:content-['*'] after:ml-0.5 after:text-red-500">{t('auth.login.email')}</Label>
               <Input
                 id="demoEmail"
                 value={demoEmail}
@@ -634,9 +638,9 @@ export default function Login() {
                 required
               />
             </div>
-            
+
             <div className="grid gap-2">
-              <Label htmlFor="demoPhone" className="after:content-['*'] after:ml-0.5 after:text-red-500">Phone</Label>
+              <Label htmlFor="demoPhone" className="after:content-['*'] after:ml-0.5 after:text-red-500">{t('pages.login.phone')}</Label>
               <Input
                 id="demoPhone"
                 value={demoPhone}
@@ -646,102 +650,102 @@ export default function Login() {
                 required
               />
             </div>
-            
+
             <div className="grid gap-2">
-              <Label htmlFor="demoRole" className="after:content-['*'] after:ml-0.5 after:text-red-500">Role</Label>
+              <Label htmlFor="demoRole" className="after:content-['*'] after:ml-0.5 after:text-red-500">{t('pages.login.role')}</Label>
               <Select value={demoRole} onValueChange={setDemoRole} required>
                 <SelectTrigger id="demoRole">
-                  <SelectValue placeholder="Select your role" />
+                  <SelectValue placeholder={t('pages.login.selectRole')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ceo">CEO / Founder</SelectItem>
-                  <SelectItem value="cto">CTO / Technical Director</SelectItem>
-                  <SelectItem value="cmo">CMO / Marketing Director</SelectItem>
-                  <SelectItem value="product">Product Manager</SelectItem>
-                  <SelectItem value="sales">Sales Manager</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="ceo">{t('pages.login.ceoFounder')}</SelectItem>
+                  <SelectItem value="cto">{t('pages.login.ctoDirector')}</SelectItem>
+                  <SelectItem value="cmo">{t('pages.login.cmoDirector')}</SelectItem>
+                  <SelectItem value="product">{t('pages.login.productManager')}</SelectItem>
+                  <SelectItem value="sales">{t('pages.login.salesManager')}</SelectItem>
+                  <SelectItem value="other">{t('common.ok')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="grid gap-2">
-              <Label htmlFor="demoCompany" className="after:content-['*'] after:ml-0.5 after:text-red-500">Company</Label>
+              <Label htmlFor="demoCompany" className="after:content-['*'] after:ml-0.5 after:text-red-500">{t('pages.login.company')}</Label>
               <Input
                 id="demoCompany"
                 value={demoCompany}
                 onChange={(e) => setDemoCompany(e.target.value)}
-                placeholder="Your company name"
+                placeholder={t('pages.login.yourCompanyName')}
                 required
               />
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="demoIndustry" className="after:content-['*'] after:ml-0.5 after:text-red-500">Industry</Label>
+                <Label htmlFor="demoIndustry" className="after:content-['*'] after:ml-0.5 after:text-red-500">{t('pages.login.industry')}</Label>
                 <Select value={demoIndustry} onValueChange={setDemoIndustry} required>
                   <SelectTrigger id="demoIndustry">
-                    <SelectValue placeholder="Select industry" />
+                    <SelectValue placeholder={t('pages.login.selectIndustry')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Technology">Technology</SelectItem>
-                    <SelectItem value="Marketing">Marketing & Advertising</SelectItem>
-                    <SelectItem value="Retail">Retail & E-commerce</SelectItem>
-                    <SelectItem value="Financial">Financial Services</SelectItem>
-                    <SelectItem value="Healthcare">Healthcare</SelectItem>
-                    <SelectItem value="Education">Education</SelectItem>
-                    <SelectItem value="Manufacturing">Manufacturing</SelectItem>
-                    <SelectItem value="Consulting">Consulting</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
+                    <SelectItem value="Technology">{t('pages.login.technology')}</SelectItem>
+                    <SelectItem value="Marketing">{t('pages.login.marketingAdvertising')}</SelectItem>
+                    <SelectItem value="Retail">{t('pages.login.retailEcommerce')}</SelectItem>
+                    <SelectItem value="Financial">{t('pages.login.financialServices')}</SelectItem>
+                    <SelectItem value="Healthcare">{t('pages.login.healthcare')}</SelectItem>
+                    <SelectItem value="Education">{t('pages.login.education')}</SelectItem>
+                    <SelectItem value="Manufacturing">{t('pages.login.manufacturing')}</SelectItem>
+                    <SelectItem value="Consulting">{t('pages.login.consulting')}</SelectItem>
+                    <SelectItem value="Other">{t('common.ok')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="grid gap-2">
-                <Label htmlFor="demoCompanySize" className="after:content-['*'] after:ml-0.5 after:text-red-500">Company Size</Label>
+                <Label htmlFor="demoCompanySize" className="after:content-['*'] after:ml-0.5 after:text-red-500">{t('pages.login.companySize')}</Label>
                 <Select value={demoCompanySize} onValueChange={setDemoCompanySize} required>
                   <SelectTrigger id="demoCompanySize">
-                    <SelectValue placeholder="Select size" />
+                    <SelectValue placeholder={t('pages.login.selectSize')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1-10">1-10 employees</SelectItem>
-                    <SelectItem value="11-50">11-50 employees</SelectItem>
-                    <SelectItem value="51-200">51-200 employees</SelectItem>
-                    <SelectItem value="201-500">201-500 employees</SelectItem>
-                    <SelectItem value="501-1000">501-1000 employees</SelectItem>
-                    <SelectItem value="1000+">1000+ employees</SelectItem>
+                    <SelectItem value="1-10">{t('pages.login.oneToTen')}</SelectItem>
+                    <SelectItem value="11-50">{t('pages.login.elevenToFifty')}</SelectItem>
+                    <SelectItem value="51-200">{t('pages.login.fiftyOneToTwoHundred')}</SelectItem>
+                    <SelectItem value="201-500">{t('pages.login.twoHundredOneToFiveHundred')}</SelectItem>
+                    <SelectItem value="501-1000">{t('pages.login.fiveHundredOneToThousand')}</SelectItem>
+                    <SelectItem value="1000+">{t('pages.login.overThousand')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
           </div>
-          
+
           <div className="grid gap-2">
-            <Label htmlFor="demoMessage">Message (Optional)</Label>
+            <Label htmlFor="demoMessage">{t('pages.login.messageOptional')}</Label>
             <Textarea
               id="demoMessage"
               value={demoMessage}
               onChange={(e) => setDemoMessage(e.target.value)}
-              placeholder="Tell us about your specific needs or questions..."
+              placeholder={t('pages.login.messagePlaceholder')}
               className="resize-none"
               rows={4}
             />
           </div>
-          
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowDemoConfirmation(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
-            <Button 
+            <Button
               onClick={handleDemoSubmit}
               disabled={isSubmittingDemo}
             >
               {isSubmittingDemo ? (
                 <>
                   <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
-                  Submitting...
+                  {t('pages.login.submitting')}
                 </>
               ) : (
-                "Book Your Demo"
+                t('pages.login.bookYourDemo')
               )}
             </Button>
           </DialogFooter>

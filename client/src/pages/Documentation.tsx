@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { 
-  FileText, 
-  Book, 
-  Code, 
-  Users, 
+import {
+  FileText,
+  Book,
+  Code,
+  Users,
   Database,
-  BarChart, 
+  BarChart,
   Search,
   ChevronRight,
   X,
@@ -15,8 +15,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { useTranslation } from "react-i18next";
 
 export default function Documentation() {
+  const { t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState("getting-started");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedArticle, setSelectedArticle] = useState(null);
@@ -2357,16 +2359,16 @@ export default function Documentation() {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Documentation</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('pages.documentation.title')}</h1>
         <p className="text-gray-600 mb-8">
-          Everything you need to know about using the PersonalysisPro platform
+          {t('pages.documentation.subtitle')}
         </p>
         
         <div className="relative mb-8">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <Input
             type="text"
-            placeholder="Search documentation..."
+            placeholder={t('pages.documentation.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 py-3 w-full"
@@ -2402,7 +2404,7 @@ export default function Documentation() {
                       </h3>
                       <p className="text-gray-600 mb-3">{article.description}</p>
                       <div className="flex items-center text-primary font-medium text-sm">
-                        Read more
+                        {t('pages.documentation.readMore')}
                         <ChevronRight className="ml-1 w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200" />
                       </div>
                     </div>
@@ -2413,7 +2415,7 @@ export default function Documentation() {
           </Tabs>
         ) : (
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Search Results</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('pages.documentation.searchResults')}</h2>
             {filteredArticles.length > 0 ? (
               <div className="grid md:grid-cols-2 gap-6">
                 {filteredArticles.map((article) => (
@@ -2427,7 +2429,7 @@ export default function Documentation() {
                     </h3>
                     <p className="text-gray-600 mb-3">{article.description}</p>
                     <div className="flex items-center text-primary font-medium text-sm">
-                      Read more
+                      {t('pages.documentation.readMore')}
                       <ChevronRight className="ml-1 w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200" />
                     </div>
                   </div>

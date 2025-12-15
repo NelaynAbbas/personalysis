@@ -37,6 +37,10 @@ import { initializeStorage, shutdownStorage } from './config/database'; // Impor
 import { monitorConnectionHealth } from './db'; // Import database health monitoring
 // import { cacheService as surveyCacheService, queryBatcherService } from './services'; // Unused imports
 import { Logger } from './utils/Logger'; // Import the enhanced logger
+import { initializeNotificationService } from './services/notification-service'; // Import notification service
+import { initializeNotificationCleanup } from './jobs/notification-cleanup'; // Import notification cleanup job
+import { fixDatabaseSchema } from './scripts/fix-database-schema'; // Import database schema fix
+import { setNotificationService } from './middleware/event-tracker'; // Import event tracker setter
 
 const csrfLogger = new Logger('CSRFTokenEndpoint');
 import { initializeDataIntegrity } from './utils/dataIntegrityService'; // Import data integrity service
@@ -281,6 +285,16 @@ app.use((req, res, next) => {
 
     logger.info('Database and data integrity services initialized successfully');
 
+    // Fix database schema - add missing columns
+    logger.info('Fixing database schema...');
+    try {
+      await fixDatabaseSchema();
+      logger.info('Database schema fixes completed successfully');
+    } catch (error) {
+      logger.error('Database schema fix failed:', error);
+      // Don't exit - continue with startup even if schema fix fails
+    }
+
     // Setup graceful shutdown
     process.on('SIGTERM', async () => {
       logger.info('SIGTERM signal received. Shutting down gracefully...');
@@ -338,6 +352,15 @@ app.use((req, res, next) => {
   // Initialize the WebSocket manager with the WebSocket server
   websocketManager.initialize(wss, '/ws');
   logger.info('WebSocket Manager initialized');
+
+  // Initialize notification service with WebSocket manager
+  const notificationService = initializeNotificationService(websocketManager);
+
+  // Set the notification service in event tracker (for lazy access)
+  setNotificationService(notificationService);
+
+  // Initialize notification cleanup job (runs daily at 2 AM)
+  initializeNotificationCleanup();
 
   // Mount the WebSocket server on our HTTP server - with path check and rate limiting
   httpServer.on('upgrade', (request, socket, head) => {

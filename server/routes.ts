@@ -20,6 +20,9 @@ import * as performance from './utils/performance';
 import { sendSuccess, sendServerError, sendClientError, ErrorCodes } from './utils/apiResponses';
 import * as bcrypt from 'bcrypt';
 import GeminiAIService, { BatchTiming, analyzeSurveyResponse } from './services/gemini-ai-service';
+import { analyzeTrends } from './services/trend-analysis-service';
+import { notificationService } from './services/notification-service';
+import { trackEvent, trackUserSignup, trackSurveyCreated, trackSurveyDeleted, trackResponseSubmitted, trackSystemError } from './middleware/event-tracker';
 // import { initDatabaseServices } from './services';
 import collaborationRouter from './routes/collaboration';
 import { demoDataRouter } from './routes/demoData';
@@ -1970,7 +1973,255 @@ export async function registerRoutes(app: Express, storage: IStorage): Promise<W
       });
     }
   });
-  
+
+  // Trend Analysis Endpoints
+
+  // Get company-level trends (all surveys)
+  app.get('/api/company/:id/trends', async (req, res) => {
+    try {
+      const companyId = parseInt(req.params.id);
+      const timeframeParam = req.query.timeframe;
+      const timeframe = (req.query.timeframe as '30d' | '90d' | 'all') || 'all';
+      console.log(`[TRENDS ENDPOINT] timeframeParam=${timeframeParam}, final timeframe=${timeframe}`);
+
+      // Validate authentication
+      if (!req.session || !req.session.userId) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Authentication required'
+        });
+      }
+
+      // Get all surveys for this company
+      const companySurveys = await db.select()
+        .from(surveys)
+        .where(eq(surveys.companyId, companyId));
+
+      if (!companySurveys.length) {
+        return res.json({
+          status: 'success',
+          data: {
+            hasEnoughData: false,
+            dataPoints: 0,
+            volumeTrend: {
+              dataPoints: [],
+              trend: 'stable',
+              growthRate: 0,
+              peakDate: new Date().toISOString().split('T')[0],
+              peakCount: 0,
+            },
+            traitEvolution: [],
+            demographicShifts: [],
+            qualityTrends: {
+              completionRate: [],
+              avgResponseTime: [],
+            },
+            insights: [
+              {
+                title: 'No Survey Data',
+                description: 'Create a survey and collect responses to see trend analysis.',
+                type: 'neutral',
+                confidence: 'high',
+              },
+            ],
+            recommendations: [],
+            message: 'No surveys found for this company.',
+          },
+        });
+      }
+
+      // Get survey IDs
+      const surveyIds = companySurveys.map((s: any) => s.id);
+      console.log(`[TRENDS DEBUG] Company ${companyId}: surveys=${companySurveys.length}, surveyIds=[${surveyIds.join(',')}]`);
+
+      // Fetch responses for all surveys
+      const rawResponses = await db.select()
+        .from(surveyResponses)
+        .where(inArray(surveyResponses.surveyId, surveyIds));
+
+      console.log(`[TRENDS DEBUG] Raw responses from DB: ${rawResponses.length} items`);
+      if (rawResponses.length > 0) {
+        console.log(`[TRENDS DEBUG] Sample response:`, JSON.stringify(rawResponses[0], null, 2).substring(0, 500));
+      }
+
+      // Transform responses to match trend analysis service expectations
+      const allResponses = rawResponses.map((r: any) => ({
+        ...r,
+        createdAt: r.completeTime || r.startTime || new Date(),
+        completionTimeSeconds: r.completeTime && r.startTime
+          ? Math.round((new Date(r.completeTime).getTime() - new Date(r.startTime).getTime()) / 1000)
+          : 0,
+      }));
+
+      console.log(`[TRENDS DEBUG] Transformed responses: ${allResponses.length} items`);
+
+      if (!allResponses.length) {
+        return res.json({
+          status: 'success',
+          data: {
+            hasEnoughData: false,
+            dataPoints: 0,
+            volumeTrend: {
+              dataPoints: [],
+              trend: 'stable',
+              growthRate: 0,
+              peakDate: new Date().toISOString().split('T')[0],
+              peakCount: 0,
+            },
+            traitEvolution: [],
+            demographicShifts: [],
+            qualityTrends: {
+              completionRate: [],
+              avgResponseTime: [],
+            },
+            insights: [
+              {
+                title: 'No Response Data',
+                description: 'Responses will appear here once users submit your surveys.',
+                type: 'neutral',
+                confidence: 'high',
+              },
+            ],
+            recommendations: [],
+            message: 'No responses collected yet.',
+          },
+        });
+      }
+
+      // Debug logging
+      console.log(`[TRENDS] Company ${companyId}: Found ${companySurveys.length} surveys, ${allResponses.length} total responses`);
+
+      // Analyze trends
+      const trendResult = await analyzeTrends(
+        allResponses,
+        timeframe,
+        {
+          productName: companySurveys[0]?.productName || undefined,
+          industry: companySurveys[0]?.industry || undefined,
+        }
+      );
+
+      console.log(`[TRENDS] Result: hasEnoughData=${trendResult.hasEnoughData}, dataPoints=${trendResult.dataPoints}`);
+
+      res.json({
+        status: 'success',
+        data: trendResult,
+      });
+    } catch (error) {
+      console.error('Error fetching company trends:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to analyze trends',
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
+  // Get survey-level trends
+  app.get('/api/surveys/:id/trends', async (req, res) => {
+    try {
+      const surveyId = parseInt(req.params.id);
+      const timeframeParam = req.query.timeframe;
+      const timeframe = (req.query.timeframe as '30d' | '90d' | 'all') || 'all';
+      console.log(`[TRENDS ENDPOINT SURVEY] timeframeParam=${timeframeParam}, final timeframe=${timeframe}`);
+
+      // Validate authentication
+      if (!req.session || !req.session.userId) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Authentication required'
+        });
+      }
+
+      // Get survey details
+      const survey = await db.select()
+        .from(surveys)
+        .where(eq(surveys.id, surveyId))
+        .limit(1);
+
+      if (!survey.length) {
+        return res.status(404).json({
+          status: 'error',
+          message: 'Survey not found',
+        });
+      }
+
+      // Fetch responses for this survey
+      const rawResponses = await db.select()
+        .from(surveyResponses)
+        .where(eq(surveyResponses.surveyId, surveyId));
+
+      // Transform responses to match trend analysis service expectations
+      const responses = rawResponses.map((r: any) => ({
+        ...r,
+        createdAt: r.completeTime || r.startTime || new Date(),
+        completionTimeSeconds: r.completeTime && r.startTime
+          ? Math.round((new Date(r.completeTime).getTime() - new Date(r.startTime).getTime()) / 1000)
+          : 0,
+      }));
+
+      if (!responses.length) {
+        return res.json({
+          status: 'success',
+          data: {
+            hasEnoughData: false,
+            dataPoints: 0,
+            volumeTrend: {
+              dataPoints: [],
+              trend: 'stable',
+              growthRate: 0,
+              peakDate: new Date().toISOString().split('T')[0],
+              peakCount: 0,
+            },
+            traitEvolution: [],
+            demographicShifts: [],
+            qualityTrends: {
+              completionRate: [],
+              avgResponseTime: [],
+            },
+            insights: [
+              {
+                title: 'No Response Data',
+                description: 'Responses will appear here once users submit your survey.',
+                type: 'neutral',
+                confidence: 'high',
+              },
+            ],
+            recommendations: [],
+            message: 'No responses collected yet.',
+          },
+        });
+      }
+
+      // Debug logging
+      console.log(`[TRENDS] Survey ${surveyId}: Found ${responses.length} responses`);
+
+      // Analyze trends
+      const trendResult = await analyzeTrends(
+        responses,
+        timeframe,
+        {
+          productName: survey[0]?.productName || undefined,
+          industry: survey[0]?.industry || undefined,
+        }
+      );
+
+      console.log(`[TRENDS] Result: hasEnoughData=${trendResult.hasEnoughData}, dataPoints=${trendResult.dataPoints}`);
+
+      res.json({
+        status: 'success',
+        data: trendResult,
+      });
+    } catch (error) {
+      console.error('Error fetching survey trends:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to analyze trends',
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
   // Helper function to sanitize filename (remove special characters, replace spaces)
   function sanitizeFilename(name: string): string {
     return name
@@ -3139,7 +3390,14 @@ export async function registerRoutes(app: Express, storage: IStorage): Promise<W
 
       // Track the response for real-time analytics
       await performance.trackSurveyResponse(responseData.surveyId, responseData);
-      
+
+      // Track response submission event for notifications
+      const surveyTitle = (survey as any)?.title || 'Survey';
+      await trackResponseSubmitted(responseData.surveyId, surveyTitle).catch(err => {
+        console.error('Failed to track response submission event:', err);
+        // Don't block the response submission if tracking fails
+      });
+
       // Broadcast survey response received notification
       const responseReceivedData: SurveyResponseReceivedData = {
         type: 'surveyResponseReceived',
@@ -7029,6 +7287,12 @@ export async function registerRoutes(app: Express, storage: IStorage): Promise<W
     console.log(`✅ Survey created successfully with ID: ${newSurvey.id} for company: ${company.name}`);
     console.log(`📋 Request body templateId:`, req.body.templateId);
 
+    // Track survey creation event for notifications
+    await trackSurveyCreated(newSurvey.id, newSurvey.title, user.username, userId).catch(err => {
+      console.error('Failed to track survey creation event:', err);
+      // Don't block the survey creation if tracking fails
+    });
+
     // Prepare payload questions (custom) and detect conflict with templateId
     const payloadQuestions = Array.isArray(req.body.questions) ? req.body.questions : [];
     const templateId = req.body.templateId;
@@ -7575,17 +7839,10 @@ export async function registerRoutes(app: Express, storage: IStorage): Promise<W
         });
       }
 
-      // Get the user's company ID from session or user object
+      // Get the user's company ID from session or user object (optional for public surveys)
       const companyId = req.session?.companyId || req.user?.companyId;
-      
-      if (!companyId) {
-        console.error('No company ID found for user');
-        return res.status(403).json({
-          status: 'error',
-          message: 'Company ID not found. Please ensure you are logged in.'
-        });
-      }
 
+      // First, fetch the survey without company filter to check if it's public/anonymous
       const result = await db.execute(sql`
         SELECT
           id, company_id, created_by_id, title, description, survey_type,
@@ -7594,7 +7851,7 @@ export async function registerRoutes(app: Express, storage: IStorage): Promise<W
           redirect_url, allow_anonymous, require_email, collect_demographics,
           estimated_time_minutes, max_responses, expiry_date, created_at, updated_at
         FROM surveys
-        WHERE id = ${surveyId} AND company_id = ${companyId}
+        WHERE id = ${surveyId}
       `);
 
       if (!result.rows || result.rows.length === 0) {
@@ -7608,6 +7865,10 @@ export async function registerRoutes(app: Express, storage: IStorage): Promise<W
       }
 
       const row = result.rows[0];
+
+      // All surveys are publicly available for taking via share links
+      // Anyone can access any survey from the shared link without authentication
+      console.log(`Survey ${surveyId} is publicly accessible via share link`);
       const formattedSurvey = {
         id: row.id,
         companyId: row.company_id,
@@ -7894,7 +8155,7 @@ export async function registerRoutes(app: Express, storage: IStorage): Promise<W
       }
 
       const survey = surveyCheck.rows[0];
-      
+
       // If preview is requested but user is not admin, deny access
       if (isPreview && !isAdmin) {
         return res.status(403).json({
@@ -7902,18 +8163,10 @@ export async function registerRoutes(app: Express, storage: IStorage): Promise<W
           message: 'Preview access is restricted to administrators only.'
         });
       }
-      
-      // Check if survey is public or if the user belongs to the survey's company
-      // Admin preview bypasses this check
-      const isPublicSurvey = survey.is_public || survey.allow_anonymous;
-      const hasAccess = (isPreview && isAdmin) || isPublicSurvey || companyId === survey.company_id;
 
-      if (!hasAccess) {
-        return res.status(403).json({
-          status: 'error',
-          message: 'Access denied. This survey is private and requires authentication.'
-        });
-      }
+      // All surveys are publicly available via share links
+      // Anyone can access survey questions without authentication
+      console.log(`Survey ${surveyId} questions are publicly accessible via share link`);
 
       // Fetch questions for this survey
       const questionsResult = await executeWithRetry(async () => {
@@ -8230,6 +8483,13 @@ export async function registerRoutes(app: Express, storage: IStorage): Promise<W
       
       // Finally, delete the survey from the database
       await db.delete(surveys).where(eq(surveys.id, surveyId));
+
+      // Track survey deletion event for notifications
+      const userId = (req.session as any)?.userId || 1;
+      await trackSurveyDeleted(existingSurvey.title, userId).catch(err => {
+        console.error('Failed to track survey deletion event:', err);
+        // Don't block the survey deletion if tracking fails
+      });
 
       // Broadcast survey deletion via WebSocket
       const companyId = existingSurvey.companyId;
@@ -11180,6 +11440,245 @@ export async function registerRoutes(app: Express, storage: IStorage): Promise<W
       res.status(500).json({
         status: 'error',
         message: 'Failed to fetch job status',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // ============================================
+  // ADMIN NOTIFICATION ENDPOINTS
+  // ============================================
+
+  // GET /api/admin/notifications - Get all admin notifications with filters
+  app.get('/api/admin/notifications', async (req: Request, res: Response) => {
+    try {
+      // Verify admin authentication
+      if (!req.session || !req.session.userId) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Authentication required'
+        });
+      }
+
+      // Check admin role
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, req.session.userId)
+      });
+
+      if (!user || (user.role !== 'admin' && user.role !== 'platform_admin')) {
+        return res.status(403).json({
+          status: 'error',
+          message: 'Admin access required'
+        });
+      }
+
+      // Get filters from query
+      let isRead: boolean | undefined = undefined;
+      if (req.query.isRead !== undefined && req.query.isRead !== '') {
+        isRead = req.query.isRead === 'true';
+      }
+      const category = req.query.category as string | undefined;
+      const limit = req.query.limit ? Math.min(parseInt(req.query.limit as string), 100) : 50;
+      const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+
+      console.log('[ADMIN_NOTIFICATIONS] Fetching with filters:', { isRead, category, limit, offset });
+
+      // Fetch notifications using service
+      const notifs = await notificationService.getAdminNotifications({
+        isRead,
+        category,
+        limit,
+        offset
+      });
+
+      console.log('[ADMIN_NOTIFICATIONS] Found', notifs.length, 'notifications');
+
+      res.json({
+        status: 'success',
+        data: notifs,
+        pagination: {
+          limit,
+          offset,
+          count: notifs.length
+        }
+      });
+    } catch (error) {
+      console.error('[ADMIN_NOTIFICATIONS] Error fetching notifications:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to fetch notifications',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // GET /api/admin/notifications/unread-count - Get count of unread notifications
+  app.get('/api/admin/notifications/unread-count', async (req: Request, res: Response) => {
+    try {
+      // Verify admin authentication
+      if (!req.session || !req.session.userId) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Authentication required'
+        });
+      }
+
+      // Check admin role
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, req.session.userId)
+      });
+
+      if (!user || (user.role !== 'admin' && user.role !== 'platform_admin')) {
+        return res.status(403).json({
+          status: 'error',
+          message: 'Admin access required'
+        });
+      }
+
+      const count = await notificationService.getUnreadCount();
+
+      res.json({
+        status: 'success',
+        data: { unreadCount: count }
+      });
+    } catch (error) {
+      console.error('[UNREAD_COUNT] Error fetching unread count:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to fetch unread count',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // PATCH /api/admin/notifications/:id/read - Mark single notification as read
+  app.patch('/api/admin/notifications/:id/read', async (req: Request, res: Response) => {
+    try {
+      // Verify admin authentication
+      if (!req.session || !req.session.userId) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Authentication required'
+        });
+      }
+
+      // Check admin role
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, req.session.userId)
+      });
+
+      if (!user || (user.role !== 'admin' && user.role !== 'platform_admin')) {
+        return res.status(403).json({
+          status: 'error',
+          message: 'Admin access required'
+        });
+      }
+
+      const notificationId = parseInt(req.params.id);
+      const result = await notificationService.markAsRead(notificationId);
+
+      if (!result) {
+        return res.status(404).json({
+          status: 'error',
+          message: 'Notification not found'
+        });
+      }
+
+      res.json({
+        status: 'success',
+        data: result
+      });
+    } catch (error) {
+      console.error('[MARK_READ] Error marking notification as read:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to mark notification as read',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // PATCH /api/admin/notifications/read-all - Mark all notifications as read
+  app.patch('/api/admin/notifications/read-all', async (req: Request, res: Response) => {
+    try {
+      // Verify admin authentication
+      if (!req.session || !req.session.userId) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Authentication required'
+        });
+      }
+
+      // Check admin role
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, req.session.userId)
+      });
+
+      if (!user || (user.role !== 'admin' && user.role !== 'platform_admin')) {
+        return res.status(403).json({
+          status: 'error',
+          message: 'Admin access required'
+        });
+      }
+
+      const count = await notificationService.markAllAsRead();
+
+      res.json({
+        status: 'success',
+        data: { markedAsReadCount: count }
+      });
+    } catch (error) {
+      console.error('[MARK_ALL_READ] Error marking all as read:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to mark all notifications as read',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // DELETE /api/admin/notifications/:id - Delete notification
+  app.delete('/api/admin/notifications/:id', async (req: Request, res: Response) => {
+    try {
+      // Verify admin authentication
+      if (!req.session || !req.session.userId) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Authentication required'
+        });
+      }
+
+      // Check admin role
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, req.session.userId)
+      });
+
+      if (!user || (user.role !== 'admin' && user.role !== 'platform_admin')) {
+        return res.status(403).json({
+          status: 'error',
+          message: 'Admin access required'
+        });
+      }
+
+      const notificationId = parseInt(req.params.id);
+      const deleted = await notificationService.deleteNotification(notificationId);
+
+      if (!deleted) {
+        return res.status(404).json({
+          status: 'error',
+          message: 'Notification not found'
+        });
+      }
+
+      res.json({
+        status: 'success',
+        message: 'Notification deleted'
+      });
+    } catch (error) {
+      console.error('[DELETE_NOTIFICATION] Error deleting notification:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to delete notification',
         error: error instanceof Error ? error.message : String(error)
       });
     }

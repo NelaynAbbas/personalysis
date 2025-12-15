@@ -244,10 +244,41 @@ const SurveyCustomize = () => {
                       <SelectValue placeholder="Select font family" />
                     </SelectTrigger>
                     <SelectContent>
+                      {/* Modern Sans-Serif */}
+                      <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">Modern Sans-Serif</div>
                       <SelectItem value="inter">Inter</SelectItem>
                       <SelectItem value="roboto">Roboto</SelectItem>
                       <SelectItem value="poppins">Poppins</SelectItem>
                       <SelectItem value="openSans">Open Sans</SelectItem>
+                      <SelectItem value="lato">Lato</SelectItem>
+                      <SelectItem value="montserrat">Montserrat</SelectItem>
+                      <SelectItem value="nunito">Nunito</SelectItem>
+                      <SelectItem value="quicksand">Quicksand</SelectItem>
+
+                      {/* Professional & Elegant */}
+                      <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">Professional & Elegant</div>
+                      <SelectItem value="playfair">Playfair Display</SelectItem>
+                      <SelectItem value="cormorant">Cormorant</SelectItem>
+                      <SelectItem value="lora">Lora</SelectItem>
+                      <SelectItem value="merriweather">Merriweather</SelectItem>
+
+                      {/* Geometric & Clean */}
+                      <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">Geometric & Clean</div>
+                      <SelectItem value="raleway">Raleway</SelectItem>
+                      <SelectItem value="geometric">Geometric Sans</SelectItem>
+                      <SelectItem value="proxima">Proxima Nova</SelectItem>
+
+                      {/* Friendly & Rounded */}
+                      <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">Friendly & Rounded</div>
+                      <SelectItem value="rubik">Rubik</SelectItem>
+                      <SelectItem value="comfortaa">Comfortaa</SelectItem>
+                      <SelectItem value="varela">Varela Round</SelectItem>
+
+                      {/* Tech & Modern */}
+                      <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">Tech & Modern</div>
+                      <SelectItem value="sora">Sora</SelectItem>
+                      <SelectItem value="space">Space Mono</SelectItem>
+                      <SelectItem value="source">Source Sans Pro</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

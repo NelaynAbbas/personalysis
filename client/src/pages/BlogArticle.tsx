@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useParams, Link } from "wouter";
+import { useTranslation } from "react-i18next";
 import {
   Card,
   CardContent,
@@ -102,7 +103,8 @@ const markdownToHtml = (markdown: string) => {
 const BlogArticle = () => {
   const { slug } = useParams();
   const [, navigate] = useLocation();
-  
+  const { t } = useTranslation();
+
   // Fetch article by slug
   const { data: article, isLoading, error } = useQuery({
     queryKey: ['blog', 'article', slug],
@@ -137,14 +139,14 @@ const BlogArticle = () => {
       </div>
     );
   }
-  
+
   if (error || !article) {
     return (
       <div className="container mx-auto py-12 max-w-4xl text-center">
-        <h1 className="text-2xl font-bold mb-4">Article Not Found</h1>
-        <p className="mb-8">The article you're looking for doesn't exist or has been removed.</p>
+        <h1 className="text-2xl font-bold mb-4">{t('pages.blogArticle.notFound')}</h1>
+        <p className="mb-8">{t('pages.blogArticle.notFoundMessage')}</p>
         <Button onClick={() => navigate('/blog')}>
-          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Blog
+          <ArrowLeft className="h-4 w-4 mr-2" /> {t('pages.blogArticle.backToBlog')}
         </Button>
       </div>
     );
@@ -153,19 +155,19 @@ const BlogArticle = () => {
   return (
     <div className="container mx-auto py-12 max-w-4xl">
       <Button variant="ghost" onClick={() => navigate('/blog')} className="mb-8">
-        <ArrowLeft className="h-4 w-4 mr-2" /> Back to Blog
+        <ArrowLeft className="h-4 w-4 mr-2" /> {t('pages.blogArticle.backToBlog')}
       </Button>
-      
+
       {article.featuredImage && (
         <div className="mb-8 rounded-lg overflow-hidden h-[400px] w-full">
-          <img 
-            src={article.featuredImage} 
+          <img
+            src={article.featuredImage}
             alt={article.title}
             className="w-full h-full object-cover"
           />
         </div>
       )}
-      
+
       <div className="mb-6">
         <h1 className="text-4xl font-bold mb-4">{article.title}</h1>
         <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
@@ -179,12 +181,12 @@ const BlogArticle = () => {
           </div>
           <div className="flex items-center">
             <Eye className="h-4 w-4 mr-1" />
-            {article.viewCount} views
+            {t('pages.blogArticle.views', { count: article.viewCount })}
           </div>
           <Badge>{article.category}</Badge>
         </div>
       </div>
-      
+
       <Card className="mb-8">
         <CardHeader className="pb-0">
           <div className="italic text-muted-foreground">
@@ -193,15 +195,15 @@ const BlogArticle = () => {
         </CardHeader>
         <CardContent>
           <Separator className="my-4" />
-          <div 
+          <div
             className="prose prose-lg max-w-none dark:prose-invert"
             dangerouslySetInnerHTML={{ __html: `<p>${markdownToHtml(article.content)}</p>` }}
           />
         </CardContent>
       </Card>
-      
+
       <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">Tags</h2>
+        <h2 className="text-xl font-semibold mb-4">{t('pages.blogArticle.tagsTitle')}</h2>
         <div className="flex flex-wrap gap-2">
           {article.tags.map((tag: string, i: number) => (
             <Badge key={i} variant="secondary" className="text-sm">
@@ -210,23 +212,23 @@ const BlogArticle = () => {
           ))}
         </div>
       </div>
-      
+
       <Separator className="my-8" />
-      
+
       <div>
-        <h2 className="text-xl font-semibold mb-4">Share this article</h2>
+        <h2 className="text-xl font-semibold mb-4">{t('pages.blogArticle.shareTitle')}</h2>
         <div className="flex gap-2">
           <Button variant="outline" size="sm">
-            Twitter
+            {t('pages.blogArticle.shareTwitter')}
           </Button>
           <Button variant="outline" size="sm">
-            LinkedIn
+            {t('pages.blogArticle.shareLinkedIn')}
           </Button>
           <Button variant="outline" size="sm">
-            Facebook
+            {t('pages.blogArticle.shareFacebook')}
           </Button>
           <Button variant="outline" size="sm">
-            Email
+            {t('pages.blogArticle.shareEmail')}
           </Button>
         </div>
       </div>

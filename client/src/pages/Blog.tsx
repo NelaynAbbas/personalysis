@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import {
   Card,
   CardContent,
@@ -172,13 +173,14 @@ const mockCategories: BlogCategory[] = [
 
 const ArticleCard = ({ article }: { article: BlogArticle }) => {
   const [, navigate] = useLocation();
-  
+  const { t } = useTranslation();
+
   return (
     <Card className="h-full flex flex-col">
       {article.featuredImage && (
         <div className="h-48 w-full overflow-hidden">
-          <img 
-            src={article.featuredImage} 
+          <img
+            src={article.featuredImage}
             alt={article.title}
             className="w-full h-full object-cover transition-transform hover:scale-105"
           />
@@ -207,12 +209,12 @@ const ArticleCard = ({ article }: { article: BlogArticle }) => {
           <User className="h-4 w-4 mr-1" />
           {article.authorName}
         </div>
-        <Button 
-          variant="link" 
-          className="p-0" 
+        <Button
+          variant="link"
+          className="p-0"
           onClick={() => navigate(`/blog/${article.slug}`)}
         >
-          Read more →
+          {t('pages.blog.readMore')}
         </Button>
       </CardFooter>
     </Card>
@@ -221,6 +223,7 @@ const ArticleCard = ({ article }: { article: BlogArticle }) => {
 
 const Blog = () => {
   const [, navigate] = useLocation();
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   
@@ -267,32 +270,32 @@ const Blog = () => {
   return (
     <div className="container mx-auto py-12 max-w-6xl">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">PersonalysisPro Blog</h1>
+        <h1 className="text-4xl font-bold mb-4">{t('pages.blog.title')}</h1>
         <p className="text-xl text-muted-foreground max-w-xl mx-auto">
-          Insights, research, and best practices for personality assessment in business
+          {t('pages.blog.subtitle')}
         </p>
       </div>
-      
+
       <div className="flex flex-col md:flex-row justify-between gap-4 mb-8">
         <div className="relative flex-1">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search articles..."
+            placeholder={t('pages.blog.searchPlaceholder')}
             className="pl-8"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        
+
         <Select
           value={categoryFilter || "all"}
           onValueChange={(value) => setCategoryFilter(value === "all" ? null : value)}
         >
           <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="All Categories" />
+            <SelectValue placeholder={t('pages.blog.allCategories')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
+            <SelectItem value="all">{t('pages.blog.allCategories')}</SelectItem>
             {categories.map((category: any) => (
               <SelectItem key={category.id} value={category.name}>
                 {category.name}
@@ -301,11 +304,11 @@ const Blog = () => {
           </SelectContent>
         </Select>
       </div>
-      
+
       {filteredArticles.length === 0 ? (
         <div className="text-center py-12">
-          <h2 className="text-xl font-semibold">No articles found</h2>
-          <p className="text-muted-foreground mt-2">Try adjusting your search or filters</p>
+          <h2 className="text-xl font-semibold">{t('pages.blog.noArticlesFound')}</h2>
+          <p className="text-muted-foreground mt-2">{t('pages.blog.tryAdjustingFilters')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -314,13 +317,13 @@ const Blog = () => {
           ))}
         </div>
       )}
-      
+
       <div className="mt-16 border-t pt-8">
-        <h2 className="text-2xl font-bold mb-4">Categories</h2>
+        <h2 className="text-2xl font-bold mb-4">{t('pages.blog.categoriesTitle')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {categories.map((category: any) => (
-            <Card 
-              key={category.id} 
+            <Card
+              key={category.id}
               className="hover:shadow-md transition-shadow cursor-pointer"
               onClick={() => setCategoryFilter(category.name)}
             >
@@ -332,7 +335,7 @@ const Blog = () => {
                   {category.description}
                 </p>
                 <div className="mt-2 text-sm font-medium">
-                  {category.articleCount} article{category.articleCount !== 1 ? 's' : ''}
+                  {t('pages.blog.articleCount', { count: category.articleCount })}
                 </div>
               </CardContent>
             </Card>

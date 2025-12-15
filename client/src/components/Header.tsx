@@ -1,32 +1,39 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import React, { useState, useEffect } from "react";
-import { 
-  Menu, 
-  X, 
-  ChevronRight, 
-  Calendar, 
-  Building2, 
-  Home, 
-  LineChart, 
-  Info, 
+import { useTranslation } from "react-i18next";
+import {
+  Menu,
+  X,
+  ChevronRight,
+  Calendar,
+  Building2,
+  Home,
+  LineChart,
+  Info,
   BookOpen,
   CheckCircle2,
   LogOut,
   Users,
   LayoutDashboard,
-  Target
+  Target,
+  Globe,
+  ChevronDown
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { performLogout } from "@/lib/logout";
+import { useLanguage } from "@/context/LanguageContext";
 
 const Header = () => {
+  const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [location, setLocation] = useLocation();
   const [scrolled, setScrolled] = useState(false);
+  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const { authLoaded, isAuthenticated } = useAuth();
+  const { language, languages, changeLanguage } = useLanguage();
   
   useEffect(() => {
     // Check if window is available (client-side only)
@@ -34,23 +41,33 @@ const Header = () => {
       const checkSize = () => {
         setIsMobile(window.innerWidth < 768);
       };
-      
+
       const handleScroll = () => {
         setScrolled(window.scrollY > 10);
       };
-      
+
+      // Close language dropdown when clicking outside
+      const handleClickOutside = (e: MouseEvent) => {
+        const target = e.target as HTMLElement;
+        if (!target.closest('[data-language-selector]')) {
+          setIsLanguageDropdownOpen(false);
+        }
+      };
+
       // Initial checks
       checkSize();
       handleScroll();
-      
+
       // Add event listeners
       window.addEventListener('resize', checkSize);
       window.addEventListener('scroll', handleScroll);
-      
+      window.addEventListener('click', handleClickOutside);
+
       // Cleanup
       return () => {
         window.removeEventListener('resize', checkSize);
         window.removeEventListener('scroll', handleScroll);
+        window.removeEventListener('click', handleClickOutside);
       };
     }
   }, []);
@@ -129,19 +146,19 @@ const Header = () => {
               </Link>
             </div>
             <nav className="hidden md:flex space-x-1">
-              {[ 
+              {[
                 // Only show these menu items when user is not logged in
                 ...(!isAuthenticated ? [
-                  { path: '/', label: 'Home' },
-                  { path: '/use-cases', label: 'Use Cases', icon: <Target className="w-4 h-4" /> },
-                  { path: '/how-it-works', label: 'How It Works' },
-                  { path: '/about', label: 'About' },
-                  { path: '/blog', label: 'Blog' }
+                  { path: '/', label: t('header.home') },
+                  { path: '/use-cases', label: t('header.useCases'), icon: <Target className="w-4 h-4" /> },
+                  { path: '/how-it-works', label: t('header.howItWorks') },
+                  { path: '/about', label: t('header.about') },
+                  { path: '/blog', label: t('header.blog') }
                 ] : []),
                 // Always show these items for logged-in users
                 ...(isAuthenticated ? [
-                  { path: '/dashboard', label: 'Dashboard' },
-                  { path: '/collaboration', label: 'Collaborate' }
+                  { path: '/dashboard', label: t('header.dashboard') },
+                  { path: '/collaboration', label: t('header.collaborate') }
                 ] : [])
               ].map(({ path, label }) => (
                 <div 
@@ -161,33 +178,69 @@ const Header = () => {
           </div>
           <div className="hidden md:block">
             <div className="ml-4 flex items-center md:ml-6 space-x-4">
+              {/* Language Selector Dropdown */}
+              <div className="relative" data-language-selector>
+                <button
+                  onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary hover:bg-gray-50 rounded-full border border-gray-300 transition-all duration-200"
+                >
+                  <Globe className="w-4 h-4" />
+                  {languages.find(l => l.code === language)?.flag}
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+
+                {/* Dropdown Menu */}
+                {isLanguageDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden">
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => {
+                          changeLanguage(lang.code);
+                          setIsLanguageDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-3 text-sm flex items-center gap-2 transition-colors ${
+                          language === lang.code
+                            ? 'bg-primary/10 text-primary font-semibold'
+                            : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        <span className="text-lg">{lang.flag}</span>
+                        {lang.name}
+                        {language === lang.code && <ChevronRight className="w-4 h-4 ml-auto" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {!isAuthenticated && (
                 <Link href="/login">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-full border-gray-300 hover:border-primary/80 hover:bg-gray-50 transition-colors duration-200"
                   >
                     <Building2 className="w-4 h-4" />
-                    Business Login
+                    {t('header.businessLogin')}
                   </Button>
                 </Link>
               )}
-              
+
               {isAuthenticated ? (
-                <Button 
+                <Button
                   onClick={handleLogout}
                   className="flex items-center gap-2 px-6 py-2 text-sm font-medium rounded-full bg-gradient-to-r from-rose-500 to-red-600 text-white hover:from-rose-500/90 hover:to-red-500 shadow-md shadow-red-500/10 hover:shadow-lg hover:shadow-red-500/20 transition-all duration-200"
                 >
                   <LogOut className="w-4 h-4" />
-                  Logout
+                  {t('header.logout')}
                 </Button>
               ) : (
-                <Button 
+                <Button
                   onClick={handleBookDemo}
                   className="flex items-center gap-2 px-6 py-2 text-sm font-medium rounded-full bg-gradient-to-r from-primary to-indigo-600 text-white hover:from-primary/90 hover:to-indigo-500 shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/20 transition-all duration-200"
                 >
                   <Calendar className="w-4 h-4" />
-                  Book a Demo
+                  {t('header.bookDemo')}
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               )}
@@ -221,17 +274,17 @@ const Header = () => {
                 {[
                   // Only show these menu items when user is not logged in
                 ...(!isAuthenticated ? [
-                    { path: '/', label: 'Home' },
-                    { path: '/use-cases', label: 'Use Cases', icon: <Target className="w-4 h-4" /> },
-                    { path: '/how-it-works', label: 'How It Works' },
-                    { path: '/about', label: 'About' },
-                    { path: '/blog', label: 'Blog' },
-                    { path: '/login', label: 'Business Login', icon: <Building2 className="w-4 h-4" /> }
+                    { path: '/', label: t('header.home') },
+                    { path: '/use-cases', label: t('header.useCases'), icon: <Target className="w-4 h-4" /> },
+                    { path: '/how-it-works', label: t('header.howItWorks') },
+                    { path: '/about', label: t('header.about') },
+                    { path: '/blog', label: t('header.blog') },
+                    { path: '/login', label: t('header.businessLogin'), icon: <Building2 className="w-4 h-4" /> }
                   ] : []),
                   // Always show these items for logged-in users
                 ...(isAuthenticated ? [
-                    { path: '/dashboard', label: 'Dashboard' },
-                    { path: '/collaboration', label: 'Collaborate' }
+                    { path: '/dashboard', label: t('header.dashboard') },
+                    { path: '/collaboration', label: t('header.collaborate') }
                   ] : [])
                 ].map(({ path, label, icon }, index) => (
                   <Link 
@@ -251,22 +304,47 @@ const Header = () => {
                     {isActive(path) && <ChevronRight className="w-4 h-4" />}
                   </Link>
                 ))}
-                
+
+                {/* Mobile Language Selector */}
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="text-xs font-semibold text-gray-600 px-4 py-2">{t('header.language')}</div>
+                  <div className="space-y-1">
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => {
+                          changeLanguage(lang.code);
+                          setIsMenuOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 rounded-lg transition-colors ${
+                          language === lang.code
+                            ? 'bg-primary/10 text-primary font-semibold'
+                            : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        <span className="text-lg">{lang.flag}</span>
+                        {lang.name}
+                        {language === lang.code && <ChevronRight className="w-4 h-4 ml-auto" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {isAuthenticated ? (
-                  <div 
-                    onClick={handleLogout} 
+                  <div
+                    onClick={handleLogout}
                     className="flex items-center justify-center gap-2 mt-4 py-3 px-4 rounded-lg text-white cursor-pointer bg-gradient-to-r from-rose-500 to-red-600 font-medium shadow-md"
                   >
                     <LogOut className="w-4 h-4" />
-                    Logout
+                    {t('header.logout')}
                   </div>
                 ) : (
-                  <div 
-                    onClick={handleBookDemo} 
+                  <div
+                    onClick={handleBookDemo}
                     className="flex items-center justify-center gap-2 mt-4 py-3 px-4 rounded-lg text-white cursor-pointer bg-gradient-to-r from-primary to-indigo-600 font-medium shadow-md"
                   >
                     <Calendar className="w-4 h-4" />
-                    Book a Demo
+                    {t('header.bookDemo')}
                     <ChevronRight className="w-4 h-4" />
                   </div>
                 )}

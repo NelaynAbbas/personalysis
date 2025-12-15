@@ -2,21 +2,22 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { 
-  Brain, 
-  LineChart, 
-  BarChart4, 
-  Share2, 
-  Database, 
-  Globe2, 
-  UserCheck, 
-  ChevronRight, 
+import {
+  Brain,
+  LineChart,
+  BarChart4,
+  Share2,
+  Database,
+  Globe2,
+  UserCheck,
+  ChevronRight,
   Sparkles,
   Shield,
   Info
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Textarea } from "@/components/ui/textarea";
 
 export default function AboutUs() {
+  const { t } = useTranslation();
   // Demo dialog state
   const [showDemoDialog, setShowDemoDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,8 +67,8 @@ export default function AboutUs() {
       }
 
       toast({
-        title: "Demo Request Received",
-        description: "Thank you! We'll contact you shortly to schedule your personalized demo.",
+        title: t('pages.aboutUs.demoRequestReceived'),
+        description: t('pages.aboutUs.demoThankYou'),
       });
 
       // Reset form

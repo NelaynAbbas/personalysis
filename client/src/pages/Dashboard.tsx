@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useRealtime } from "@/hooks/useRealtime";
 import DashboardView from "@/components/dashboard/DashboardView";
-import BusinessIntelligence from "@/components/dashboard/BusinessIntelligenceFix";
+import TrendSection from "@/components/dashboard/TrendSection";
 import SurveyList from "@/components/SurveyList";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -25,7 +26,8 @@ import {
   FileText,
   ChevronRight,
   CheckCircle,
-  Filter
+  Filter,
+  TrendingUp
 } from "lucide-react";
 import { apiRequest } from "@/lib/api";
 
@@ -135,9 +137,10 @@ interface Company {
 }
 
 const Dashboard = () => {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
-  const [dashboardTab, setDashboardTab] = useState<"basic" | "business-intelligence">("basic");
+  const [dashboardTab, setDashboardTab] = useState<"basic" | "trend-analysis">("basic");
   const [selectedSurveyId, setSelectedSurveyId] = useState<string>("all");
   const [isTabLoading, setIsTabLoading] = useState(false);
   const [hasLoadingTimeoutElapsed, setHasLoadingTimeoutElapsed] = useState(false);
@@ -411,40 +414,40 @@ const Dashboard = () => {
         {isLicenseExpired && (
           <Card className="border-red-200 bg-red-50">
             <CardContent className="p-4 text-red-800">
-              <div className="font-semibold">License issue</div>
-              <div className="text-sm">Your company license is not active. Renew or contact support to resume creating or sharing surveys.</div>
+              <div className="font-semibold">{t('pages.dashboard.licenseIssue')}</div>
+              <div className="text-sm">{t('pages.dashboard.licenseNotActive')}</div>
             </CardContent>
           </Card>
         )}
         {!isLicenseExpired && isExpiringSoon && (
           <Card className="border-amber-200 bg-amber-50">
             <CardContent className="p-4 text-amber-900">
-              <div className="font-semibold">License expiring soon</div>
-              <div className="text-sm">Your license expires in {daysRemaining} day{daysRemaining === 1 ? '' : 's'}. Please renew to avoid interruptions.</div>
+              <div className="font-semibold">{t('pages.dashboard.licenseExpiringSoon')}</div>
+              <div className="text-sm">{t('pages.dashboard.licenseExpiresIn', { daysRemaining })}</div>
             </CardContent>
           </Card>
         )}
         {isResponseBlocked && (
           <Card className="border-red-200 bg-red-50">
             <CardContent className="p-4 text-red-800">
-              <div className="font-semibold">Response quota reached</div>
-              <div className="text-sm">You have collected {actualResponses}/{maxResponses} responses. Upgrade to increase your response quota.</div>
+              <div className="font-semibold">{t('pages.dashboard.responseQuotaReached')}</div>
+              <div className="text-sm">{t('pages.dashboard.responseQuotaMessage', { actualResponses, maxResponses })}</div>
             </CardContent>
           </Card>
         )}
         {!isResponseBlocked && isResponseNearCap && (
           <Card className="border-amber-200 bg-amber-50">
             <CardContent className="p-4 text-amber-900">
-              <div className="font-semibold">Approaching response limit</div>
-              <div className="text-sm">{usagePercentage}% of your response quota used ({actualResponses}/{maxResponses}). Consider upgrading.</div>
+              <div className="font-semibold">{t('pages.dashboard.approachingResponseLimit')}</div>
+              <div className="text-sm">{t('pages.dashboard.responseQuotaUsage', { usagePercentage, actualResponses, maxResponses })}</div>
             </CardContent>
           </Card>
         )}
         {isSurveyBlocked && (
           <Card className="border-red-200 bg-red-50">
             <CardContent className="p-4 text-red-800">
-              <div className="font-semibold">Survey limit reached</div>
-              <div className="text-sm">You have reached your plan's survey limit ({surveysCount}/{maxSurveys}). Upgrade to create more surveys.</div>
+              <div className="font-semibold">{t('pages.dashboard.surveyLimitReached')}</div>
+              <div className="text-sm">{t('pages.dashboard.surveyLimitMessage', { surveysCount, maxSurveys })}</div>
             </CardContent>
           </Card>
         )}
@@ -463,17 +466,17 @@ const Dashboard = () => {
               </div>
             )}
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{company?.name || 'Company Dashboard'}</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{company?.name || t('pages.dashboard.companyDashboard')}</h1>
               <div className="flex flex-col gap-2 mt-2">
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Plan:</span>
+                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">{t('pages.dashboard.plan')}:</span>
                     <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-                      {company?.subscriptionTier ? company.subscriptionTier.charAt(0).toUpperCase() + company.subscriptionTier.slice(1) : 'Not Set'}
+                      {company?.subscriptionTier ? company.subscriptionTier.charAt(0).toUpperCase() + company.subscriptionTier.slice(1) : t('pages.dashboard.notSet')}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">License:</span>
+                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">{t('pages.dashboard.license')}:</span>
                     <Badge
                       variant="outline"
                       className={
@@ -484,14 +487,14 @@ const Dashboard = () => {
                             : "bg-green-100 text-green-700 border-green-200"
                       }
                     >
-                      {company?.licenseStatus ? company.licenseStatus.charAt(0).toUpperCase() + company.licenseStatus.slice(1) : 'Unknown'}
+                      {company?.licenseStatus ? company.licenseStatus.charAt(0).toUpperCase() + company.licenseStatus.slice(1) : t('pages.dashboard.unknown')}
                     </Badge>
                   </div>
                 </div>
                 {company?.size && (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Company Size:</span>
-                    <span className="text-sm text-gray-700">{company.size} employees</span>
+                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">{t('pages.dashboard.companySize')}:</span>
+                    <span className="text-sm text-gray-700">{company.size} {t('pages.dashboard.employees')}</span>
                   </div>
                 )}
               </div>
@@ -503,54 +506,54 @@ const Dashboard = () => {
               onClick={() => setLocation('/survey/create')}
               disabled={isAnyBlocked || isSurveyBlocked}
               title={
-                isLicenseExpired ? 'License not active' :
-                isResponseBlocked ? 'Response quota reached' :
-                isSurveyBlocked ? 'Survey limit reached' : undefined
+                isLicenseExpired ? t('pages.dashboard.licenseNotActiveTitle') :
+                isResponseBlocked ? t('pages.dashboard.responseQuotaReachedTitle') :
+                isSurveyBlocked ? t('pages.dashboard.surveyLimitReachedTitle') : undefined
               }
               className="bg-primary hover:bg-primary-dark text-white"
             >
               <FileText className="h-4 w-4 mr-2" />
-              Create New Survey
+              {t('pages.dashboard.createNewSurvey')}
             </Button>
             <Button
               onClick={() => setShowShareModal(true)}
               disabled={isAnyBlocked}
               title={
-                isLicenseExpired ? 'License not active' :
-                isResponseBlocked ? 'Response quota reached' :
+                isLicenseExpired ? t('pages.dashboard.licenseNotActiveTitle') :
+                isResponseBlocked ? t('pages.dashboard.responseQuotaReachedTitle') :
                 undefined
               }
               className="bg-primary/80 hover:bg-primary text-white"
             >
               <Share2 className="h-4 w-4 mr-2" />
-              Share Survey
+              {t('pages.dashboard.shareSurvey')}
             </Button>
             <Button
               onClick={() => setLocation('/collaboration')}
               disabled={isAnyBlocked}
               title={
-                isLicenseExpired ? 'License not active' :
-                isResponseBlocked ? 'Response quota reached' :
+                isLicenseExpired ? t('pages.dashboard.licenseNotActiveTitle') :
+                isResponseBlocked ? t('pages.dashboard.responseQuotaReachedTitle') :
                 undefined
               }
               className="bg-primary/80 hover:bg-primary text-white"
             >
               <MessageSquare className="h-4 w-4 mr-2" />
-              Collaborate on Survey
+              {t('pages.dashboard.collaborateOnSurvey')}
             </Button>
             <Button
               variant="outline"
               onClick={() => setLocation('/survey/customize')}
               disabled={isAnyBlocked}
               title={
-                isLicenseExpired ? 'License not active' :
-                isResponseBlocked ? 'Response quota reached' :
+                isLicenseExpired ? t('pages.dashboard.licenseNotActiveTitle') :
+                isResponseBlocked ? t('pages.dashboard.responseQuotaReachedTitle') :
                 undefined
               }
               className="border-primary text-primary hover:bg-primary/10"
             >
               <Settings className="h-4 w-4 mr-2" />
-              Customize Survey
+              {t('pages.dashboard.customizeSurvey')}
             </Button>
           </div>
         </div>
@@ -560,21 +563,21 @@ const Dashboard = () => {
           <CardContent className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">License Period</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">{t('pages.dashboard.licensePeriod')}</h3>
                 <p className="text-base font-medium">
                   {formatDate(company?.licenseStartDate)} - {formatDate(company?.licenseEndDate)}
                 </p>
                 <p className="text-sm text-green-600 font-medium mt-1">
                   <CheckCircle className="h-4 w-4 inline mr-1" />
-                  {isFinite(daysRemaining) ? `${daysRemaining} days remaining` : 'Never expires'}
+                  {isFinite(daysRemaining) ? t('pages.dashboard.daysRemaining', { daysRemaining }) : t('pages.dashboard.neverExpires')}
                 </p>
               </div>
               
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Response Quota</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">{t('pages.dashboard.responseQuota')}</h3>
                 <div className="flex items-center gap-2">
                   <p className="text-base font-medium">
-                    {usagePercentage}% used
+                    {usagePercentage}% {t('pages.dashboard.used')}
                   </p>
                   <span className="text-xs text-gray-500">
                     ({usageData?.data?.actualResponses || 0}/{company?.maxResponses || 0})
@@ -584,18 +587,18 @@ const Dashboard = () => {
               </div>
               
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">User Accounts</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">{t('pages.dashboard.userAccounts')}</h3>
                 <p className="text-base font-medium">
-                  {usageData?.data?.actualUsers ?? 0}/{company?.maxUsers ?? 0} seats used
+                  {usageData?.data?.actualUsers ?? 0}/{company?.maxUsers ?? 0} {t('pages.dashboard.seatsUsed')}
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
-                  <Users className="h-4 w-4 inline mr-1" /> 
-                  {usageData?.data?.availableUsers ?? (company?.maxUsers ? Math.max(0, (company.maxUsers - (usageData?.data?.actualUsers ?? 0))) : 0)} seats available
+                  <Users className="h-4 w-4 inline mr-1" />
+                  {usageData?.data?.availableUsers ?? (company?.maxUsers ? Math.max(0, (company.maxUsers - (usageData?.data?.actualUsers ?? 0))) : 0)} {t('pages.dashboard.seatsAvailable')}
                 </p>
               </div>
               
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Features</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">{t('pages.dashboard.features')}</h3>
                 <div className="flex flex-wrap gap-2">
                   {(() => {
                     // Get features from license.features if available, otherwise fall back to company fields
@@ -612,17 +615,17 @@ const Dashboard = () => {
                     };
                     
                     const enabledFeatures = [];
-                    if (features.customBranding) enabledFeatures.push(<Badge key="customBranding" variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100">Custom Branding</Badge>);
-                    if (features.dataExport) enabledFeatures.push(<Badge key="dataExport" variant="outline" className="bg-green-50 text-green-700 border-green-100">Data Export</Badge>);
-                    if (features.aiInsights) enabledFeatures.push(<Badge key="aiInsights" variant="outline" className="bg-blue-50 text-blue-700 border-blue-100">AI Insights</Badge>);
-                    if (features.advancedAnalytics) enabledFeatures.push(<Badge key="advancedAnalytics" variant="outline" className="bg-purple-50 text-purple-700 border-purple-100">Advanced Analytics</Badge>);
-                    if (features.apiAccess) enabledFeatures.push(<Badge key="apiAccess" variant="outline" className="bg-cyan-50 text-cyan-700 border-cyan-100">API Access</Badge>);
-                    if (features.prioritySupport) enabledFeatures.push(<Badge key="prioritySupport" variant="outline" className="bg-amber-50 text-amber-700 border-amber-100">Priority Support</Badge>);
-                    if (features.whiteLabeling) enabledFeatures.push(<Badge key="whiteLabeling" variant="outline" className="bg-slate-50 text-slate-700 border-slate-100">White Labeling</Badge>);
-                    if (features.socialSharing) enabledFeatures.push(<Badge key="socialSharing" variant="outline" className="bg-orange-50 text-orange-700 border-orange-100">Social Sharing</Badge>);
-                    if (features.crmIntegration) enabledFeatures.push(<Badge key="crmIntegration" variant="outline" className="bg-teal-50 text-teal-700 border-teal-100">CRM Integration</Badge>);
-                    
-                    return enabledFeatures.length > 0 ? enabledFeatures : <span className="text-sm text-gray-400">No features enabled</span>;
+                    if (features.customBranding) enabledFeatures.push(<Badge key="customBranding" variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100">{t('pages.dashboard.feature.customBranding')}</Badge>);
+                    if (features.dataExport) enabledFeatures.push(<Badge key="dataExport" variant="outline" className="bg-green-50 text-green-700 border-green-100">{t('pages.dashboard.feature.dataExport')}</Badge>);
+                    if (features.aiInsights) enabledFeatures.push(<Badge key="aiInsights" variant="outline" className="bg-blue-50 text-blue-700 border-blue-100">{t('pages.dashboard.feature.aiInsights')}</Badge>);
+                    if (features.advancedAnalytics) enabledFeatures.push(<Badge key="advancedAnalytics" variant="outline" className="bg-purple-50 text-purple-700 border-purple-100">{t('pages.dashboard.feature.advancedAnalytics')}</Badge>);
+                    if (features.apiAccess) enabledFeatures.push(<Badge key="apiAccess" variant="outline" className="bg-cyan-50 text-cyan-700 border-cyan-100">{t('pages.dashboard.feature.apiAccess')}</Badge>);
+                    if (features.prioritySupport) enabledFeatures.push(<Badge key="prioritySupport" variant="outline" className="bg-amber-50 text-amber-700 border-amber-100">{t('pages.dashboard.feature.prioritySupport')}</Badge>);
+                    if (features.whiteLabeling) enabledFeatures.push(<Badge key="whiteLabeling" variant="outline" className="bg-slate-50 text-slate-700 border-slate-100">{t('pages.dashboard.feature.whiteLabeling')}</Badge>);
+                    if (features.socialSharing) enabledFeatures.push(<Badge key="socialSharing" variant="outline" className="bg-orange-50 text-orange-700 border-orange-100">{t('pages.dashboard.feature.socialSharing')}</Badge>);
+                    if (features.crmIntegration) enabledFeatures.push(<Badge key="crmIntegration" variant="outline" className="bg-teal-50 text-teal-700 border-teal-100">{t('pages.dashboard.feature.crmIntegration')}</Badge>);
+
+                    return enabledFeatures.length > 0 ? enabledFeatures : <span className="text-sm text-gray-400">{t('pages.dashboard.noFeaturesEnabled')}</span>;
                   })()}
                 </div>
               </div>
@@ -644,20 +647,20 @@ const Dashboard = () => {
       {isLoading ? (
         <div className="text-center py-10">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard data...</p>
+          <p className="mt-4 text-gray-600">{t('pages.dashboard.loadingData')}</p>
         </div>
       ) : error ? (
         <div className="text-center py-10">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
             <span className="text-red-500 text-3xl">!</span>
           </div>
-          <h2 className="text-2xl font-display font-bold text-gray-900 mb-2">Error Loading Dashboard</h2>
-          <p className="text-gray-600 mb-6">We couldn't load your dashboard data. Please try again.</p>
+          <h2 className="text-2xl font-display font-bold text-gray-900 mb-2">{t('pages.dashboard.errorLoadingDashboard')}</h2>
+          <p className="text-gray-600 mb-6">{t('pages.dashboard.couldNotLoadData')}</p>
           <Button 
             variant="outline" 
             onClick={() => setLocation('/dashboard')}
           >
-            Retry
+            {t('common.back')}
           </Button>
         </div>
       ) : (
@@ -669,10 +672,10 @@ const Dashboard = () => {
                 <div>
                   <CardTitle className="flex items-center">
                     <BarChart3 className="h-5 w-5 mr-2 text-primary" />
-                    Survey Performance
+                    {t('pages.dashboard.surveyPerformance')}
                   </CardTitle>
                   <CardDescription>
-                    Overview of your survey performance and response data
+                    {t('pages.dashboard.surveyPerformanceDescription')}
                   </CardDescription>
                 </div>
                 
@@ -686,11 +689,11 @@ const Dashboard = () => {
                     <SelectTrigger className="w-full border-primary/30 focus:ring-primary">
                       <div className="flex items-center">
                         <Filter className="mr-2 h-4 w-4 text-gray-500" />
-                        <SelectValue placeholder="Select a survey" />
+                        <SelectValue placeholder={t('pages.dashboard.selectSurvey')} />
                       </div>
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Surveys</SelectItem>
+                      <SelectItem value="all">{t('pages.dashboard.allSurveys')}</SelectItem>
                       {surveysData?.data?.map((survey) => (
                         <SelectItem key={survey.id} value={survey.id.toString()}>
                           {survey.title}
@@ -709,19 +712,19 @@ const Dashboard = () => {
             >
               <div className="border-b border-gray-200 mb-4">
                 <TabsList className="bg-transparent h-14">
-                  <TabsTrigger 
-                    value="basic" 
+                  <TabsTrigger
+                    value="basic"
                     className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none h-14 px-6"
                   >
                     <LineChart className="h-4 w-4 mr-2" />
-                    Basic Analytics
+                    {t('pages.dashboard.basicAnalytics')}
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="business-intelligence" 
+                  <TabsTrigger
+                    value="trend-analysis"
                     className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none h-14 px-6"
                   >
-                    <BarChart className="h-4 w-4 mr-2" />
-                    Business Intelligence
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    {t('pages.dashboard.trendAnalysis')}
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -736,13 +739,13 @@ const Dashboard = () => {
                 )}
               </TabsContent>
               
-              <TabsContent value="business-intelligence" className="mt-0">
+              <TabsContent value="trend-analysis" className="mt-0">
                 {isTabLoading ? (
                   <div className="flex items-center justify-center py-20">
                     <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
                   </div>
                 ) : (
-                  <BusinessIntelligence surveyId={selectedSurveyId} companyId={companyId} />
+                  <TrendSection surveyId={selectedSurveyId} companyId={companyId} />
                 )}
               </TabsContent>
             </Tabs>
@@ -754,21 +757,21 @@ const Dashboard = () => {
       <Dialog open={showShareModal} onOpenChange={setShowShareModal}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Select Survey to Share</DialogTitle>
+            <DialogTitle>{t('pages.dashboard.selectSurveyToShare')}</DialogTitle>
             <DialogDescription>
-              Choose a survey from the list below to share with others.
+              {t('pages.dashboard.chooseSurveyToShare')}
             </DialogDescription>
           </DialogHeader>
-          
+
           {surveysLoading ? (
             <div className="py-8 text-center text-muted-foreground">
-              Loading surveys...
+              {t('pages.dashboard.loadingSurveys')}
             </div>
           ) : !surveysData?.data || surveysData.data.length === 0 ? (
             <div className="py-8 text-center">
-              <p className="text-muted-foreground mb-4">No surveys available to share.</p>
+              <p className="text-muted-foreground mb-4">{t('pages.dashboard.noSurveysToShare')}</p>
               <p className="text-sm text-muted-foreground">
-                Create a survey first to share it with others.
+                {t('pages.dashboard.createSurveyFirst')}
               </p>
             </div>
           ) : (
@@ -788,9 +791,9 @@ const Dashboard = () => {
                       <div className="flex-1">
                         <p className="font-medium">{survey.title}</p>
                         <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                          <span>Responses: {(survey as any).responseCount ?? 0}</span>
-                          <span>Status: {(survey as any).status ?? (survey.isActive ? 'Active' : 'Inactive')}</span>
-                          <span>Type: {(survey as any).surveyType ?? 'Custom'}</span>
+                          <span>{t('pages.dashboard.responses')}: {(survey as any).responseCount ?? 0}</span>
+                          <span>{t('pages.dashboard.status')}: {(survey as any).status ?? (survey.isActive ? t('pages.dashboard.active') : t('pages.dashboard.inactive'))}</span>
+                          <span>{t('pages.dashboard.type')}: {(survey as any).surveyType ?? t('pages.dashboard.custom')}</span>
                         </div>
                       </div>
                       {selectedSurveyForShare === survey.id.toString() && (
@@ -811,7 +814,7 @@ const Dashboard = () => {
                 setSelectedSurveyForShare("");
               }}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={() => {
@@ -823,7 +826,7 @@ const Dashboard = () => {
               }}
               disabled={!selectedSurveyForShare || surveysData?.data?.length === 0}
             >
-              Proceed
+              {t('pages.dashboard.proceed')}
             </Button>
           </DialogFooter>
         </DialogContent>

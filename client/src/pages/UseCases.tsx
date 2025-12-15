@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
 
 export default function UseCases() {
+  const { t } = useTranslation();
   const industries = [
     {
       icon: <Megaphone className="h-8 w-8 text-primary" />,
@@ -133,22 +135,22 @@ export default function UseCases() {
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto text-center">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Validate your MVP
-            <span className="text-transparent bg-gradient-to-r from-primary to-indigo-600 bg-clip-text block">or scale what you've built.</span>
+            {t('pages.useCases.title')}
+            <span className="text-transparent bg-gradient-to-r from-primary to-indigo-600 bg-clip-text block">{t('pages.useCases.titleHighlight')}</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-           Analize the target audience and set smarter campaigns, scale revenue streams, or iterate your product and pricing strategy. 
+            {t('pages.useCases.subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
               <Button size="lg" className="bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/90 hover:to-indigo-500 shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/20 transition-all duration-200">
-                Turn data into growth
+                {t('pages.useCases.turnDataIntoGrowth')}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link href="/demo">
               <Button variant="outline" size="lg" className="border-primary/30 text-primary hover:bg-gradient-to-r hover:from-primary/5 hover:to-indigo-50">
-                Request Demo
+                {t('pages.useCases.requestDemo')}
               </Button>
             </Link>
           </div>
@@ -159,7 +161,7 @@ export default function UseCases() {
       <section className="py-16 px-4 bg-gradient-to-br from-slate-50 to-primary/5">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-            Gain an edge over competitors
+            {t('pages.useCases.edgeTitle')}
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {keyFeatures.map((feature, index) => (
@@ -179,10 +181,10 @@ export default function UseCases() {
       <section className="py-20 px-4 bg-gradient-to-br from-gray-50 to-primary/5">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">
-            Solutions by Industry
+            {t('pages.useCases.solutionsTitle')}
           </h2>
           <p className="text-lg text-gray-600 text-center mb-12 max-w-3xl mx-auto">
-            Empowering each industry to meet its unique demands and stay ahead in a competitive landscape.
+            {t('pages.useCases.solutionsSubtitle')}
           </p>
           
           <div className="grid lg:grid-cols-2 gap-8">
@@ -239,15 +241,15 @@ export default function UseCases() {
       <section className="py-20 px-4 bg-gradient-to-br from-primary/5 via-indigo-50 to-primary/10">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-          Your industry isn’t listed? No problem.
+            {t('pages.useCases.ctaTitle')}
           </h2>
           <p className="text-xl text-gray-600 mb-8">
-            We’ve helped companies across diverse sectors. Let’s talk about yours.
+            {t('pages.useCases.ctaSubtitle')}
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">
               <Button size="lg" className="bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/90 hover:to-indigo-500 shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/20 transition-all duration-200">
-                Contact Us
+                {t('pages.useCases.contactUs')}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>

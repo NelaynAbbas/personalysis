@@ -1752,6 +1752,11 @@ export const notifications = pgTable("notifications", {
   isRead: boolean("isRead").default(false).notNull(),
   link: varchar("link", { length: 255 }),
   metadata: json("metadata"),
+  // Admin notification fields
+  isGlobal: boolean("is_global").default(false).notNull(), // Global admin notification
+  category: varchar("category", { length: 50 }), // 'user', 'survey', 'response', 'ai', 'system'
+  priority: varchar("priority", { length: 20 }).default("medium"), // 'high', 'medium', 'low'
+  actionableUserId: integer("actionable_user_id"), // User/entity that triggered the event
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt"),
   expiresAt: timestamp("expiresAt")

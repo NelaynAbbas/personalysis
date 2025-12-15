@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useLocation } from 'wouter';
+import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +35,7 @@ interface Question {
 }
 
 const TakeSurvey = () => {
+  const { t } = useTranslation();
   const params = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -177,8 +179,8 @@ const TakeSurvey = () => {
     onSuccess: (data) => {
       setSubmitted(true);
       toast({
-        title: "Survey Submitted",
-        description: "Thank you for completing the survey!",
+        title: t('pages.takeSurvey.surveySubmitted'),
+        description: t('pages.takeSurvey.thankYouCompletion'),
         variant: "default"
       });
       
@@ -208,8 +210,8 @@ const TakeSurvey = () => {
     onError: (error) => {
       console.error("Error submitting survey:", error);
       toast({
-        title: "Submission Error",
-        description: "There was a problem submitting your survey. Please try again.",
+        title: t('pages.takeSurvey.submissionError'),
+        description: t('pages.takeSurvey.submissionErrorMessage'),
         variant: "destructive"
       });
       setShowThankYou(false);
@@ -260,12 +262,12 @@ const TakeSurvey = () => {
     if (error) {
       console.error("Survey fetch error:", error);
       toast({
-        title: "Error loading survey",
-        description: "Failed to load survey details. Please try again.",
+        title: t('pages.takeSurvey.errorLoadingSurvey'),
+        description: t('pages.takeSurvey.failedLoadSurveyDetails'),
         variant: "destructive"
       });
     }
-  }, [error, toast]);
+  }, [error, toast, t]);
 
   const survey = surveyData?.data;
 
@@ -273,17 +275,17 @@ const TakeSurvey = () => {
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <Link href="/dashboard" className="flex items-center text-primary hover:underline mb-4">
         <ArrowLeft className="h-4 w-4 mr-1" />
-        Back to Dashboard
+        {t('pages.takeSurvey.backToDashboard')}
       </Link>
       
       <Card className="shadow-lg">
         <CardHeader className="bg-primary/5">
           <CardTitle className="text-2xl font-bold">
-            {isLoading ? "Loading Survey..." : survey?.title || "Personality Assessment"}
+            {isLoading ? t('pages.takeSurvey.loadingSurvey') : survey?.title || t('pages.takeSurvey.defaultTitle')}
           </CardTitle>
           {!hasStarted && (
             <CardDescription>
-              {survey?.description || "Complete this assessment to discover insights about your personality traits."}
+              {survey?.description || t('pages.takeSurvey.defaultDescription')}
             </CardDescription>
           )}
         </CardHeader>
@@ -295,40 +297,40 @@ const TakeSurvey = () => {
             </div>
           ) : error ? (
             <div className="text-center py-12 text-red-500">
-              Failed to load survey. Please try again.
+              {t('pages.takeSurvey.failedLoadSurvey')}
             </div>
           ) : !hasStarted ? (
             <div className="space-y-4">
               <div className="text-gray-700">
                 <p>
-                  {(survey as any)?.customWelcomeMessage || `Welcome! This survey will help us better understand your perspectives.`}
+                  {(survey as any)?.customWelcomeMessage || t('pages.takeSurvey.welcomeMessage')}
                 </p>
               </div>
               <div className="text-sm text-gray-600 space-y-1">
                 {((survey as any)?.estimatedTime) && (
-                  <p><strong>Estimated Time:</strong> {(survey as any)?.estimatedTime} minutes</p>
+                  <p><strong>{t('pages.takeSurvey.estimatedTime')}:</strong> {(survey as any)?.estimatedTime} {t('pages.takeSurvey.minutes')}</p>
                 )}
-                <p><strong>Questions:</strong> {questions.length}</p>
-                <p><strong>Type:</strong> {(survey as any)?.surveyType || 'General'}</p>
+                <p><strong>{t('pages.takeSurvey.questions')}:</strong> {questions.length}</p>
+                <p><strong>{t('pages.takeSurvey.type')}:</strong> {(survey as any)?.surveyType || t('pages.takeSurvey.general')}</p>
               </div>
               <div className="pt-2">
-                <Button onClick={() => setHasStarted(true)}>Start Survey</Button>
+                <Button onClick={() => setHasStarted(true)}>{t('pages.takeSurvey.startSurvey')}</Button>
               </div>
             </div>
           ) : submitted || showThankYou ? (
             <div className="text-center py-12">
               <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
-              <h3 className="text-xl font-medium mb-2">Thank You!</h3>
-              <p className="text-gray-600 mb-2">{(survey as any)?.customCompletionMessage || 'Your responses have been recorded.'}</p>
-              <p className="text-gray-500">We're preparing your personalized results...</p>
+              <h3 className="text-xl font-medium mb-2">{t('pages.takeSurvey.thankYou')}</h3>
+              <p className="text-gray-600 mb-2">{(survey as any)?.customCompletionMessage || t('pages.takeSurvey.responsesRecorded')}</p>
+              <p className="text-gray-500">{t('pages.takeSurvey.preparingResults')}</p>
             </div>
           ) : (
             <>
               {/* Progress bar */}
               <div className="mb-6">
                 <div className="flex justify-between text-sm mb-1">
-                  <span>Question {currentQuestion + 1} of {questions.length}</span>
-                  <span>{progressPercentage}% Complete</span>
+                  <span>{t('pages.takeSurvey.question')} {currentQuestion + 1} {t('pages.takeSurvey.of')} {questions.length}</span>
+                  <span>{progressPercentage}% {t('pages.takeSurvey.complete')}</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2.5">
                   <div 
@@ -363,25 +365,25 @@ const TakeSurvey = () => {
         
         {!isLoading && !error && !submitted && (
           <CardFooter className="bg-gray-50 flex justify-between">
-            <Button 
+            <Button
               variant="outline"
               onClick={goToPreviousQuestion}
               disabled={currentQuestion === 0}
             >
-              Previous
+              {t('pages.takeSurvey.previous')}
             </Button>
-            
-            <Button 
+
+            <Button
               onClick={goToNextQuestion}
               disabled={!isCurrentQuestionAnswered() || isSubmitting}
             >
               {isSubmitting ? (
                 <>
-                  <span className="mr-2">Submitting</span>
+                  <span className="mr-2">{t('pages.takeSurvey.submitting')}</span>
                   <div className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
                 </>
               ) : (
-                currentQuestion < questions.length - 1 ? 'Next' : 'Submit'
+                currentQuestion < questions.length - 1 ? t('pages.takeSurvey.next') : t('pages.takeSurvey.submit')
               )}
             </Button>
           </CardFooter>

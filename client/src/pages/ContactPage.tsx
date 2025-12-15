@@ -1,53 +1,56 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
+import { useTranslation } from 'react-i18next';
 import DemoRequestForm from '@/components/DemoRequestForm';
 import { Mail, Phone, MapPin, Clock } from 'lucide-react';
 
 const ContactPage: React.FC = () => {
+  const { t } = useTranslation();
+
   return (
     <>
       <Helmet>
-        <title>Contact Us | PersonalysisPro</title>
+        <title>{t('pages.contactPage.pageTitle')}</title>
         <meta
           name="description"
-          content="Get in touch with the PersonalysisPro team to learn more about our personality profiling platform or request a demo."
+          content={t('pages.contactPage.metaDescription')}
         />
       </Helmet>
 
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
+          <h1 className="text-4xl font-bold mb-4">{t('pages.contactPage.title')}</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Have questions or want to see PersonalysisPro in action? Get in touch with our team or request a personalized demo.
+            {t('pages.contactPage.subtitle')}
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           <div>
             <div className="bg-card rounded-lg shadow-sm p-8 mb-8">
-              <h2 className="text-2xl font-semibold mb-6">Get in Touch</h2>
-              
+              <h2 className="text-2xl font-semibold mb-6">{t('pages.contactPage.getInTouch')}</h2>
+
               <div className="space-y-6">
                 <div className="flex items-start">
                   <Mail className="h-6 w-6 text-primary mr-4 mt-0.5" />
                   <div>
-                    <h3 className="font-medium">Email</h3>
+                    <h3 className="font-medium">{t('pages.contactPage.email')}</h3>
                     <p className="text-muted-foreground">hello@grsventures.ltd</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <Phone className="h-6 w-6 text-primary mr-4 mt-0.5" />
                   <div>
-                    <h3 className="font-medium">Phone</h3>
+                    <h3 className="font-medium">{t('pages.contactPage.phone')}</h3>
                     <p className="text-muted-foreground">+44 7477285200</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <MapPin className="h-6 w-6 text-primary mr-4 mt-0.5" />
                   <div>
-                    <h3 className="font-medium">Office</h3>
+                    <h3 className="font-medium">{t('pages.contactPage.office')}</h3>
                     <p className="text-muted-foreground">
                       71-75 Shelton Street<br />
                        London, WC2H 9JQ <br />
@@ -55,20 +58,20 @@ const ContactPage: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <Clock className="h-6 w-6 text-primary mr-4 mt-0.5" />
                   <div>
-                    <h3 className="font-medium">Business Hours</h3>
-                    <p className="text-muted-foreground">Monday - Friday: 9am - 5pm EST</p>
-                    <p className="text-muted-foreground">Saturday - Sunday: Closed</p>
+                    <h3 className="font-medium">{t('pages.contactPage.businessHours')}</h3>
+                    <p className="text-muted-foreground">{t('pages.contactPage.weekdayHours')}</p>
+                    <p className="text-muted-foreground">{t('pages.contactPage.weekendHours')}</p>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-card rounded-lg shadow-sm p-8">
-              <h2 className="text-2xl font-semibold mb-6">Follow Us</h2>
+              <h2 className="text-2xl font-semibold mb-6">{t('pages.contactPage.followUs')}</h2>
               <div className="flex space-x-4">
                 <a 
                   href="https://twitter.com/personalysispro" 

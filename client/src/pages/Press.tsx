@@ -2,16 +2,18 @@ import { useEffect, useState } from "react";
 import { Calendar, Download, ExternalLink, Filter, Newspaper, Search, Award, TrendingUp, Users, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTranslation } from "react-i18next";
 
 export default function Press() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [yearFilter, setYearFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -204,21 +206,20 @@ export default function Press() {
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl -z-10 transform -translate-x-1/2 translate-y-1/2"></div>
         
         <div className="max-w-3xl">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Press & News</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">{t('pages.press.title')}</h1>
           <p className="text-lg text-gray-700 mb-8">
-            Stay up-to-date with the latest news, press releases, and media coverage about PersonalysisPro's 
-            innovative personality assessment platform for businesses.
+            {t('pages.press.subtitle')}
           </p>
           <div className="flex flex-wrap gap-3">
-            <Button variant="default">Media Kit</Button>
-            <Button variant="outline">Contact Press Team</Button>
+            <Button variant="default">{t('pages.press.mediaKit')}</Button>
+            <Button variant="outline">{t('pages.press.contactPressTeam')}</Button>
           </div>
         </div>
       </div>
       
       {/* Company Overview Section */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Company Overview</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('pages.press.companyOverview')}</h2>
         
         <div className="prose prose-primary max-w-none">
           <p className="text-gray-700">
@@ -240,7 +241,7 @@ export default function Press() {
               <Users className="h-6 w-6 text-primary" />
             </div>
             <div className="font-bold text-3xl text-gray-900 mb-2">250+</div>
-            <div className="text-gray-600">Enterprise Clients</div>
+            <div className="text-gray-600">{t('pages.press.enterpriseClients')}</div>
           </div>
           
           <div className="bg-gray-50 p-6 rounded-lg">
@@ -248,7 +249,7 @@ export default function Press() {
               <TrendingUp className="h-6 w-6 text-primary" />
             </div>
             <div className="font-bold text-3xl text-gray-900 mb-2">1M+</div>
-            <div className="text-gray-600">Personality Assessments</div>
+            <div className="text-gray-600">{t('pages.press.assessments')}</div>
           </div>
           
           <div className="bg-gray-50 p-6 rounded-lg">
@@ -256,7 +257,7 @@ export default function Press() {
               <Award className="h-6 w-6 text-primary" />
             </div>
             <div className="font-bold text-3xl text-gray-900 mb-2">12</div>
-            <div className="text-gray-600">Industry Awards</div>
+            <div className="text-gray-600">{t('pages.press.industryAwards')}</div>
           </div>
         </div>
         

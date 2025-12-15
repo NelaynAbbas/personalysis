@@ -1,156 +1,135 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { apiRequest } from "@/lib/api";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Notification } from "../../../../shared/schema";
-import { PlusIcon, CheckIcon, EyeIcon, TrashIcon, AlertCircleIcon, InfoIcon, Bell, RefreshCwIcon } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { formatDistanceToNow } from "date-fns";
+import { CheckIcon, TrashIcon, RefreshCwIcon, Bell } from "lucide-react";
 
-// API Response interfaces
-interface ApiResponse<T> {
-  status: string;
-  data: T;
+// Types
+interface AdminNotification {
+  id: number;
+  userId: number;
+  type: string;
+  title: string;
+  message: string;
+  isRead: boolean;
+  link: string | null;
+  metadata: any;
+  isGlobal: boolean;
+  category: string | null;
+  priority: string | null;
+  actionableUserId: number | null;
+  createdAt: Date | string;
+  updatedAt: Date | string | null;
+  expiresAt: Date | string | null;
 }
 
 interface NotificationsResponse {
-  notifications: Notification[];
+  status: string;
+  data: AdminNotification[];
+  pagination?: {
+    limit: number;
+    offset: number;
+    count: number;
+  };
 }
 
 interface NotificationCardProps {
-  notification: Notification;
+  notification: AdminNotification;
   onMarkAsRead: (id: number) => void;
   onDelete: (id: number) => void;
 }
 
+// Category badge colors
+const getCategoryBadgeColor = (category: string | null): string => {
+  switch (category) {
+    case 'user':
+      return 'bg-blue-100 text-blue-800';
+    case 'survey':
+      return 'bg-green-100 text-green-800';
+    case 'response':
+      return 'bg-purple-100 text-purple-800';
+    case 'ai':
+      return 'bg-orange-100 text-orange-800';
+    case 'system':
+      return 'bg-red-100 text-red-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+};
+
 const NotificationCard = ({ notification, onMarkAsRead, onDelete }: NotificationCardProps) => {
-  const getIcon = (type: string) => {
-    switch (type) {
-      case "alert":
-        return <AlertCircleIcon className="h-5 w-5 text-red-500" />;
-      case "warning":
-        return <AlertCircleIcon className="h-5 w-5 text-amber-500" />;
-      case "success":
-        return <CheckIcon className="h-5 w-5 text-emerald-500" />;
-      case "info":
-        return <InfoIcon className="h-5 w-5 text-blue-500" />;
-      case "system":
-        return <Bell className="h-5 w-5 text-violet-500" />;
-      default:
-        return <InfoIcon className="h-5 w-5 text-gray-500" />;
-    }
-  };
-
-  const getBadgeClass = (type: string) => {
-    switch (type) {
-      case "alert":
-        return "bg-red-100 text-red-800 hover:bg-red-200";
-      case "warning":
-        return "bg-amber-100 text-amber-800 hover:bg-amber-200";
-      case "success":
-        return "bg-emerald-100 text-emerald-800 hover:bg-emerald-200";
-      case "info":
-        return "bg-blue-100 text-blue-800 hover:bg-blue-200";
-      case "system":
-        return "bg-violet-100 text-violet-800 hover:bg-violet-200";
-      default:
-        return "bg-gray-100 text-gray-800 hover:bg-gray-200";
-    }
-  };
-
   return (
-    <Card className={`mb-4 overflow-hidden ${notification.isRead ? 'bg-gray-50' : 'bg-white border-l-4 border-l-primary'}`}>
-      <CardContent className="p-5">
+    <Card
+      className={`mb-3 overflow-hidden transition-colors ${
+        notification.isRead
+          ? 'bg-gray-50 border-gray-200'
+          : 'bg-white border-l-4 border-l-primary shadow-sm'
+      }`}
+    >
+      <CardContent className="p-4">
         <div className="flex items-start gap-4">
+          {/* Category Badge */}
           <div className="flex-shrink-0 mt-1">
-            {getIcon(notification.type)}
+            <Badge className={getCategoryBadgeColor(notification.category)}>
+              {notification.category?.toUpperCase() || 'SYSTEM'}
+            </Badge>
           </div>
+
+          {/* Notification Content */}
           <div className="flex-grow">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className={`font-medium text-lg ${notification.isRead ? 'text-gray-700' : 'text-gray-900'}`}>
-                  {notification.title}
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">
+            <div className="flex justify-between items-start gap-4">
+              <div className="flex-grow">
+                <div className="flex items-center gap-2">
+                  <h3
+                    className={`font-medium ${
+                      notification.isRead ? 'text-gray-700' : 'text-gray-900'
+                    }`}
+                  >
+                    {notification.title}
+                  </h3>
+                </div>
+                <p className={`text-sm mt-1 ${notification.isRead ? 'text-gray-600' : 'text-gray-700'}`}>
                   {notification.message}
                 </p>
               </div>
-              <div className="flex-shrink-0 flex space-x-2">
-                <Badge variant="outline" className={getBadgeClass(notification.type)}>
-                  {notification.type.charAt(0).toUpperCase() + notification.type.slice(1)}
-                </Badge>
-              </div>
-            </div>
-            
-            <div className="flex justify-between items-center mt-4">
-              <span className="text-xs text-muted-foreground">
-                {notification.createdAt && formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
-              </span>
-              <div className="flex space-x-2">
+
+              {/* Action Buttons */}
+              <div className="flex-shrink-0 flex gap-2">
                 {!notification.isRead && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 px-2 text-blue-600"
                     onClick={() => onMarkAsRead(notification.id)}
+                    title="Mark as read"
                   >
-                    <EyeIcon className="h-4 w-4 mr-1" />
-                    Mark as read
-                  </Button>
-                )}
-                {notification.link && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2"
-                    onClick={() => window.location.href = notification.link!}
-                  >
-                    View details
+                    <CheckIcon className="h-4 w-4" />
                   </Button>
                 )}
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 px-2 text-red-600"
                   onClick={() => onDelete(notification.id)}
+                  title="Delete notification"
                 >
-                  <TrashIcon className="h-4 w-4 mr-1" />
-                  Delete
+                  <TrashIcon className="h-4 w-4 text-red-500" />
                 </Button>
               </div>
             </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
 
-const NotificationSkeletonCard = () => {
-  return (
-    <Card className="mb-4 overflow-hidden">
-      <CardContent className="p-5">
-        <div className="flex items-start gap-4">
-          <Skeleton className="h-6 w-6 rounded-full" />
-          <div className="flex-grow space-y-2">
-            <Skeleton className="h-6 w-3/4" />
-            <Skeleton className="h-4 w-full" />
-            <div className="flex justify-between pt-4">
-              <Skeleton className="h-4 w-24" />
-              <div className="flex space-x-2">
-                <Skeleton className="h-8 w-24" />
-                <Skeleton className="h-8 w-20" />
-              </div>
+            {/* Timestamp */}
+            <div className="mt-3 pt-2 border-t border-gray-100">
+              <span className="text-xs text-muted-foreground">
+                {notification.createdAt &&
+                  formatDistanceToNow(new Date(notification.createdAt), {
+                    addSuffix: true,
+                  })}
+              </span>
             </div>
           </div>
         </div>
@@ -159,333 +138,203 @@ const NotificationSkeletonCard = () => {
   );
 };
 
-const NewNotificationForm = ({ onClose }: { onClose: () => void }) => {
-  const [title, setTitle] = useState('');
-  const [message, setMessage] = useState('');
-  const [type, setType] = useState('info');
-  const [userId, setUserId] = useState<string>('');
-  const [link, setLink] = useState('');
+export default function NotificationCenter() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
 
-  const createNotificationMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/notifications', 'POST', data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
-      toast({
-        title: "Success",
-        description: "Notification sent successfully",
-        variant: "default",
-      });
-      onClose();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to send notification",
-        variant: "destructive",
-      });
+  // Fetch notifications
+  const { data: notificationsData, isLoading, refetch } = useQuery<NotificationsResponse>({
+    queryKey: ['admin-notifications', activeTab],
+    queryFn: () => {
+      const params: Record<string, any> = {
+        limit: 100
+      };
+
+      // Only add isRead filter for unread tab
+      if (activeTab === 'unread') {
+        params.isRead = 'false';
+      }
+
+      return apiRequest(
+        `/api/admin/notifications`,
+        {
+          skipAuthHeader: false,
+          params
+        }
+      );
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!title.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Title is required",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!message.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Message is required",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!userId) {
-      toast({
-        title: "Validation Error",
-        description: "User ID is required",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    const notificationData = {
-      title,
-      message,
-      type,
-      userId: parseInt(userId),
-      link: link || null,
-      isRead: false,
-    };
-    
-    createNotificationMutation.mutate(notificationData);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="title">Title</Label>
-        <Input
-          id="title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Notification title"
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="message">Message</Label>
-        <Textarea
-          id="message"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Notification message"
-          rows={3}
-        />
-      </div>
-      
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="type">Type</Label>
-          <Select value={type} onValueChange={setType}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="info">Info</SelectItem>
-              <SelectItem value="success">Success</SelectItem>
-              <SelectItem value="warning">Warning</SelectItem>
-              <SelectItem value="alert">Alert</SelectItem>
-              <SelectItem value="system">System</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="userId">User ID</Label>
-          <Input
-            id="userId"
-            type="number"
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
-            placeholder="Recipient User ID"
-          />
-        </div>
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="link">Link (Optional)</Label>
-        <Input
-          id="link"
-          value={link}
-          onChange={(e) => setLink(e.target.value)}
-          placeholder="/dashboard"
-        />
-      </div>
-      
-      <DialogFooter>
-        <Button type="button" variant="outline" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button 
-          type="submit" 
-          disabled={createNotificationMutation.isPending}
-        >
-          {createNotificationMutation.isPending ? 
-            <RefreshCwIcon className="mr-2 h-4 w-4 animate-spin" /> : 
-            <PlusIcon className="mr-2 h-4 w-4" />}
-          Send Notification
-        </Button>
-      </DialogFooter>
-    </form>
-  );
-};
-
-const NotificationCenter = () => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [currentTab, setCurrentTab] = useState("all");
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  const { data, isLoading, isError, error } = useQuery<ApiResponse<Notification[]>>({
-    queryKey: ['/api/notifications'],
-    staleTime: 60000, // 1 minute
-  });
-
+  // Mark as read mutation
   const markAsReadMutation = useMutation({
-    mutationFn: (id: number) => apiRequest(`/api/notifications/${id}/read`, 'PATCH'),
+    mutationFn: (notificationId: number) =>
+      apiRequest(
+        `/api/admin/notifications/${notificationId}/read`,
+        { method: 'PATCH', skipAuthHeader: false }
+      ),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-notifications'] });
       toast({
-        title: "Success",
-        description: "Notification marked as read",
+        title: 'Success',
+        description: 'Notification marked as read',
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to mark notification as read",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message || 'Failed to mark as read',
+        variant: 'destructive',
       });
     },
   });
 
+  // Mark all as read mutation
+  const markAllAsReadMutation = useMutation({
+    mutationFn: () =>
+      apiRequest(
+        `/api/admin/notifications/read-all`,
+        { method: 'PATCH', skipAuthHeader: false }
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-notifications'] });
+      toast({
+        title: 'Success',
+        description: 'All notifications marked as read',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to mark all as read',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Delete notification mutation
   const deleteNotificationMutation = useMutation({
-    mutationFn: (id: number) => apiRequest(`/api/notifications/${id}`, 'DELETE'),
+    mutationFn: (notificationId: number) =>
+      apiRequest(
+        `/api/admin/notifications/${notificationId}`,
+        { method: 'DELETE', skipAuthHeader: false }
+      ),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-notifications'] });
       toast({
-        title: "Success",
-        description: "Notification deleted successfully",
+        title: 'Success',
+        description: 'Notification deleted',
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to delete notification",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message || 'Failed to delete notification',
+        variant: 'destructive',
       });
     },
   });
 
-  const handleMarkAsRead = (id: number) => {
-    markAsReadMutation.mutate(id);
-  };
-
-  const handleDelete = (id: number) => {
-    deleteNotificationMutation.mutate(id);
-  };
-
-  // Filter notifications based on the active tab
-  const filteredNotifications =
-  data?.data?.filter((notification: Notification) => {
-    if (currentTab === "all") return true;
-    if (currentTab === "unread") return !notification.isRead;
-    return notification.type === currentTab;
-  }) || [];
-
-
-  // Count notifications for badge displays
-  const unreadCount = data?.data?.filter((n: Notification) => !n.isRead).length || 0;
-  const countByType = data?.data?.reduce((acc: Record<string, number>, n: Notification) => {
-    acc[n.type] = (acc[n.type] || 0) + 1;
-    return acc;
-  }, {});
+  // notificationsData is already unwrapped by apiRequest, so it's the array directly
+  const notifications = Array.isArray(notificationsData) ? notificationsData : notificationsData?.data || [];
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-            <div>
-              <CardTitle className="text-xl font-bold">Notification Center</CardTitle>
-              <CardDescription>
-                Manage platform notifications and alerts
-              </CardDescription>
-            </div>
-            <div>
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    Send Alert
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[475px]">
-                  <DialogHeader>
-                    <DialogTitle>Send New Notification</DialogTitle>
-                    <DialogDescription>
-                      Create a new notification to send to users
-                    </DialogDescription>
-                  </DialogHeader>
-                  <NewNotificationForm onClose={() => setIsDialogOpen(false)} />
-                </DialogContent>
-              </Dialog>
-            </div>
-          </div>
-        </CardHeader>
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <Bell className="h-5 w-5 text-primary" />
+          <h2 className="text-2xl font-bold">Notifications</h2>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isLoading}
+          >
+            <RefreshCwIcon className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          </Button>
+          {activeTab === 'unread' && notifications.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => markAllAsReadMutation.mutate()}
+              disabled={markAllAsReadMutation.isPending}
+            >
+              Mark all as read
+            </Button>
+          )}
+        </div>
+      </div>
 
-        <CardContent>
-          <Tabs defaultValue="all" value={currentTab} onValueChange={setCurrentTab}>
-            <TabsList className="mb-6 flex flex-wrap">
-              <TabsTrigger value="all">
-                All
-                <Badge variant="secondary" className="ml-2">{data?.data?.length || 0}</Badge>
-              </TabsTrigger>
-              <TabsTrigger value="unread">
-                Unread
-                <Badge variant="secondary" className="ml-2">{unreadCount}</Badge>
-              </TabsTrigger>
-              <TabsTrigger value="system">
-                System
-                <Badge variant="secondary" className="ml-2">{countByType?.system || 0}</Badge>
-              </TabsTrigger>
-              <TabsTrigger value="alert">
-                Alerts
-                <Badge variant="secondary" className="ml-2">{countByType?.alert || 0}</Badge>
-              </TabsTrigger>
-              <TabsTrigger value="info">
-                Info
-                <Badge variant="secondary" className="ml-2">{countByType?.info || 0}</Badge>
-              </TabsTrigger>
-              <TabsTrigger value="success">
-                Success
-                <Badge variant="secondary" className="ml-2">{countByType?.success || 0}</Badge>
-              </TabsTrigger>
-              <TabsTrigger value="warning">
-                Warnings
-                <Badge variant="secondary" className="ml-2">{countByType?.warning || 0}</Badge>
-              </TabsTrigger>
-            </TabsList>
+      <Separator />
 
-            <TabsContent value={currentTab}>
-              {isLoading ? (
-                <>
-                  <NotificationSkeletonCard />
-                  <NotificationSkeletonCard />
-                  <NotificationSkeletonCard />
-                </>
-              ) : isError ? (
-                <div className="py-12 text-center text-muted-foreground">
-                  <AlertCircleIcon className="h-10 w-10 text-red-500 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2">Error Loading Notifications</h3>
-                  <p>{(error as any)?.message || "An error occurred while loading notifications"}</p>
-                  <Button variant="outline" className="mt-4" onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/notifications'] })}>
-                    <RefreshCwIcon className="mr-2 h-4 w-4" />
-                    Try Again
-                  </Button>
-                </div>
-              ) : (filteredNotifications?.length ?? 0) > 0 ? (
-                filteredNotifications.map((notification: Notification) => (
-                  <NotificationCard
-                    key={notification.id}
-                    notification={notification}
-                    onMarkAsRead={handleMarkAsRead}
-                    onDelete={handleDelete}
-                  />
-                ))
-              ) : (
-                <div className="py-12 text-center text-muted-foreground">
-                  <Bell className="h-10 w-10 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No notifications found</h3>
-                  <p>You don't have any {currentTab !== "all" ? currentTab + " " : ""}notifications at the moment</p>
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'all' | 'unread')}>
+        <TabsList>
+          <TabsTrigger value="all">All</TabsTrigger>
+          <TabsTrigger value="unread">Unread</TabsTrigger>
+        </TabsList>
+
+        {/* All Tab */}
+        <TabsContent value="all" className="mt-4">
+          {isLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="h-24 bg-gray-100 animate-pulse" />
+              ))}
+            </div>
+          ) : notifications.length === 0 ? (
+            <Card className="p-8 text-center bg-blue-50">
+              <Bell className="h-12 w-12 mx-auto text-blue-300 mb-4" />
+              <p className="text-gray-600">No notifications yet</p>
+              <p className="text-sm text-gray-500 mt-2">
+                Notifications will appear here when new events occur
+              </p>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {notifications.map((notification) => (
+                <NotificationCard
+                  key={notification.id}
+                  notification={notification}
+                  onMarkAsRead={markAsReadMutation.mutate}
+                  onDelete={deleteNotificationMutation.mutate}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Unread Tab */}
+        <TabsContent value="unread" className="mt-4">
+          {isLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="h-24 bg-gray-100 animate-pulse" />
+              ))}
+            </div>
+          ) : notifications.length === 0 ? (
+            <Card className="p-8 text-center bg-green-50">
+              <CheckIcon className="h-12 w-12 mx-auto text-green-300 mb-4" />
+              <p className="text-gray-600">All caught up!</p>
+              <p className="text-sm text-gray-500 mt-2">You have no unread notifications</p>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {notifications.map((notification) => (
+                <NotificationCard
+                  key={notification.id}
+                  notification={notification}
+                  onMarkAsRead={markAsReadMutation.mutate}
+                  onDelete={deleteNotificationMutation.mutate}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
-};
-
-export default NotificationCenter;
+}

@@ -1,0 +1,50 @@
+{
+  "blog": {
+    "title": "Blog de PersonalysisPro",
+    "subtitle": "Perspectives, recherches et meilleures pratiques pour l'évaluation de la personnalité dans les affaires",
+    "searchPlaceholder": "Rechercher des articles...",
+    "allCategories": "Toutes les catégories",
+    "noArticlesFound": "Aucun article trouvé",
+    "tryAdjustingFilters": "Essayez d'ajuster votre recherche ou vos filtres",
+    "categoriesTitle": "Catégories",
+    "articleCount": "{{count}} article",
+    "articleCount_plural": "{{count}} articles",
+    "readMore": "Lire la suite →"
+  },
+  "blogArticle": {
+    "backToBlog": "Retour au Blog",
+    "notFound": "Article non trouvé",
+    "notFoundMessage": "L'article que vous recherchez n'existe pas ou a été supprimé.",
+    "views": "{{count}} vue",
+    "views_plural": "{{count}} vues",
+    "tagsTitle": "Tags",
+    "shareTitle": "Partager cet article",
+    "shareTwitter": "Twitter",
+    "shareLinkedIn": "LinkedIn",
+    "shareFacebook": "Facebook",
+    "shareEmail": "Email"
+  },
+  "aboutUs": {
+    "badge": "Transformer la Compréhension du Client",
+    "title": "À Propos de PersonalysisPro",
+    "subtitle": "Débloquez l'intelligence client de nouvelle génération avec des prédictions comportementales guidées par l'IA, basées sur des recherches psychologiques de Stanford, Google et primées par le Nobel.",
+    "demoRequestReceived": "Demande de Démo Reçue",
+    "demoThankYou": "Merci! Nous vous contacterons bientôt pour programmer votre démo personnalisée."
+  },
+  "documentation": {
+    "title": "Documentation",
+    "subtitle": "Guides et ressources complets pour PersonalysisPro",
+    "searchPlaceholder": "Rechercher dans la documentation...",
+    "categories": {
+      "gettingStarted": "Démarrage",
+      "userGuides": "Guides Utilisateur",
+      "teamManagement": "Gestion d'Équipe",
+      "dataManagement": "Gestion des Données",
+      "analytics": "Analytique",
+      "api": "Référence API"
+    },
+    "noResults": "Aucun résultat trouvé",
+    "tryDifferentSearch": "Essayez un terme de recherche différent",
+    "backToOverview": "Retour à l'aperçu"
+  }
+}

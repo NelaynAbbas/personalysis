@@ -1,0 +1,150 @@
+{
+  "pages": {
+    "home": {
+      "hero": {
+        "badge": "AI-Powered Business Intelligence Platform",
+        "title": "Transform Personality Data into",
+        "titleHighlight": "Actionable Business Intelligence",
+        "subtitle": "Reveal deep customer insights with AI-driven personality analytics to fuel strategic, measurable growth.",
+        "bookDemo": "Book a Demo",
+        "howItWorks": "How It Works",
+        "demoDescription": "Schedule a personalized demo to see PersonalysisPro's AI-powered personality analytics in action",
+        "howItWorksDescription": "Learn about our comprehensive personality profiling and business intelligence process"
+      },
+      "features": {
+        "badge": "Predict Consumer Behavior with AI",
+        "title": "Advanced Personality Analytics",
+        "subtitle": "A powerful AI platform that blends psychology, analytics, and machine learning to unlock customer understanding, competitive positioning, and strategic market insights.",
+        "gamified": {
+          "title": "Gamified Micro-Experiences",
+          "description": "Interactive surveys designed to drive engagement and collect rich psychographic data effortlessly.",
+          "learnMore": "Learn more"
+        },
+        "psychographic": {
+          "title": "Identify Psychographic Profiles",
+          "description": "Advanced algorithms uncover actionable insights from customer behavior, going beyond traditional A/B testing to optimize decision-making."
+        },
+        "ctas": {
+          "title": "Hyper-Personalized CTAs",
+          "description": "Dynamic call-to-action generation designed to deliver tailored offers, recommendations, and messages that maximize engagement."
+        },
+        "businessIntelligence": {
+          "badge": "Business Intelligence",
+          "title": "Turn Insights Into Strategic Advantage",
+          "subtitle": "Gain strategic clarity through a Business Intelligence Suite that decode behavior patterns and transform psychographic data into decision-ready business insights.",
+          "feature1": "Dashboards highlight campaign performance and audience engagement",
+          "feature2": "Traits, behaviors and recommended products charts uncover drivers of decision-making and loyalty",
+          "feature3": "Compare against industry benchmarks, market fit, features priorities and much more",
+          "exploreMore": "Explore more"
+        }
+      },
+      "industries": {
+        "badge": "Tailored for any Industry",
+        "title": "Industry-Specific Solutions",
+        "subtitle": "From market validation to hyper-personalized engagement, PersonalysisPro adapts to any industry's needs to drive performance.",
+        "finance": {
+          "title": "Finance & Insurance",
+          "description": "Move beyond past data with predictive psychographic insights that let you design products, content, and acquisition strategies aligned with deeper consumer traits.",
+          "benefit1": "Hyper-personalized campaigns based on personality clusters",
+          "benefit2": "Identify communication styles that improve conversion",
+          "benefit3": "Refine product targeting with risk and trust indicators"
+        },
+        "marketResearch": {
+          "title": "Market Research & Insight Providers",
+          "description": "Add new layer of behavioral intelligence for every project and transform traditional surveys into immersive, data-rich psychographic experiences.",
+          "benefit1": "Reveal emotional motivators behind consumer choices",
+          "benefit2": "Deliver premium insights to win higher-value clients",
+          "benefit3": "Automated underwriting based on AI personality data"
+        },
+        "marketing": {
+          "title": "Marketing Agencie & E-commerce",
+          "description": "Transform your marketing strategy with deep personality-based insights that predict consumer behavior and preferences.",
+          "benefit1": "Hyper-personalized campaigns with predictive segmentation",
+          "benefit2": "Increased conversion rates with psychometric targeting",
+          "benefit3": "Enhanced product recommendations with personality matching"
+        },
+        "venture": {
+          "title": "Venture Capital & Business Builders",
+          "description": "Gain a competitive edge in investment decisions with market fit insights so you can shape, pivot, or scale ventures based on cognitive resonance with your audience.",
+          "benefit1": "Define feature priorities based on the market gap",
+          "benefit2": "Focus group simulation with just a prompt",
+          "benefit3": "Define makret, pricing strategies and revenue forecast"
+        }
+      },
+      "benefits": {
+        "title": "Why Choose PersonalysisPro?",
+        "growth": {
+          "title": "Drive Business Growth",
+          "benefit1": "Increase customer retention by up to 40%",
+          "benefit2": "Optimize marketing campaigns with personality-based targeting",
+          "benefit3": "Reduce customer acquisition costs"
+        },
+        "insights": {
+          "title": "Actionable Insights",
+          "benefit1": "Launch engaging personality surveys in minutes. No dev team required.",
+          "benefit2": "Predictive analysis for customer preferences",
+          "benefit3": "Auto-generate hyper-personalized CTAs based on profile traits"
+        }
+      },
+      "clients": {
+        "title": "Trusted by Industry Leaders",
+        "subtitle": "Join innovative companies and gain an edge over competitors",
+        "ariaLabel": "Logo carousel of companies using PersonalysisPro"
+      },
+      "cta": {
+        "title": "Ready to Transform Your Business?",
+        "subtitle": "Discover how PersonalysisPro can help your business understand customers at a deeper level and make more informed strategic decisions.",
+        "scheduleDemo": "Schedule a Demo"
+      },
+      "loginDialog": {
+        "title": "Business Login",
+        "description": "Sign in to access your dashboard",
+        "continueToLogin": "Continue to Login"
+      },
+      "demoDialog": {
+        "title": "Request a Demo",
+        "description": "Fill the form to request a dedicated demo for PersonalysisPro.",
+        "name": "Name",
+        "namePlaceholder": "Your first name",
+        "surname": "Surname",
+        "surnamePlaceholder": "Your last name",
+        "email": "Email address",
+        "emailPlaceholder": "your.email@company.com",
+        "phone": "Phone",
+        "phonePlaceholder": "+1 (555) 000-0000",
+        "role": "Role",
+        "selectRole": "Select your role",
+        "ceo": "CEO / Founder",
+        "cto": "CTO / Technical Director",
+        "cmo": "CMO / Marketing Director",
+        "product": "Product Manager",
+        "sales": "Sales Manager",
+        "other": "Other",
+        "company": "Company",
+        "companyPlaceholder": "Your company name",
+        "industry": "Industry",
+        "selectIndustry": "Select industry",
+        "technology": "Technology",
+        "marketing": "Marketing & Advertising",
+        "retail": "Retail & E-commerce",
+        "financial": "Financial Services",
+        "healthcare": "Healthcare",
+        "education": "Education",
+        "manufacturing": "Manufacturing",
+        "consulting": "Consulting",
+        "companySize": "Company Size",
+        "selectSize": "Select size",
+        "size1to10": "1-10 employees",
+        "size11to50": "11-50 employees",
+        "size51to200": "51-200 employees",
+        "size201to500": "201-500 employees",
+        "size501to1000": "501-1000 employees",
+        "size1000plus": "1000+ employees",
+        "message": "Message (Optional)",
+        "messagePlaceholder": "Tell us about your specific needs or questions...",
+        "submitting": "Submitting...",
+        "bookDemo": "Book Your Demo"
+      }
+    }
+  }
+}

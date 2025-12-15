@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { 
-  Briefcase, 
-  MapPin, 
-  Clock, 
+import {
+  Briefcase,
+  MapPin,
+  Clock,
   Search,
   Filter,
   ChevronRight,
@@ -16,16 +16,18 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTranslation } from "react-i18next";
 
 export default function Careers() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
   const [locationFilter, setLocationFilter] = useState("all");
@@ -152,13 +154,12 @@ export default function Careers() {
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl -z-10 transform -translate-x-1/2 translate-y-1/2"></div>
         
         <div className="max-w-3xl">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Join Our Team</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">{t('pages.careers.title')}</h1>
           <p className="text-lg text-gray-700 mb-8">
-            We're on a mission to revolutionize how businesses understand people through personality insights. 
-            If you're passionate about psychology, AI, and creating impactful solutions, we'd love to meet you!
+            {t('pages.careers.subtitle')}
           </p>
           <Button size="lg" className="bg-primary hover:bg-primary/90">
-            View Open Positions
+            {t('pages.careers.viewPositions')}
             <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
@@ -166,7 +167,7 @@ export default function Careers() {
       
       {/* Core Values Section */}
       <div className="mb-16">
-        <h2 className="text-3xl font-bold text-center text-gray-900 mb-10">Our Core Values</h2>
+        <h2 className="text-3xl font-bold text-center text-gray-900 mb-10">{t('pages.careers.coreValues')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
             <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
@@ -212,7 +213,7 @@ export default function Careers() {
       
       {/* Benefits Section */}
       <div className="mb-16">
-        <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">Benefits & Perks</h2>
+        <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">{t('pages.careers.benefitsPerks')}</h2>
         <p className="text-center text-gray-600 max-w-3xl mx-auto mb-10">
           We believe in taking care of our team with competitive compensation and benefits that support your health, wealth, and well-being.
         </p>
@@ -425,7 +426,7 @@ export default function Careers() {
       
       {/* Open Positions Section */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-12">
-        <h2 className="text-3xl font-bold text-gray-900 mb-6">Open Positions</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-6">{t('pages.careers.openPositions')}</h2>
         
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div className="flex-1 relative">

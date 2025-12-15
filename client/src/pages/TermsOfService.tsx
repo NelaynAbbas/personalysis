@@ -1,13 +1,16 @@
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
 
 export default function TermsOfService() {
+  const { t } = useTranslation();
+
   return (
     <div className="container mx-auto py-12 px-4 max-w-4xl">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Terms of Service</h1>
-      
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">{t('pages.terms.title')}</h1>
+
       <div className="prose prose-lg max-w-none">
         <p className="text-gray-600">
-          Last Updated: April 1, 2025
+          {t('pages.terms.lastUpdated')}
         </p>
         
         <h2>1. Agreement to Terms</h2>
@@ -120,10 +123,10 @@ export default function TermsOfService() {
           (800) 555-0123
         </p>
       </div>
-      
+
       <div className="mt-12 text-center">
         <Link href="/" className="text-primary hover:text-primary-dark font-medium">
-          Return to Home
+          {t('pages.terms.returnHome')}
         </Link>
       </div>
     </div>

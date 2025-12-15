@@ -75,14 +75,55 @@ export async function fixDatabaseSchema() {
     // Check and fix any other missing columns
     try {
       await db.execute(sql`
-        ALTER TABLE survey_responses 
+        ALTER TABLE survey_responses
         ADD COLUMN IF NOT EXISTS validation_status TEXT DEFAULT 'pending';
       `);
       console.log('✅ Added validation_status column to survey_responses table');
     } catch (error) {
       console.log('ℹ️ validation_status column already exists or error occurred:', error);
     }
-    
+
+    // Add missing notification columns for admin notifications system
+    try {
+      await db.execute(sql`
+        ALTER TABLE notifications
+        ADD COLUMN IF NOT EXISTS is_global BOOLEAN DEFAULT false NOT NULL;
+      `);
+      console.log('✅ Added is_global column to notifications table');
+    } catch (error) {
+      console.log('ℹ️ is_global column already exists or error occurred:', error);
+    }
+
+    try {
+      await db.execute(sql`
+        ALTER TABLE notifications
+        ADD COLUMN IF NOT EXISTS category VARCHAR(50);
+      `);
+      console.log('✅ Added category column to notifications table');
+    } catch (error) {
+      console.log('ℹ️ category column already exists or error occurred:', error);
+    }
+
+    try {
+      await db.execute(sql`
+        ALTER TABLE notifications
+        ADD COLUMN IF NOT EXISTS priority VARCHAR(20) DEFAULT 'medium';
+      `);
+      console.log('✅ Added priority column to notifications table');
+    } catch (error) {
+      console.log('ℹ️ priority column already exists or error occurred:', error);
+    }
+
+    try {
+      await db.execute(sql`
+        ALTER TABLE notifications
+        ADD COLUMN IF NOT EXISTS actionable_user_id INTEGER;
+      `);
+      console.log('✅ Added actionable_user_id column to notifications table');
+    } catch (error) {
+      console.log('ℹ️ actionable_user_id column already exists or error occurred:', error);
+    }
+
     console.log('✅ Database schema fixes completed');
   } catch (error) {
     console.error('❌ Database schema fix failed:', error);
@@ -90,15 +131,5 @@ export async function fixDatabaseSchema() {
   }
 }
 
-// Run if called directly
-if (require.main === module) {
-  fixDatabaseSchema()
-    .then(() => {
-      console.log('✅ Schema fix completed successfully');
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error('❌ Schema fix failed:', error);
-      process.exit(1);
-    });
-}
+// This module is designed to be imported and called from index.ts
+// The fixDatabaseSchema function is exported above and called in the main server initialization

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { useTranslation } from "react-i18next";
 import { 
   Card, 
   CardContent, 
@@ -37,14 +38,16 @@ import { AnalyticsData, SystemMetrics } from "@shared/adminTypes";
 import { apiRequest, getQueryFn } from "@/lib/queryClient";
 import { useSystemPerformance } from "@/lib/useSystemPerformance";
 import { performLogout } from "@/lib/logout";
-import { 
-  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, 
-  Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell 
+import {
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell
 } from "recharts";
+import { Badge } from "@/components/ui/badge";
 
 // No more demo data generators - using real API data only
 
 const AdminConsole = () => {
+  const { t } = useTranslation();
   const [location, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [timeRange, setTimeRange] = useState<"1week" | "1month" | "3months" | "6months" | "12months">("1week");
@@ -54,6 +57,7 @@ const AdminConsole = () => {
   const [pendingTicketId, setPendingTicketId] = useState<number | null>(null);
   const [pendingLicenseId, setPendingLicenseId] = useState<number | null>(null);
   const [viewingAnalytics, setViewingAnalytics] = useState<number | null>(null); // Track which survey analytics we're viewing
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   useEffect(() => {
     if (activeTab === 'support' && pendingTicketId) {
       const timer = setTimeout(() => setPendingTicketId(null), 1500);
@@ -118,6 +122,50 @@ const AdminConsole = () => {
     setIsMounted(true);
   }, []);
 
+  // Fetch unread notification count on mount
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const data = await apiRequest('/api/admin/notifications/unread-count', {
+          skipAuthHeader: false
+        });
+        setUnreadNotificationCount(data.unreadCount || 0);
+      } catch (error) {
+        console.error('Failed to fetch unread notification count:', error);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchUnreadCount();
+    }
+  }, [isAuthenticated]);
+
+  // Listen for real-time notification updates via WebSocket
+  const { subscribe } = useWebSocket();
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const handleNotificationUpdate = (data: any) => {
+      // Refresh unread count when new notification arrives
+      const fetchUnreadCount = async () => {
+        try {
+          const result = await apiRequest('/api/admin/notifications/unread-count', {
+            skipAuthHeader: false
+          });
+          setUnreadNotificationCount(result.unreadCount || 0);
+        } catch (error) {
+          console.error('Failed to update unread notification count:', error);
+        }
+      };
+      fetchUnreadCount();
+    };
+
+    // Subscribe returns an unsubscribe function
+    const unsubscribe = subscribe('notificationUpdate', handleNotificationUpdate);
+
+    return unsubscribe;
+  }, [isAuthenticated, subscribe]);
+
   // Check if user is authenticated with admin role
       useEffect(() => {
         const verifyAdminAccess = () => {
@@ -153,8 +201,8 @@ const AdminConsole = () => {
             if (currentUser.role !== UserRole.PLATFORM_ADMIN && currentUser.role !== 'platform_admin' && currentUser.role !== 'admin') {
               console.error("❌ ADMIN CONSOLE DEBUG - User doesn't have admin permissions", currentUser.role);
               toast({
-                title: "Access Denied",
-                description: "You don't have permission to access the admin console.",
+                title: t('pages.adminConsole.accessDenied'),
+                description: t('pages.adminConsole.accessDeniedDescription'),
                 variant: "destructive"
               });
               setLocation('/dashboard');
@@ -214,9 +262,9 @@ const AdminConsole = () => {
       <div className="flex flex-col gap-6">
         <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
           <div>
-            <h1 className="text-3xl font-bold">Admin Console</h1>
+            <h1 className="text-3xl font-bold">{t('pages.adminConsole.title')}</h1>
             <p className="text-muted-foreground mt-1">
-              Manage all aspects of the PersonalysisPro platform
+              {t('pages.adminConsole.subtitle')}
             </p>
           </div>
 
@@ -336,9 +384,9 @@ const AdminConsole = () => {
                       <rect width="7" height="9" x="14" y="12" rx="1"></rect>
                       <rect width="7" height="5" x="3" y="16" rx="1"></rect>
                     </svg>
-                    Dashboard
+                    {t('pages.adminConsole.tabs.dashboard')}
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="clients"
                     className="h-8 rounded-md data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none bg-transparent flex items-center gap-1 whitespace-nowrap px-3 text-sm"
                   >
@@ -357,9 +405,9 @@ const AdminConsole = () => {
                       <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
                       <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                     </svg>
-                    Clients
+                    {t('pages.adminConsole.tabs.clients')}
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="licenses"
                     className="h-8 rounded-md data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none bg-transparent flex items-center gap-1 whitespace-nowrap px-3 text-sm"
                   >
@@ -382,9 +430,9 @@ const AdminConsole = () => {
                       <path d="M17.7 12h.3"></path>
                       <path d="M17.7 16h.3"></path>
                     </svg>
-                    Licenses
+                    {t('pages.adminConsole.tabs.licenses')}
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="templates"
                     className="h-8 rounded-md data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none bg-transparent flex items-center gap-1 whitespace-nowrap px-3 text-sm"
                   >
@@ -405,9 +453,9 @@ const AdminConsole = () => {
                       <path d="M14 13h2"></path>
                       <path d="M14 17h2"></path>
                     </svg>
-                    Templates
+                    {t('pages.adminConsole.tabs.templates')}
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="support"
                     className="h-8 rounded-md data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none bg-transparent flex items-center gap-1 whitespace-nowrap px-3 text-sm"
                   >
@@ -423,9 +471,9 @@ const AdminConsole = () => {
                     >
                       <path d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0z"></path>
                     </svg>
-                    Support
+                    {t('pages.adminConsole.tabs.support')}
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="analytics"
                     className="h-8 rounded-md data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none bg-transparent flex items-center gap-1 whitespace-nowrap px-3 text-sm"
                   >
@@ -442,9 +490,9 @@ const AdminConsole = () => {
                       <path d="M3 3v18h18"></path>
                       <path d="m19 9-5 5-4-4-3 3"></path>
                     </svg>
-                    Analytics
+                    {t('pages.adminConsole.tabs.analytics')}
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="billing"
                     className="h-8 rounded-md data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none bg-transparent flex items-center gap-1 whitespace-nowrap px-3 text-sm"
                   >
@@ -461,9 +509,9 @@ const AdminConsole = () => {
                       <rect width="20" height="14" x="2" y="5" rx="2"></rect>
                       <line x1="2" x2="22" y1="10" y2="10"></line>
                     </svg>
-                    Billing
+                    {t('pages.adminConsole.tabs.billing')}
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="notifications"
                     className="h-8 rounded-md data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none bg-transparent flex items-center gap-1 whitespace-nowrap px-3 text-sm"
                   >
@@ -480,9 +528,14 @@ const AdminConsole = () => {
                       <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
                       <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>
                     </svg>
-                    Notifications
+                    {t('pages.adminConsole.tabs.notifications')}
+                    {unreadNotificationCount > 0 && (
+                      <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-xs flex items-center justify-center">
+                        {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
+                      </Badge>
+                    )}
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="auditlogs"
                     className="h-8 rounded-md data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none bg-transparent flex items-center gap-1 whitespace-nowrap px-3 text-sm"
                   >
@@ -502,9 +555,9 @@ const AdminConsole = () => {
                       <path d="M16 17H8"></path>
                       <path d="M10 9H8"></path>
                     </svg>
-                    Audit Logs
+                    {t('pages.adminConsole.tabs.auditLogs')}
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="responses"
                     className="h-8 rounded-md data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none bg-transparent flex items-center gap-1 whitespace-nowrap px-3 text-sm"
                   >
@@ -522,9 +575,9 @@ const AdminConsole = () => {
                       <line x1="9" y1="10" x2="15" y2="10"></line>
                       <line x1="12" y1="7" x2="12" y2="13"></line>
                     </svg>
-                    Responses
+                    {t('pages.adminConsole.tabs.responses')}
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="demo-request"
                     className="h-8 rounded-md data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none bg-transparent flex items-center gap-1 whitespace-nowrap px-3 text-sm"
                   >
@@ -542,9 +595,9 @@ const AdminConsole = () => {
                       <path d="M12 12v4"></path>
                       <path d="M12 12h4"></path>
                     </svg>
-                    Demo Requests
+                    {t('pages.adminConsole.tabs.demoRequests')}
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="integrations"
                     className="h-8 rounded-md data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none bg-transparent flex items-center gap-1 whitespace-nowrap px-3 text-sm"
                   >
@@ -561,9 +614,9 @@ const AdminConsole = () => {
                       <circle cx="12" cy="12" r="3"></circle>
                       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                     </svg>
-                    Integrations
+                    {t('pages.adminConsole.tabs.integrations')}
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="settings"
                     className="h-8 rounded-md data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none bg-transparent flex items-center gap-1 whitespace-nowrap px-3 text-sm"
                   >
@@ -580,9 +633,9 @@ const AdminConsole = () => {
                       <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
                       <circle cx="12" cy="12" r="3"></circle>
                     </svg>
-                    Settings
+                    {t('pages.adminConsole.tabs.settings')}
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="demodata"
                     className="h-8 rounded-md data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none bg-transparent flex items-center gap-1 whitespace-nowrap px-3 text-sm font-semibold"
                   >
@@ -603,9 +656,9 @@ const AdminConsole = () => {
                       <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
                       <line x1="12" y1="22.08" x2="12" y2="12"></line>
                     </svg>
-                    DEMO DATA
+                    {t('pages.adminConsole.tabs.demoData')}
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="backup"
                     className="h-8 rounded-md data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none bg-transparent flex items-center gap-1 whitespace-nowrap px-3 text-sm"
                   >
@@ -625,9 +678,9 @@ const AdminConsole = () => {
                       <path d="M6 17v3"></path>
                       <path d="M10 17v3"></path>
                     </svg>
-                    Backup
+                    {t('pages.adminConsole.tabs.backup')}
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="blog"
                     className="h-8 rounded-md data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none bg-transparent flex items-center gap-1 whitespace-nowrap px-3 text-sm"
                   >
@@ -643,7 +696,7 @@ const AdminConsole = () => {
                     >
                       <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
                     </svg>
-                    Blog
+                    {t('pages.adminConsole.tabs.blog')}
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -654,19 +707,19 @@ const AdminConsole = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                  <span>Time Range</span>
+                  <span>{t('pages.adminConsole.dashboard.timeRange')}</span>
                 </div>
                 <div className="w-[220px]">
                   <Select value={timeRange} onValueChange={(v) => setTimeRange(v as any)}>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select range" />
+                      <SelectValue placeholder={t('pages.adminConsole.dashboard.selectRange')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1week">Last Week</SelectItem>
-                      <SelectItem value="1month">Last Month</SelectItem>
-                      <SelectItem value="3months">Last 3 Months</SelectItem>
-                      <SelectItem value="6months">Last 6 Months</SelectItem>
-                      <SelectItem value="12months">Last Year</SelectItem>
+                      <SelectItem value="1week">{t('pages.adminConsole.dashboard.lastWeek')}</SelectItem>
+                      <SelectItem value="1month">{t('pages.adminConsole.dashboard.lastMonth')}</SelectItem>
+                      <SelectItem value="3months">{t('pages.adminConsole.dashboard.last3Months')}</SelectItem>
+                      <SelectItem value="6months">{t('pages.adminConsole.dashboard.last6Months')}</SelectItem>
+                      <SelectItem value="12months">{t('pages.adminConsole.dashboard.lastYear')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -760,9 +813,9 @@ const AdminConsole = () => {
                         <YAxis />
                         <Tooltip />
                         <Legend />
-                        <Line type="monotone" dataKey="activeClients" name="Active Clients" stroke="#3b82f6" strokeWidth={2} />
-                        <Line type="monotone" dataKey="newClients" name="New Clients" stroke="#10b981" strokeWidth={2} />
-                        <Line type="monotone" dataKey="churnedClients" name="Churned Clients" stroke="#ef4444" strokeWidth={2} />
+                        <Line type="monotone" dataKey="activeClients" name={t('pages.adminConsole.dashboard.activeClients')} stroke="#3b82f6" strokeWidth={2} />
+                        <Line type="monotone" dataKey="newClients" name={t('pages.adminConsole.dashboard.newClients')} stroke="#10b981" strokeWidth={2} />
+                        <Line type="monotone" dataKey="churnedClients" name={t('pages.adminConsole.dashboard.churnedClients')} stroke="#ef4444" strokeWidth={2} />
                       </LineChart>
                     </ResponsiveContainer>
                   ) : (
@@ -790,9 +843,9 @@ const AdminConsole = () => {
                         <YAxis />
                         <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, undefined]} />
                         <Legend />
-                        <Bar dataKey="subscriptionRevenue" name="Subscription Revenue" fill="#3b82f6" />
-                        <Bar dataKey="oneTimeRevenue" name="One-time Revenue" fill="#10b981" />
-                        <Line type="monotone" dataKey="totalRevenue" name="Total Revenue" stroke="#6366f1" strokeWidth={2} />
+                        <Bar dataKey="subscriptionRevenue" name={t('pages.adminConsole.dashboard.subscriptionRevenue')} fill="#3b82f6" />
+                        <Bar dataKey="oneTimeRevenue" name={t('pages.adminConsole.dashboard.oneTimeRevenue')} fill="#10b981" />
+                        <Line type="monotone" dataKey="totalRevenue" name={t('pages.adminConsole.dashboard.totalRevenue')} stroke="#6366f1" strokeWidth={2} />
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
@@ -968,18 +1021,18 @@ const AdminConsole = () => {
                     ) : (
                       <>
                         <div className="space-y-4">
-                          {((ticketsData?.data || []).slice(0, 4)).map((t: any) => {
-                            const p = String(t.priority || '').toLowerCase();
+                          {((ticketsData?.data || []).slice(0, 4)).map((ticket: any) => {
+                            const p = String(ticket.priority || '').toLowerCase();
                             const dot = p === 'high' || p === 'urgent' ? 'bg-red-500' : p === 'medium' ? 'bg-amber-500' : 'bg-emerald-500';
                             return (
-                              <div key={t.id} className="flex items-center gap-4">
+                              <div key={ticket.id} className="flex items-center gap-4">
                                 <div className={`w-2 h-2 rounded-full ${dot}`}></div>
                                 <div className="flex-1">
-                                  <div className="text-sm font-medium truncate">{t.subject || 'Ticket'}</div>
-                                  <div className="text-sm text-muted-foreground truncate">{t.clientName || 'Unknown Client'} - {new Date(t.createdAt).toLocaleString()}</div>
+                                  <div className="text-sm font-medium truncate">{ticket.subject || 'Ticket'}</div>
+                                  <div className="text-sm text-muted-foreground truncate">{ticket.clientName || 'Unknown Client'} - {new Date(ticket.createdAt).toLocaleString()}</div>
                                 </div>
                                 <div>
-                                  <Button variant="ghost" size="sm" onClick={() => { setPendingTicketId(t.id); handleTabChange('support'); }}>View</Button>
+                                  <Button variant="ghost" size="sm" onClick={() => { setPendingTicketId(ticket.id); handleTabChange('support'); }}>{t('pages.adminConsole.dashboard.view')}</Button>
                                 </div>
                               </div>
                             );
@@ -989,7 +1042,7 @@ const AdminConsole = () => {
                           )}
                         </div>
                         <div className="mt-4 pt-4 border-t">
-                          <Button variant="outline" size="sm" className="w-full" onClick={() => handleTabChange('support')}>View All Tickets</Button>
+                          <Button variant="outline" size="sm" className="w-full" onClick={() => handleTabChange('support')}>{t('pages.adminConsole.dashboard.viewAllTickets')}</Button>
                         </div>
                       </>
                     )}
@@ -1035,7 +1088,7 @@ const AdminConsole = () => {
                                     <div className="text-sm text-muted-foreground truncate">{(l.plan || 'Plan')} - {isFinite(days) ? `Expires in ${days} day${days === 1 ? '' : 's'}` : 'No expiry'}</div>
                                   </div>
                                   <div>
-                                    <Button variant="ghost" size="sm" onClick={() => { setPendingLicenseId(l.id); handleTabChange('licenses'); }}>View</Button>
+                                    <Button variant="ghost" size="sm" onClick={() => { setPendingLicenseId(l.id); handleTabChange('licenses'); }}>{t('pages.adminConsole.dashboard.view')}</Button>
                                   </div>
                                 </div>
                               );
@@ -1059,7 +1112,7 @@ const AdminConsole = () => {
                           })()}
                         </div>
                         <div className="mt-4 pt-4 border-t">
-                          <Button variant="outline" size="sm" className="w-full" onClick={() => handleTabChange('licenses')}>View All Expiring Licenses</Button>
+                          <Button variant="outline" size="sm" className="w-full" onClick={() => handleTabChange('licenses')}>{t('pages.adminConsole.dashboard.viewAllExpiringLicenses')}</Button>
                         </div>
                       </>
                     )}
@@ -1084,15 +1137,15 @@ const AdminConsole = () => {
                     onClick={() => setViewingAnalytics(null)}
                     className="mb-4"
                   >
-                    ← Back to Survey Management
+                    ← {t('pages.adminConsole.templates.backToSurveyManagement')}
                   </Button>
                   <AdminSurveyAnalytics surveyId={viewingAnalytics} onBack={() => setViewingAnalytics(null)} />
                 </div>
               ) : (
                 <Tabs defaultValue="templates">
                   <TabsList className="w-full">
-                    <TabsTrigger value="templates">Survey Templates</TabsTrigger>
-                    <TabsTrigger value="survey-management">Survey Management</TabsTrigger>
+                    <TabsTrigger value="templates">{t('pages.adminConsole.templates.surveyTemplates')}</TabsTrigger>
+                    <TabsTrigger value="survey-management">{t('pages.adminConsole.templates.surveyManagement')}</TabsTrigger>
                   </TabsList>
                   <TabsContent value="templates">
                     <SurveyTemplates />
@@ -1107,8 +1160,8 @@ const AdminConsole = () => {
             <TabsContent value="support">
               <Tabs defaultValue="tickets">
                 <TabsList className="w-full">
-                  <TabsTrigger value="tickets">Support Tickets</TabsTrigger>
-                  <TabsTrigger value="client-support">Client Support</TabsTrigger>
+                  <TabsTrigger value="tickets">{t('pages.adminConsole.support.supportTickets')}</TabsTrigger>
+                  <TabsTrigger value="client-support">{t('pages.adminConsole.support.clientSupport')}</TabsTrigger>
                 </TabsList>
                 <TabsContent value="tickets">
                   <SupportTickets initialOpenTicketId={pendingTicketId || undefined} />

@@ -1,3 +1,6 @@
+// Initialize i18n FIRST - must be before all other imports
+import './config/i18n';
+
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
@@ -50,6 +53,7 @@ import { useRealtime } from "./hooks/useRealtime";
 import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
+import { LanguageProvider } from "./context/LanguageContext";
 
 // Admin redirect component to protect the admin routes
 function AdminRedirect() {
@@ -317,21 +321,23 @@ function App() {
         <ToastProvider>
           <AccessibilityProvider>
             <AuthProvider>
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
-              {/* Skip link for keyboard users */}
-              <SkipToContentLink />
-              
-              {/* Initialize WebSocket connection */}
-              <WebSocketConnectionManager />
-              
-              {/* Main Router with Analytics Tracking */}
-              <RouterWithAnalytics />
-              
-              {/* Cookie Consent Banner - Global across all pages */}
-              <CookieConsent />
-              
-              <Toaster />
-            </div>
+              <LanguageProvider>
+                <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
+                  {/* Skip link for keyboard users */}
+                  <SkipToContentLink />
+
+                  {/* Initialize WebSocket connection */}
+                  <WebSocketConnectionManager />
+
+                  {/* Main Router with Analytics Tracking */}
+                  <RouterWithAnalytics />
+
+                  {/* Cookie Consent Banner - Global across all pages */}
+                  <CookieConsent />
+
+                  <Toaster />
+                </div>
+              </LanguageProvider>
             </AuthProvider>
           </AccessibilityProvider>
         </ToastProvider>

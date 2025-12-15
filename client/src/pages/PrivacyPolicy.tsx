@@ -1,21 +1,25 @@
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
 
 export default function PrivacyPolicy() {
+  const { t } = useTranslation();
+
   return (
     <div className="container mx-auto py-12 px-4 max-w-4xl">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Privacy Policy</h1>
-      
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">{t('pages.privacy.title')}</h1>
+
       <div className="prose prose-lg max-w-none">
         <p className="text-gray-600">
-          Last Updated: April 1, 2025
+          {t('pages.privacy.lastUpdated')}
         </p>
-        
-        <h2>1. Introduction</h2>
+
+
+        <h2>{t('pages.privacy.section1Title')}</h2>
         <p>
-          PersonalysisPro ("we," "our," or "us") respects your privacy and is committed to protecting it through our compliance with this policy. This policy describes the types of information we may collect from you or that you may provide when you use our personality assessment platform and our practices for collecting, using, maintaining, protecting, and disclosing that information.
+          {t('pages.privacy.section1Content')}
         </p>
-        
-        <h2>2. Information We Collect</h2>
+
+        <h2>{t('pages.privacy.section2Title')}</h2>
         <p>
           We collect several types of information from and about users of our platform, including:
         </p>
@@ -101,10 +105,10 @@ export default function PrivacyPolicy() {
         <strong>Address:</strong> 71-75 Shelton Street, London, WC2H 9JQ<br />
         </p>
       </div>
-      
+
       <div className="mt-12 text-center">
         <Link href="/" className="text-primary hover:text-primary-dark font-medium">
-          Return to Home
+          {t('pages.privacy.returnHome')}
         </Link>
       </div>
     </div>

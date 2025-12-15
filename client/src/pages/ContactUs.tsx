@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import { 
-  Mail, 
-  Phone, 
-  MapPin, 
-  MessageSquare, 
-  Users, 
-  Building, 
-  Briefcase, 
+import { useTranslation } from "react-i18next";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  MessageSquare,
+  Users,
+  Building,
+  Briefcase,
   Send,
   AlertCircle,
   Check
@@ -14,17 +15,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
 
 import { toast } from "@/hooks/use-toast";
 
 export default function ContactUs() {
+  const { t } = useTranslation();
+
   // Form states
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -36,27 +39,27 @@ export default function ContactUs() {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-  
+
   useEffect(() => {
     // Set page title
-    document.title = "Contact Us | PersonalysisPro";
+    document.title = t('pages.contactUs.pageTitle');
     // Scroll to top on page load
     window.scrollTo(0, 0);
-  }, []);
+  }, [t]);
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
-    
-    if (!firstName.trim()) errors.firstName = "First name is required";
-    if (!lastName.trim()) errors.lastName = "Last name is required";
+
+    if (!firstName.trim()) errors.firstName = t('pages.contactUs.validation.firstNameRequired');
+    if (!lastName.trim()) errors.lastName = t('pages.contactUs.validation.lastNameRequired');
     if (!email.trim()) {
-      errors.email = "Email is required";
+      errors.email = t('pages.contactUs.validation.emailRequired');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = "Please enter a valid email address";
+      errors.email = t('pages.contactUs.validation.emailInvalid');
     }
-    if (!company.trim()) errors.company = "Company name is required";
-    if (!message.trim()) errors.message = "Message is required";
-    
+    if (!company.trim()) errors.company = t('pages.contactUs.validation.companyRequired');
+    if (!message.trim()) errors.message = t('pages.contactUs.validation.messageRequired');
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -84,8 +87,8 @@ export default function ContactUs() {
       
       // Show success message
       toast({
-        title: "Message Sent!",
-        description: "Thank you for contacting us. We'll respond to your inquiry shortly.",
+        title: t('pages.contactUs.successTitle'),
+        description: t('pages.contactUs.successMessage'),
         variant: "default",
       });
     }, 1500);
@@ -99,11 +102,9 @@ export default function ContactUs() {
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl -z-10 transform -translate-x-1/2 translate-y-1/2"></div>
         
         <div className="max-w-3xl">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Contact Us</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">{t('pages.contactUs.title')}</h1>
           <p className="text-lg text-gray-700 mb-8">
-            Get in touch with our team to learn more about how PersonalysisPro can help your 
-            business understand customers, employees, and markets through advanced 
-            personality insights.
+            {t('pages.contactUs.subtitle')}
           </p>
         </div>
       </div>
@@ -112,13 +113,13 @@ export default function ContactUs() {
         {/* Contact Form */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
           <div className="w-full">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Send Us a Message</h2>
-              
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('pages.contactUs.formTitle')}</h2>
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-                      First Name*
+                      {t('pages.contactUs.firstName')}
                     </label>
                     <Input
                       id="firstName"
