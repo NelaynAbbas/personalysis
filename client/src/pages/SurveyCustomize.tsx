@@ -120,6 +120,7 @@ const SurveyCustomize = () => {
                 <span className="material-icons mr-3 text-sm">share</span>
                 Sharing Options
               </button>
+              {/*
               <button
                 onClick={() => setActiveTab("integrations")}
                 className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md ${
@@ -131,6 +132,7 @@ const SurveyCustomize = () => {
                 <span className="material-icons mr-3 text-sm">integration_instructions</span>
                 Integrations
               </button>
+              */}
             </nav>
           </CardContent>
         </Card>
@@ -439,6 +441,7 @@ const SurveyCustomize = () => {
             </Card>
           )}
 
+          {/*
           {activeTab === "integrations" && (
             <Card>
               <CardHeader>
@@ -497,6 +500,7 @@ const SurveyCustomize = () => {
               </CardContent>
             </Card>
           )}
+          */}
         </div>
       </div>
     </main>
